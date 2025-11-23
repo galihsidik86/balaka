@@ -222,21 +222,29 @@ Functional tests use Playwright for browser automation. They require Docker for 
 
 ## Project Status
 
-🚧 **Planning Phase** - Currently in design and documentation stage.
+🔄 **Phase 1: Core Accounting (MVP)** - In active development.
 
-### Completed:
-- ✅ Requirements analysis
-- ✅ Architecture design
-- ✅ Database schema design
-- ✅ Tax compliance research outline
-- ✅ Technology stack selection
+### Phase 0: Project Setup ✅
+- ✅ Spring Boot 4.0 project structure
+- ✅ PostgreSQL with Flyway migrations (V001-V006)
+- ✅ Spring Security (session-based auth)
+- ✅ Thymeleaf + HTMX + Alpine.js UI
+- ✅ CI/CD pipeline (GitHub Actions)
+- ✅ Playwright functional testing framework
 
-### Next Steps:
-1. Finalize open design questions
-2. Set up development environment
-3. Build proof of concept for journal template system
-4. Design UI/UX mockups
-5. Implement authentication and multi-tenancy
+### Phase 1: Core Accounting 🔄
+**Chart of Accounts (1.1):**
+- ✅ Account entity with hierarchical structure
+- ✅ Account types (Asset, Liability, Equity, Revenue, Expense)
+- ✅ Pre-seeded IT Services COA (30+ accounts)
+- 🔄 Account CRUD UI (in progress)
+- ⏳ Soft delete implementation
+
+**Journal Templates (1.2):** ⏳ Pending
+**Transactions (1.3):** ⏳ Pending
+**Reports (1.6):** ⏳ Pending
+
+See [Implementation Plan](docs/06-implementation-plan.md) for full details.
 
 ## Contributing
 

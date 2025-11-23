@@ -9,33 +9,32 @@
 
 ## Phase Overview
 
-| Phase | Focus | Target |
+| Phase | Focus | Status |
 |-------|-------|--------|
-| **0** | Project Setup | Week 1 |
-| **1** | Core Accounting (MVP) - IT Services | Go Live |
-| **2** | Tax Compliance | After Go Live |
-| **3** | Reconciliation | After Phase 2 |
-| **4** | Payroll | After Phase 3 |
-| **5** | Assets & Budget | After Phase 4 |
-| **6+** | Other Industries, Advanced Features | As Needed |
+| **0** | Project Setup | ✅ Complete |
+| **1** | Core Accounting (MVP) - IT Services | 🔄 In Progress |
+| **2** | Tax Compliance | ⏳ Not Started |
+| **3** | Reconciliation | ⏳ Not Started |
+| **4** | Payroll | ⏳ Not Started |
+| **5** | Assets & Budget | ⏳ Not Started |
+| **6+** | Other Industries, Advanced Features | ⏳ Not Started |
 
 ---
 
-## Phase 0: Project Setup
+## Phase 0: Project Setup ✅
 
 ### 0.1 Development Environment
-- [ ] Spring Boot 4.0 project structure
-- [ ] PostgreSQL 17 local setup (Docker Compose)
-- [ ] Flyway migration setup
-- [ ] Basic CI/CD pipeline (build + test)
-- [ ] Local storage directory setup
+- [x] Spring Boot 4.0 project structure
+- [x] PostgreSQL 17 local setup (Testcontainers for tests)
+- [x] Flyway migration setup
+- [x] Basic CI/CD pipeline (GitHub Actions)
 
 ### 0.2 Core Infrastructure
-- [ ] Spring Security configuration (session-based)
-- [ ] User authentication (login/logout)
-- [ ] Base entity classes (audit fields, soft delete)
-- [ ] Exception handling and error pages
-- [ ] Thymeleaf + HTMX base layout
+- [x] Spring Security configuration (session-based)
+- [x] User authentication (login/logout)
+- [x] Base entity classes (audit fields)
+- [x] Exception handling (GlobalExceptionHandler)
+- [x] Thymeleaf + HTMX base layout
 
 ### 0.3 Database Foundation
 ```sql
@@ -45,7 +44,11 @@ company_config
 audit_logs
 ```
 
-**Deliverable:** Running app with login, empty dashboard
+**Deliverable:** ✅ Running app with login, dashboard
+
+**Deferred:**
+- Local storage directory setup → Phase 2 (for document attachment)
+- Soft delete → Phase 1.1 (with COA)
 
 ---
 
@@ -56,12 +59,13 @@ audit_logs
 **Scope:** IT Services industry only (primary use case for initial deployment)
 
 ### 1.1 Chart of Accounts
-- [ ] Account entity and repository
-- [ ] Account types (asset, liability, equity, revenue, expense)
-- [ ] Hierarchical structure (parent/child)
-- [ ] Pre-seeded COA template: **IT Services only**
+- [x] Account entity and repository
+- [x] Account types (asset, liability, equity, revenue, expense)
+- [x] Hierarchical structure (parent/child)
+- [x] Pre-seeded COA template: **IT Services only**
 - [ ] Account CRUD UI
 - [ ] Account activation/deactivation
+- [ ] Soft delete (base entity with deleted_at, JPA filter)
 
 **Note:** Other industry templates (Photography, Online Seller, General Freelancer) deferred to Phase 1+
 
@@ -172,6 +176,9 @@ user_template_preferences
 ## Phase 2: Tax Compliance
 
 **Goal:** Indonesian tax features (PPN, PPh) + document attachment
+
+### 2.0 Infrastructure (Deferred from Phase 0)
+- [ ] Local storage directory setup
 
 ### 2.1 Document Attachment
 - [ ] Document entity
