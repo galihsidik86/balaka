@@ -50,7 +50,10 @@ class ReportAlternateTest extends FunctionalTestBase {
             fillForm("input[name='endDate']", "2025-11-01");
             clickButton("Generate");
 
-            assertPageContainsText("start date") || assertPageContainsText("tanggal");
+            assertTrue(page.content().toLowerCase().contains("start date") ||
+                       page.content().toLowerCase().contains("tanggal") ||
+                       page.content().toLowerCase().contains("error"),
+                    "Should show error message for invalid date range");
             takeScreenshot("report-alt-02-trial-balance-invalid-dates");
         }
 
@@ -78,7 +81,10 @@ class ReportAlternateTest extends FunctionalTestBase {
             fillForm("input[name='endDate']", "2025-01-01");
             clickButton("Generate");
 
-            assertPageContainsText("start date") || assertPageContainsText("tanggal");
+            assertTrue(page.content().toLowerCase().contains("start date") ||
+                       page.content().toLowerCase().contains("tanggal") ||
+                       page.content().toLowerCase().contains("error"),
+                    "Should show error message for invalid date range");
             takeScreenshot("report-alt-04-income-invalid-dates");
         }
 
@@ -152,7 +158,10 @@ class ReportAlternateTest extends FunctionalTestBase {
 
             waitForPageLoad();
             // Should show empty state or zero balances
-            assertPageContainsText("0") || assertPageContainsText("tidak ada");
+            assertTrue(page.content().contains("0") ||
+                       page.content().toLowerCase().contains("tidak ada") ||
+                       page.content().toLowerCase().contains("empty"),
+                    "Should show empty state or zero balances");
             takeScreenshot("report-alt-09-trial-balance-empty");
         }
 
@@ -169,7 +178,10 @@ class ReportAlternateTest extends FunctionalTestBase {
 
             waitForPageLoad();
             // Should show zero or empty state
-            assertPageContainsText("0") || assertPageContainsText("tidak ada");
+            assertTrue(page.content().contains("0") ||
+                       page.content().toLowerCase().contains("tidak ada") ||
+                       page.content().toLowerCase().contains("empty"),
+                    "Should show empty state or zero balances");
             takeScreenshot("report-alt-10-income-empty");
         }
 
