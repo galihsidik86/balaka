@@ -63,12 +63,12 @@ Complete COA features with functional tests. Item is only checked when verified 
 - [x] Confirmation dialog before delete
 
 ### 5. Activate/Deactivate Account
-- [ ] Deactivate button visible on active accounts
-- [ ] Activate button visible on inactive accounts
-- [ ] Click deactivate changes status to inactive
-- [ ] Inactive accounts visually distinguished (grayed out)
+- [x] Deactivate button visible on active accounts
+- [x] Activate button visible on inactive accounts
+- [x] Click deactivate changes status to inactive
+- [x] Inactive accounts visually distinguished (grayed out)
 - [ ] Inactive accounts not shown in transaction dropdowns (future)
-- [ ] Success message displayed after status change
+- [x] Success message displayed after status change
 
 ### 6. Hierarchical Structure
 - [x] Parent account can have children
@@ -102,7 +102,7 @@ Complete COA features with functional tests. Item is only checked when verified 
 1. ~~`ChartOfAccountCreateTest.java` - Create account scenarios~~ ✅ Done
 2. ~~`ChartOfAccountEditTest.java` - Edit account scenarios~~ ✅ Done
 3. ~~`ChartOfAccountDeleteTest.java` - Delete/soft delete scenarios~~ ✅ Done
-4. `ChartOfAccountStatusTest.java` - Activate/deactivate scenarios
+4. ~~`ChartOfAccountStatusTest.java` - Activate/deactivate scenarios~~ ✅ Done
 5. `ChartOfAccountValidationTest.java` - Validation error scenarios
 
 ---

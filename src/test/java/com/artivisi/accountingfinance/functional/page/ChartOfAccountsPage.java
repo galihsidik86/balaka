@@ -162,6 +162,55 @@ public class ChartOfAccountsPage {
         assertThat(page.locator("#account-row-" + id)).not().isVisible();
     }
 
+    public void assertActivateButtonNotVisible(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        assertThat(page.locator("#btn-activate-" + id)).not().isVisible();
+    }
+
+    public void assertDeactivateButtonNotVisible(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        assertThat(page.locator("#btn-deactivate-" + id)).not().isVisible();
+    }
+
+    public void assertAccountIsInactive(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        // Check the container has opacity-50 class
+        assertThat(page.locator("#account-container-" + id)).hasClass(java.util.regex.Pattern.compile(".*opacity-50.*"));
+    }
+
+    public void assertAccountIsActive(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        // Active accounts don't have opacity-50 class
+        assertThat(page.locator("#account-container-" + id)).not().hasClass(java.util.regex.Pattern.compile(".*opacity-50.*"));
+    }
+
+    public void assertInactiveBadgeVisible(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        assertThat(page.locator("#account-row-" + id + " >> text=Non-aktif")).isVisible();
+    }
+
+    public void assertInactiveBadgeNotVisible(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        assertThat(page.locator("#account-row-" + id + " >> text=Non-aktif")).not().isVisible();
+    }
+
+    public void clickDeactivateAccount(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        page.onceDialog(dialog -> dialog.accept());
+        page.click("#btn-deactivate-" + id);
+    }
+
+    public void clickDeactivateAccountAndCancel(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        page.onceDialog(dialog -> dialog.dismiss());
+        page.click("#btn-deactivate-" + id);
+    }
+
+    public void clickActivateAccount(String accountCode) {
+        String id = accountCodeToId(accountCode);
+        page.click("#btn-activate-" + id);
+    }
+
     // Helper method to convert account code to ID format
     // "1.1.01" -> "1-1-01"
     private String accountCodeToId(String accountCode) {
