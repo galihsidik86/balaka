@@ -1,170 +1,160 @@
-# TODO: Journal Templates (1.4)
+# TODO: Journal Templates (1.4 Basic)
 
 Predefined recipes for common transactions. Generates journal entries automatically.
 
-## Purpose
-
-- Standardize common transactions (revenue, expense, payment, receipt)
-- Reduce data entry errors
-- Enable non-accountants to create proper journal entries
-- Reused by Transactions (1.5)
+**Reference:** `docs/06-implementation-plan.md` section 1.4, `docs/99-decisions-and-questions.md`
 
 ## Dependencies
 
 - COA (1.1) ✅ Complete
 - Journal Entries (1.2) ✅ Complete
-- Basic Reports (1.3) ✅ Complete
+
+## Scope (from implementation plan)
+
+**In scope for 1.4:**
+- Template entity with versioning
+- Template lines entity (account mappings, debit/credit rules)
+- Category field (income, expense, payment, receipt, transfer)
+- Cash flow category field (operating, investing, financing)
+- System templates for IT Services (preloaded via migration)
+- Template CRUD UI
+- Template list with category filter
+- Template detail view
+- Template execution (generates journal entry)
+
+**NOT in scope (deferred):**
+- Tags, favorites, usage tracking → 1.8 Template Enhancements
+- SpEL formula support → 1.6 Formula Support (optional for MVP)
+- Search functionality → 1.8
 
 ---
 
-## TODO List
+## TODO Checklist
 
-### 1. Database Schema
+### 1. Database Schema ✅
 
-- [ ] Create V007__journal_templates.sql migration
-- [ ] journal_templates table (id, name, code, description, category, cash_flow_category, version, is_system, active, audit fields)
-- [ ] journal_template_lines table (id, template_id, line_order, account_id, debit_formula, credit_formula, description)
+- [x] V003__create_journal_templates.sql migration
+- [x] journal_templates table with versioning (version field)
+- [x] journal_template_lines table
 
-**Categories:**
-- INCOME - Revenue transactions
-- EXPENSE - Expense transactions
-- PAYMENT - Cash/bank outflow
-- RECEIPT - Cash/bank inflow
-- TRANSFER - Between accounts
-- ADJUSTMENT - Period-end adjustments
+### 2. Entity Classes ✅
 
-**Cash Flow Categories:**
-- OPERATING - Day-to-day business
-- INVESTING - Asset purchases/sales
-- FINANCING - Loans, capital
-
-### 2. Entity Classes
-
-- [ ] JournalTemplate entity
-- [ ] JournalTemplateLine entity
-- [ ] TemplateCategory enum
-- [ ] CashFlowCategory enum
-- [ ] JournalTemplateRepository
-- [ ] JournalTemplateLineRepository
+- [x] JournalTemplate entity with version field
+- [x] JournalTemplateLine entity
+- [x] TemplateCategory enum (INCOME, EXPENSE, PAYMENT, RECEIPT, TRANSFER, ADJUSTMENT)
+- [x] CashFlowCategory enum (OPERATING, INVESTING, FINANCING)
+- [x] JournalTemplateRepository
+- [x] JournalTemplateLineRepository
 
 ### 3. Service Layer
 
-- [ ] JournalTemplateService (CRUD operations)
-- [ ] TemplateExecutionEngine.execute(template, context) → JournalEntry
-- [ ] TemplateExecutionEngine.validate(template) → List<ValidationError>
-- [ ] Template versioning support
+- [x] JournalTemplateService with CRUD operations
+- [ ] Version increment on update (Decision #10) - verify implementation
+- [x] System template protection (cannot edit/delete is_system=true)
+- [x] TemplateExecutionEngine.execute() → creates JournalEntry
+- [x] TemplateExecutionEngine.preview() → shows what will be created (Decision #14)
+- [x] TemplateExecutionEngine.validate()
 
-### 4. System Templates (IT Services)
+**Versioning (Decision #10):**
+- [ ] Verify version field increments on each update
+- [ ] Journal entries store template_version used at execution time
+- [ ] Display version number in detail view
 
-Pre-seeded templates via V008__it_services_templates.sql:
+### 4. System Templates (IT Services) ✅
 
-| Code | Name | Category | Debit | Credit |
-|------|------|----------|-------|--------|
-| INC-CONSULT | Pendapatan Konsultasi | INCOME | Bank/Kas | Pendapatan Konsultasi |
-| INC-DEV | Pendapatan Development | INCOME | Bank/Kas | Pendapatan Development |
-| EXP-SALARY | Beban Gaji | EXPENSE | Beban Gaji | Bank/Kas |
-| EXP-SERVER | Beban Server & Cloud | EXPENSE | Beban Server | Bank/Kas |
-| EXP-OFFICE | Beban Perlengkapan Kantor | EXPENSE | Beban Perlengkapan | Bank/Kas |
-| PAY-VENDOR | Pembayaran Hutang | PAYMENT | Hutang Usaha | Bank/Kas |
-| RCV-CLIENT | Penerimaan Piutang | RECEIPT | Bank/Kas | Piutang Usaha |
-| TRF-BANK | Transfer Antar Bank | TRANSFER | Bank Tujuan | Bank Asal |
-| ADJ-DEPREC | Penyusutan Aset | ADJUSTMENT | Beban Penyusutan | Akum. Penyusutan |
+- [x] Pre-seeded via V003 migration (12 templates)
+- [x] Categories: INCOME, EXPENSE, PAYMENT, RECEIPT, TRANSFER, ADJUSTMENT
 
-### 5. Template UI
+### 5. Template List UI
 
-- [ ] Template list page (`/templates`)
-- [ ] Category filter tabs
-- [ ] Search by name/code
-- [ ] Template detail view (`/templates/{id}`)
-- [ ] Template form (`/templates/new`, `/templates/{id}/edit`)
-- [ ] Template line management (add/edit/remove lines)
-- [ ] System template indicator (non-editable)
+- [x] Route GET /templates
+- [ ] Dynamic list from database (currently static HTML mockup)
+- [ ] Category filter tabs (functional)
+- [ ] Link to detail page for each template
 
-### 6. Template Execution UI
+### 6. Template Detail View ✅
 
-- [ ] Execute template button on detail page
-- [ ] Execution form (date, amount, description)
-- [ ] Preview generated journal entry
-- [ ] Confirm and create journal entry
-- [ ] Link to created journal entry
+- [x] Route GET /templates/{id}
+- [x] Display template info (name, category, cash flow category)
+- [x] Display template lines (account, position, formula)
+- [x] Execute button → links to execution page
+- [x] Edit button (hidden for system templates)
 
-### 7. Playwright Tests
+### 7. Template CRUD UI
 
-- [ ] TemplateListTest.java - List and filter templates
-- [ ] TemplateDetailTest.java - View template details
-- [ ] TemplateFormTest.java - Create/edit templates
-- [ ] TemplateExecutionTest.java - Execute templates
+- [x] Routes: GET /templates/new, GET /templates/{id}/edit
+- [ ] Form POST to /templates (create) and /templates/{id} (update)
+- [ ] Use @ModelAttribute binding (same pattern as Journal Entry form)
+- [ ] Account dropdown uses ${accounts} with th:each (currently hardcoded)
+- [ ] Add/remove template lines (Alpine.js for dynamic rows)
+- [ ] Load existing data for edit mode via th:object="${template}"
+- [ ] System template warning (non-editable)
+- [ ] Delete via POST /templates/{id}/delete
 
----
+### 8. Template Execution UI ✅
 
-## Service Methods
+- [x] Route GET /templates/{id}/execute
+- [x] Execution form (date, amount, description)
+- [x] Preview button → shows generated journal lines
+- [x] Execute button → creates journal entry
+- [x] Success message with link to created journal
 
-```java
-JournalTemplateService {
-    findAll() → List<JournalTemplate>
-    findByCategory(TemplateCategory) → List<JournalTemplate>
-    findById(UUID) → JournalTemplate
-    create(JournalTemplate) → JournalTemplate
-    update(UUID, JournalTemplate) → JournalTemplate
-    delete(UUID) → void
-    activate(UUID) → void
-    deactivate(UUID) → void
-}
+### 9. Playwright Tests
 
-TemplateExecutionEngine {
-    execute(JournalTemplate, ExecutionContext) → JournalEntry
-    validate(JournalTemplate) → List<ValidationError>
-    preview(JournalTemplate, ExecutionContext) → JournalEntryPreview
-}
-
-ExecutionContext {
-    LocalDate transactionDate
-    BigDecimal amount
-    String description
-    Map<String, Object> additionalFields
-}
-```
+- [x] Template list page loads
+- [x] Template detail page loads
+- [x] Template execution flow (preview → execute)
+- [x] Validation errors displayed
+- [ ] Template create flow (save, verify in list)
+- [ ] Template edit flow (version increments after save)
+- [ ] Template delete flow (non-system only)
+- [ ] System template protection (edit/delete buttons hidden or disabled)
+- [ ] Version displayed in detail view
 
 ---
 
-## Database Schema
+## Key Decisions Applied
 
-```sql
-CREATE TABLE journal_templates (
-    id UUID PRIMARY KEY,
-    code VARCHAR(20) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    category VARCHAR(20) NOT NULL,
-    cash_flow_category VARCHAR(20),
-    version INTEGER DEFAULT 1,
-    is_system BOOLEAN DEFAULT FALSE,
-    active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL,
-    created_by VARCHAR(100),
-    updated_at TIMESTAMP,
-    updated_by VARCHAR(100),
-    deleted_at TIMESTAMP
-);
-
-CREATE TABLE journal_template_lines (
-    id UUID PRIMARY KEY,
-    template_id UUID NOT NULL REFERENCES journal_templates(id),
-    line_order INTEGER NOT NULL,
-    account_id UUID NOT NULL REFERENCES chart_of_accounts(id),
-    debit_formula VARCHAR(100),  -- e.g., "amount", "amount * 0.11", null
-    credit_formula VARCHAR(100), -- e.g., "amount", null
-    description VARCHAR(255),
-    created_at TIMESTAMP NOT NULL,
-    UNIQUE(template_id, line_order)
-);
-```
+| Decision | Description | Applied |
+|----------|-------------|---------|
+| #10 | Version templates, increment on edit | ✅ Service increments version |
+| #14 | No conditional logic, use preview | ✅ Preview before execute |
+| #2 | Configurable templates with preloaded defaults | ✅ System templates seeded |
 
 ---
 
-## Notes
+## Current Status
 
-- System templates (is_system=true) cannot be edited or deleted
-- Template versioning: increment version on each update
-- Formula supports: "amount", "amount * factor", constants
-- Tags, favorites, usage tracking deferred to 1.8
+**Working:**
+- Backend complete (entities, service, execution engine)
+- System templates seeded
+- Template detail view (dynamic)
+- Template execution flow (preview → execute → journal created)
+
+**Not Working:**
+- list.html is static mockup
+- form.html doesn't submit (action="#")
+- form.html account dropdown is hardcoded
+- Cannot create/edit/delete templates through UI
+
+---
+
+## Implementation Tasks
+
+1. **Make list.html dynamic**
+   - Replace static HTML with Thymeleaf: `th:each="template : ${templates}"`
+   - Category filter tabs using query parameter `?category=INCOME`
+   - Link cards to /templates/{id}
+
+2. **Fix form.html (Thymeleaf + Spring form pattern)**
+   - Change form action to `th:action="@{/templates}"` (create) or `th:action="@{/templates/{id}(id=${template.id})}"` (edit)
+   - Use `th:object="${template}"` for form binding
+   - Use `th:each` for account dropdown from ${accounts}
+   - Alpine.js only for dynamic line add/remove (not form submission)
+   - Add controller POST endpoints for create/update/delete
+
+3. **Add CRUD Playwright tests**
+   - Test create new template
+   - Test edit existing template (version increments)
+   - Test delete non-system template
+   - Test system template is protected
