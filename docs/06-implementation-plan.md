@@ -435,16 +435,16 @@ Expenses:
 - [x] Project list with filters (status, client)
 - [x] Link transactions to project (project_id on journal entries and transactions)
 - [x] Project selection in transaction form
-- [ ] Project Profitability Report
-- [ ] Project Income Statement (revenue - costs per project)
+- [x] Project Profitability Report
+- [x] Project Income Statement (revenue - costs per project)
 
 #### Client Features
 - [x] Client entity (code, name, contact info, notes)
 - [x] Client CRUD UI
 - [x] Client list with search
 - [x] Link projects to client
-- [ ] Client Profitability Report (aggregate of all client projects)
-- [ ] Client Revenue Ranking (top clients by revenue)
+- [x] Client Profitability Report (aggregate of all client projects)
+- [x] Client Revenue Ranking (top clients by revenue)
 
 #### Project Milestones
 - [x] Milestone entity (name, target date, completion %, status)
