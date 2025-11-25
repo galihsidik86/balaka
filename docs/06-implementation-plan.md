@@ -70,10 +70,10 @@ The features are ordered to maximize code reuse and enable incremental validatio
                         reused by all         the engine      journal entries   formula eval
 
                     │                                                                       │
-                    ├──────────────────────────────────────────→ 1.9 Amortization Schedules
+                    ├──────────────────────────────────────────→ 1.8 Amortization Schedules
                     │                                                (auto-generates adjustments)
                     │
-                    └──────────────────────────────────────────→ 1.10 Project Tracking
+                    └──────────────────────────────────────────→ 1.9 Project Tracking
                                                                      (profitability analysis)
 ```
 
@@ -317,27 +317,7 @@ User fills transaction form
 
 ---
 
-### 1.7 Account Balances (Materialized) - Performance Optimization
-
-**Purpose:** Cache account balances for faster report generation.
-
-**Dependencies:** Journal Entries (1.2), Reports (1.3)
-
-**Note:** Defer until performance requires it. On-the-fly calculation sufficient for MVP.
-
-- [ ] Account balances entity
-- [ ] Balance update on journal entry post/void
-- [ ] Period-based aggregation (monthly snapshots)
-- [ ] Balance recalculation utility (rebuild from journal entries)
-
-```sql
--- V006: Account balances (when needed)
-account_balances (id, account_id, period_start, period_end, opening_balance, debit_total, credit_total, closing_balance, ...)
-```
-
----
-
-### 1.8 Template Enhancements
+### 1.7 Template Enhancements
 
 **Purpose:** Improve template discoverability and user experience.
 
@@ -357,7 +337,7 @@ user_template_preferences (id, user_id, template_id, is_favorite, last_used_at, 
 
 ---
 
-### 1.9 Amortization Schedules
+### 1.8 Amortization Schedules
 
 **Purpose:** Automate recurring period-end adjustments for prepaid expenses, unearned revenue, and intangible assets.
 
@@ -434,7 +414,7 @@ Expenses:
 
 ---
 
-### 1.10 Project Tracking
+### 1.9 Project Tracking
 
 **Purpose:** Track profitability per project/job for service businesses.
 
@@ -628,13 +608,13 @@ When milestone is marked complete:
 
 | Component | Created In | Reused By |
 |-----------|------------|-----------|
-| JournalEntryService | 1.2 | 1.3, 1.4, 1.5, 1.9, 1.10 |
-| AccountBalanceCalculator | 1.3 | 1.4 (validation), 1.5 (display), 1.9 (remaining balance), 1.10 (profitability) |
+| JournalEntryService | 1.2 | 1.3, 1.4, 1.5, 1.8, 1.9 |
+| AccountBalanceCalculator | 1.3 | 1.4 (validation), 1.5 (display), 1.8 (remaining balance), 1.9 (profitability) |
 | TemplateExecutionEngine | 1.4 | 1.5 |
 | FormulaEvaluator | 1.6 | 1.4 (template execution), 1.5 (transaction posting) |
 | ChartOfAccountRepository | 1.1 | All subsequent features |
-| AmortizationScheduleService | 1.9 | Period-end dashboard |
-| ProjectService | 1.10 | Transaction form, Profitability reports |
+| AmortizationScheduleService | 1.8 | Period-end dashboard |
+| ProjectService | 1.9 | Transaction form, Profitability reports |
 
 ---
 
@@ -819,7 +799,25 @@ alert_history (id, alert_type, entity_type, entity_id,
     alert_data, acknowledged, acknowledged_by, acknowledged_at, created_at)
 ```
 
-**Deliverable:** Tax-compliant accounting with export formats for DJP, document storage, proper backup/restore, flexible transaction tagging, trend analysis, and smart alerts
+### 2.12 Account Balances (Materialized) - Performance Optimization
+
+**Purpose:** Cache account balances for faster report generation.
+
+**Dependencies:** Journal Entries (1.2), Reports (1.3)
+
+**Note:** Implement when performance requires it. On-the-fly calculation sufficient for MVP.
+
+- [ ] Account balances entity
+- [ ] Balance update on journal entry post/void
+- [ ] Period-based aggregation (monthly snapshots)
+- [ ] Balance recalculation utility (rebuild from journal entries)
+
+```sql
+-- Account balances (when needed)
+account_balances (id, account_id, period_start, period_end, opening_balance, debit_total, credit_total, closing_balance, ...)
+```
+
+**Deliverable:** Tax-compliant accounting with export formats for DJP, document storage, proper backup/restore, flexible transaction tagging, trend analysis, smart alerts, and optimized balance calculations
 
 ---
 
