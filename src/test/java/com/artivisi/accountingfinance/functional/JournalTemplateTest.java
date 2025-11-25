@@ -395,7 +395,95 @@ class JournalTemplateTest extends PlaywrightTestBase {
     }
 
     @Nested
-    @DisplayName("1.4.12 Formula Calculations")
+    @DisplayName("1.4.12 Formula Help Panel")
+    class FormulaHelpTests {
+
+        @Test
+        @DisplayName("Should display formula help panel when clicked")
+        void shouldDisplayFormulaHelpPanel() {
+            templateFormPage.navigateToNew();
+
+            templateFormPage.clickFormulaHelpButton();
+
+            templateFormPage.assertFormulaHelpPanelVisible();
+        }
+
+        @Test
+        @DisplayName("Should show Coba Formula tab with result")
+        void shouldShowCobaFormulaWithResult() {
+            templateFormPage.navigateToNew();
+
+            templateFormPage.clickFormulaHelpButton();
+            templateFormPage.clickCobaFormulaTab();
+            templateFormPage.fillTryFormula("amount * 0.11");
+            templateFormPage.fillTryAmount("10000000");
+
+            templateFormPage.assertTryResultVisible();
+            String result = templateFormPage.getTryResult();
+            assertThat(result).isEqualTo("1.100.000");
+        }
+
+        @Test
+        @DisplayName("Should calculate DPP from gross (amount / 1.11)")
+        void shouldCalculateDppFromGross() {
+            templateFormPage.navigateToNew();
+
+            templateFormPage.clickFormulaHelpButton();
+            templateFormPage.clickCobaFormulaTab();
+            templateFormPage.fillTryFormula("amount / 1.11");
+            templateFormPage.fillTryAmount("11100000");
+
+            String result = templateFormPage.getTryResult();
+            assertThat(result).isEqualTo("10.000.000");
+        }
+
+        @Test
+        @DisplayName("Should calculate conditional PPh 23 above threshold")
+        void shouldCalculatePph23AboveThreshold() {
+            templateFormPage.navigateToNew();
+
+            templateFormPage.clickFormulaHelpButton();
+            templateFormPage.clickCobaFormulaTab();
+            templateFormPage.fillTryFormula("amount > 2000000 ? amount * 0.02 : 0");
+            templateFormPage.fillTryAmount("5000000");
+
+            String result = templateFormPage.getTryResult();
+            assertThat(result).isEqualTo("100.000");
+        }
+
+        @Test
+        @DisplayName("Should calculate conditional PPh 23 below threshold")
+        void shouldCalculatePph23BelowThreshold() {
+            templateFormPage.navigateToNew();
+
+            templateFormPage.clickFormulaHelpButton();
+            templateFormPage.clickCobaFormulaTab();
+            templateFormPage.fillTryFormula("amount > 2000000 ? amount * 0.02 : 0");
+            templateFormPage.fillTryAmount("1500000");
+
+            String result = templateFormPage.getTryResult();
+            assertThat(result).isEqualTo("0");
+        }
+
+        @Test
+        @DisplayName("Should show quick example buttons")
+        void shouldShowQuickExampleButtons() {
+            templateFormPage.navigateToNew();
+
+            templateFormPage.clickFormulaHelpButton();
+            templateFormPage.clickCobaFormulaTab();
+            templateFormPage.fillTryAmount("10000000");
+
+            // Click quick example and verify result changes
+            templateFormPage.clickQuickExample("amount * 0.11");
+
+            String result = templateFormPage.getTryResult();
+            assertThat(result).isEqualTo("1.100.000");
+        }
+    }
+
+    @Nested
+    @DisplayName("1.4.13 Formula Calculations")
     class FormulaCalculationTests {
 
         // Template IDs from V903 test migration

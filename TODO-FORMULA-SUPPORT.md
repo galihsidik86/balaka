@@ -179,15 +179,15 @@ Each scenario should include:
 - [x] Help panel design (collapsible, stays on page)
 - [x] Syntax reference table at top
 - [x] Scenario cards with copy button for formulas
-- [ ] "Coba Formula" - live preview with sample amount input (partial - component exists but not wired)
+- [x] "Coba Formula" - live preview with sample amount input
 - [x] Indonesian language throughout
 
 #### 10.5 Formula Preview on Template Form
 
-- [ ] Add sample amount input field (default: Rp 10.000.000) - Future enhancement
-- [ ] Show calculated result next to each formula field - Future enhancement
-- [ ] Real-time update as user types formula - Future enhancement
-- [ ] Show error message if formula invalid - Future enhancement
+- [x] Add sample amount input field (default: Rp 10.000.000)
+- [x] Show calculated result next to each formula field
+- [x] Real-time update as user types formula
+- [x] Show error message if formula invalid
 
 ---
 
@@ -275,6 +275,4 @@ public record FormulaContext(
 - Functional tests: ✅ (3 tests passing)
 - Unit tests: ✅ (28 tests passing)
 
-**Future enhancements (optional):**
-- Live formula preview on template form (10.5)
-- Real-time formula validation as user types
+**All features implemented.**

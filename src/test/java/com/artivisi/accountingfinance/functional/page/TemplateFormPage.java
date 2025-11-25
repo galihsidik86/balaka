@@ -136,4 +136,73 @@ public class TemplateFormPage {
     public String getSecondAccountId() {
         return page.locator("#line-account-0 option").nth(2).getAttribute("value");
     }
+
+    // Formula Help Panel methods
+
+    public void clickFormulaHelpButton() {
+        page.locator("button:has-text('Bantuan Formula')").click();
+        page.waitForTimeout(300); // Wait for collapse animation
+    }
+
+    public void assertFormulaHelpPanelVisible() {
+        // Look for the tab button specifically
+        assertThat(page.locator("button:has-text('Coba Formula')")).isVisible();
+    }
+
+    public void clickCobaFormulaTab() {
+        page.locator("button:has-text('Coba Formula')").click();
+    }
+
+    public void clickSintaksTab() {
+        page.locator("button:has-text('Sintaks')").click();
+    }
+
+    public void clickContohSkenarioTab() {
+        page.locator("button:has-text('Contoh Skenario')").click();
+    }
+
+    public void fillTryFormula(String formula) {
+        page.locator("input[x-model='tryFormula']").fill(formula);
+    }
+
+    public void fillTryAmount(String amount) {
+        page.locator("input[x-model='tryAmount']").fill(amount);
+    }
+
+    public String getTryResult() {
+        page.waitForTimeout(500); // Wait for API call
+        return page.locator("span[x-text='tryResult']").textContent();
+    }
+
+    public void assertTryResultVisible() {
+        page.waitForTimeout(500); // Wait for API call
+        assertThat(page.locator("span[x-text='tryResult']")).isVisible();
+    }
+
+    public void assertTryErrorVisible() {
+        page.waitForTimeout(500); // Wait for API call
+        assertThat(page.locator("span[x-text='tryError']")).isVisible();
+    }
+
+    public void clickQuickExample(String exampleText) {
+        page.locator("button:has-text('" + exampleText + "')").click();
+    }
+
+    // Preview Amount methods
+
+    public void fillPreviewAmount(String amount) {
+        page.locator("input[x-model='previewAmount']").fill(amount);
+    }
+
+    public String getLinePreviewResult(int lineIndex) {
+        page.waitForTimeout(500); // Wait for API call
+        // The preview result is in the 4th column (col-span-2) after formula input
+        return page.locator(".grid.grid-cols-12").nth(lineIndex + 1) // +1 to skip header
+                .locator(".col-span-2.text-right span[x-text='line.previewResult']").textContent();
+    }
+
+    public void assertLinePreviewResultVisible(int lineIndex) {
+        page.waitForTimeout(500);
+        assertThat(page.locator("span[x-text='line.previewResult']").nth(lineIndex)).isVisible();
+    }
 }

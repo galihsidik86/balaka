@@ -1,6 +1,8 @@
 package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.dto.ExecuteTemplateDto;
+import com.artivisi.accountingfinance.dto.FormulaPreviewRequest;
+import com.artivisi.accountingfinance.dto.FormulaPreviewResponse;
 import com.artivisi.accountingfinance.dto.JournalTemplateDto;
 import com.artivisi.accountingfinance.dto.JournalTemplateLineDto;
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
@@ -10,6 +12,7 @@ import com.artivisi.accountingfinance.enums.CashFlowCategory;
 import com.artivisi.accountingfinance.enums.TemplateCategory;
 import com.artivisi.accountingfinance.enums.TemplateType;
 import com.artivisi.accountingfinance.service.ChartOfAccountService;
+import com.artivisi.accountingfinance.service.FormulaEvaluator;
 import com.artivisi.accountingfinance.service.JournalTemplateService;
 import com.artivisi.accountingfinance.service.TemplateExecutionEngine;
 import jakarta.validation.Valid;
@@ -42,6 +45,7 @@ public class JournalTemplateController {
     private final JournalTemplateService journalTemplateService;
     private final ChartOfAccountService chartOfAccountService;
     private final TemplateExecutionEngine templateExecutionEngine;
+    private final FormulaEvaluator formulaEvaluator;
 
     @GetMapping
     public String list(
@@ -226,6 +230,28 @@ public class JournalTemplateController {
     public ResponseEntity<Void> apiDelete(@PathVariable UUID id) {
         journalTemplateService.delete(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/formula/preview")
+    @ResponseBody
+    public ResponseEntity<FormulaPreviewResponse> apiFormulaPreview(@RequestBody FormulaPreviewRequest request) {
+        java.util.List<String> errors = formulaEvaluator.validate(request.formula());
+        if (!errors.isEmpty()) {
+            return ResponseEntity.ok(FormulaPreviewResponse.error(errors));
+        }
+
+        java.math.BigDecimal result = formulaEvaluator.preview(request.formula(), request.amount());
+        if (result == null) {
+            return ResponseEntity.ok(FormulaPreviewResponse.error(java.util.List.of("Formula evaluation failed")));
+        }
+
+        String formatted = formatCurrency(result);
+        return ResponseEntity.ok(FormulaPreviewResponse.success(result, formatted));
+    }
+
+    private String formatCurrency(java.math.BigDecimal amount) {
+        java.text.NumberFormat formatter = java.text.NumberFormat.getInstance(new java.util.Locale("id", "ID"));
+        return formatter.format(amount.longValue());
     }
 
     @PostMapping("/api/{id}/preview")

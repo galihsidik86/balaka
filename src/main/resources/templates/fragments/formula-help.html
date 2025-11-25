@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="id">
 <body>
     <!-- Formula Help Panel - Include with th:replace="fragments/formula-help :: formula-help" -->
-    <div th:fragment="formula-help" x-data="{ open: false, activeTab: 'syntax' }" class="mt-4">
+    <div th:fragment="formula-help" x-data="formulaHelp()" class="mt-4">
         <button @click="open = !open" type="button"
                 class="flex items-center text-sm text-primary-600 hover:text-primary-800 transition-colors">
             <svg class="w-4 h-4 mr-2" :class="{ 'rotate-90': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,6 +14,11 @@
         <div x-show="open" x-collapse class="mt-3 bg-blue-50 rounded-lg border border-blue-200 overflow-hidden">
             <!-- Tab Navigation -->
             <div class="flex border-b border-blue-200 bg-blue-100">
+                <button @click="activeTab = 'try'" type="button"
+                        :class="activeTab === 'try' ? 'bg-blue-50 text-blue-800 border-b-2 border-blue-600' : 'text-blue-600 hover:bg-blue-50'"
+                        class="px-4 py-2 text-sm font-medium transition-colors">
+                    Coba Formula
+                </button>
                 <button @click="activeTab = 'syntax'" type="button"
                         :class="activeTab === 'syntax' ? 'bg-blue-50 text-blue-800 border-b-2 border-blue-600' : 'text-blue-600 hover:bg-blue-50'"
                         class="px-4 py-2 text-sm font-medium transition-colors">
@@ -24,6 +29,83 @@
                         class="px-4 py-2 text-sm font-medium transition-colors">
                     Contoh Skenario
                 </button>
+            </div>
+
+            <!-- Try Formula Tab -->
+            <div x-show="activeTab === 'try'" class="p-4">
+                <h4 class="text-sm font-semibold text-blue-800 mb-3">Coba Formula</h4>
+                <p class="text-xs text-blue-700 mb-4">Masukkan formula dan jumlah untuk melihat hasil perhitungan.</p>
+
+                <div class="space-y-4">
+                    <!-- Formula Input -->
+                    <div>
+                        <label class="block text-xs font-medium text-blue-700 mb-1">Formula</label>
+                        <input type="text" x-model="tryFormula"
+                               @input="debouncedPreview()"
+                               placeholder="amount * 0.11"
+                               class="w-full px-3 py-2 text-sm font-mono border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    </div>
+
+                    <!-- Amount Input -->
+                    <div>
+                        <label class="block text-xs font-medium text-blue-700 mb-1">Jumlah (amount)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">Rp</span>
+                            <input type="text" x-model="tryAmount"
+                                   @input="formatAmountInput(); debouncedPreview();"
+                                   placeholder="10.000.000"
+                                   class="w-full pl-10 pr-3 py-2 text-sm font-mono border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-right">
+                        </div>
+                    </div>
+
+                    <!-- Result -->
+                    <div class="p-4 bg-white rounded-lg border border-blue-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Hasil:</span>
+                            <div class="text-right">
+                                <template x-if="tryLoading">
+                                    <span class="text-sm text-gray-400">Menghitung...</span>
+                                </template>
+                                <template x-if="!tryLoading && tryError">
+                                    <span class="text-sm text-red-600" x-text="tryError"></span>
+                                </template>
+                                <template x-if="!tryLoading && !tryError && tryResult">
+                                    <span class="text-lg font-bold text-primary-700">Rp <span x-text="tryResult"></span></span>
+                                </template>
+                                <template x-if="!tryLoading && !tryError && !tryResult">
+                                    <span class="text-sm text-gray-400">-</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Examples -->
+                    <div class="pt-2 border-t border-blue-200">
+                        <p class="text-xs text-blue-700 mb-2">Contoh cepat (klik untuk mencoba):</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" @click="tryFormula = 'amount'; debouncedPreview()"
+                                    class="px-2 py-1 text-xs font-mono bg-white border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+                                amount
+                            </button>
+                            <button type="button" @click="tryFormula = 'amount * 0.11'; debouncedPreview()"
+                                    class="px-2 py-1 text-xs font-mono bg-white border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+                                amount * 0.11
+                            </button>
+                            <button type="button" @click="tryFormula = 'amount / 1.11'; debouncedPreview()"
+                                    class="px-2 py-1 text-xs font-mono bg-white border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+                                amount / 1.11
+                            </button>
+                            <button type="button" @click="tryFormula = 'amount - (amount / 1.11)'; debouncedPreview()"
+                                    class="px-2 py-1 text-xs font-mono bg-white border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+                                amount - (amount / 1.11)
+                            </button>
+                            <button type="button" @click="tryFormula = 'amount > 2000000 ? amount * 0.02 : 0'; debouncedPreview()"
+                                    class="px-2 py-1 text-xs font-mono bg-white border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+                                PPh 23 conditional
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Syntax Tab -->
@@ -212,21 +294,84 @@
         </div>
     </div>
 
-    <!-- Formula Preview Component - Include with th:replace="fragments/formula-help :: formula-preview" -->
-    <div th:fragment="formula-preview" x-data="formulaPreview()" class="mt-2">
-        <div class="flex items-center space-x-2">
-            <label class="text-xs text-gray-500">Preview dengan:</label>
-            <div class="relative">
-                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">Rp</span>
-                <input type="text" x-model="sampleAmount"
-                       @input="updatePreview()"
-                       class="w-32 pl-7 pr-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-right font-mono"
-                       placeholder="10.000.000">
-            </div>
-            <span class="text-xs text-gray-500">=</span>
-            <span x-text="previewResult" class="text-xs font-mono font-semibold text-primary-700"></span>
-        </div>
-        <p x-show="previewError" x-text="previewError" class="text-xs text-red-600 mt-1"></p>
-    </div>
+    <script th:fragment="formula-help-script">
+        function formulaHelp() {
+            return {
+                open: false,
+                activeTab: 'try',
+                tryFormula: 'amount',
+                tryAmount: '10.000.000',
+                tryResult: null,
+                tryError: null,
+                tryLoading: false,
+                debounceTimer: null,
+
+                formatAmountInput() {
+                    // Remove non-digits
+                    let value = this.tryAmount.replace(/\D/g, '');
+                    // Format with dots
+                    this.tryAmount = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                },
+
+                parseAmount() {
+                    // Remove dots and convert to number
+                    return parseInt(this.tryAmount.replace(/\./g, ''), 10) || 0;
+                },
+
+                debouncedPreview() {
+                    if (this.debounceTimer) {
+                        clearTimeout(this.debounceTimer);
+                    }
+                    this.debounceTimer = setTimeout(() => {
+                        this.preview();
+                    }, 300);
+                },
+
+                async preview() {
+                    if (!this.tryFormula || this.parseAmount() === 0) {
+                        this.tryResult = null;
+                        this.tryError = null;
+                        return;
+                    }
+
+                    this.tryLoading = true;
+                    this.tryError = null;
+
+                    try {
+                        const response = await fetch('/templates/api/formula/preview', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                formula: this.tryFormula,
+                                amount: this.parseAmount()
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.valid) {
+                            this.tryResult = data.formattedResult;
+                            this.tryError = null;
+                        } else {
+                            this.tryResult = null;
+                            this.tryError = data.errors.join(', ');
+                        }
+                    } catch (error) {
+                        this.tryError = 'Gagal menghubungi server';
+                        this.tryResult = null;
+                    } finally {
+                        this.tryLoading = false;
+                    }
+                },
+
+                init() {
+                    // Initial preview on load
+                    this.preview();
+                }
+            };
+        }
+    </script>
 </body>
 </html>
