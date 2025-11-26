@@ -7,7 +7,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 ## Current Status
 
 - **Phase 0:** ✅ Complete (project setup, auth, CI/CD)
-- **Phase 1:** ✅ Complete (Core Accounting MVP)
+- **Phase 1:** 🔄 In Progress (Core Accounting MVP)
   - 1.1 COA: ✅ Complete
   - 1.2 Journal Entries: ✅ Complete
   - 1.3 Basic Reports: ✅ Complete
@@ -19,7 +19,8 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
   - 1.8 Amortization Schedules: ✅ Complete
   - 1.9 Project Tracking: ✅ Complete
   - 1.10 Dashboard KPIs: ✅ Complete
-- **Phase 2:** ⏳ Next (Tax Compliance)
+  - 1.11 User Manual: ⏳ Next
+- **Phase 2:** Tax Compliance
   - See `docs/06-implementation-plan.md` for full plan
 
 ## Key Files
@@ -72,16 +73,14 @@ User → Controller (MVC) → Service → Repository → PostgreSQL
 
 ## Current Focus
 
-Phase 1 Core Accounting MVP is now complete. Ready for Phase 2 (Tax Compliance).
+User Manual (1.11) - Complete documentation for Phase 1 features:
+- Update `ScreenshotCapture.java` with new page definitions
+- Update `UserManualGenerator.java` with new sections
+- Write 7 new markdown chapters (reports, amortization, clients, projects, invoices, profitability, glossary)
+- Add test data for meaningful screenshots
 
-Key completed features:
-- Chart of Accounts with IT Services pre-seeded template
-- Double-entry journal entries with posting workflow
-- Trial Balance, Income Statement, Balance Sheet reports
-- Journal Templates with formula support
-- Transactions (user-friendly interface for business users)
-- Amortization Schedules (prepaid/unearned items)
-- Project Tracking (clients, projects, milestones, invoices, profitability)
-- Dashboard KPIs (revenue, expenses, profit, cash, receivables, payables)
-
-Next: Phase 2 Tax Compliance - See `docs/06-implementation-plan.md`
+Existing infrastructure:
+- `docs/user-manual/*.md` - Markdown content
+- `ScreenshotCapture.java` - Playwright screenshot capture
+- `UserManualGenerator.java` - Flexmark HTML generator
+- `.github/workflows/publish-manual.yml` - GitHub Pages deployment
