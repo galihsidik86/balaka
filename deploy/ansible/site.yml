@@ -1,0 +1,25 @@
+---
+- name: Setup Accounting Finance Application
+  hosts: accounting
+  become: yes
+
+  pre_tasks:
+    - name: Validate db_password is set
+      ansible.builtin.fail:
+        msg: "db_password is not set or uses default value"
+      when: db_password is not defined or db_password == 'CHANGE_THIS_DB_PASSWORD'
+
+    - name: Validate admin_password_plain is set
+      ansible.builtin.fail:
+        msg: "admin_password_plain is not set or uses default value"
+      when: admin_password_plain is not defined or admin_password_plain == 'CHANGE_THIS_ADMIN_PASSWORD'
+
+    - name: Generate bcrypt hash for admin password
+      ansible.builtin.set_fact:
+        admin_password_bcrypt: "{{ admin_password_plain | password_hash('bcrypt', rounds=10) }}"
+
+  roles:
+    - common
+    - postgresql
+    - app
+    - nginx

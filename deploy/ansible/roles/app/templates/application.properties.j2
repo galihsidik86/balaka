@@ -1,0 +1,22 @@
+spring.application.name={{ app_name }}
+
+server.port={{ app_port }}
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/{{ db_name }}
+spring.datasource.username={{ db_user }}
+spring.datasource.password={{ db_password }}
+
+# JPA/Hibernate configuration
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+
+# Jackson JSON configuration
+spring.jackson.time-zone=Asia/Jakarta
+
+# Thymeleaf configuration
+spring.thymeleaf.cache=true
+
+# Logging
+logging.file.name=/var/log/{{ app_name }}/application.log
+logging.level.root=INFO

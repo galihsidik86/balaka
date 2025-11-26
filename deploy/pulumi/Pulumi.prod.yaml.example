@@ -1,0 +1,6 @@
+config:
+  accounting-finance-infra:dropletName: accounting-app
+  accounting-finance-infra:region: sgp1
+  accounting-finance-infra:sshKeyName: "your-ssh-key-name-here"
+  accounting-finance-infra:domainName: artivisi.id
+  accounting-finance-infra:subdomainName: akunting

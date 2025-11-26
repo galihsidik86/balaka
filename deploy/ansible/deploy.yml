@@ -1,0 +1,73 @@
+---
+- name: Deploy Accounting Finance Application
+  hosts: accounting
+  become: yes
+
+  pre_tasks:
+    - name: Generate bcrypt hash for admin password
+      ansible.builtin.set_fact:
+        admin_password_bcrypt: "{{ admin_password_plain | password_hash('bcrypt', rounds=10) }}"
+      when: admin_password_plain is defined
+
+  tasks:
+    - name: Build application locally
+      ansible.builtin.command:
+        cmd: ./mvnw clean package -DskipTests
+        chdir: "{{ playbook_dir }}/../.."
+      delegate_to: localhost
+      become: no
+      register: build_result
+
+    - name: Find built jar file
+      ansible.builtin.find:
+        paths: "{{ playbook_dir }}/../../target"
+        patterns: "*.jar"
+        excludes: "*-sources.jar"
+      delegate_to: localhost
+      become: no
+      register: jar_files
+
+    - name: Fail if jar not found
+      ansible.builtin.fail:
+        msg: "No jar file found in target directory"
+      when: jar_files.files | length == 0
+
+    - name: Stop application
+      ansible.builtin.systemd:
+        name: "{{ app_name }}"
+        state: stopped
+      ignore_errors: yes
+
+    - name: Copy jar to server
+      ansible.builtin.copy:
+        src: "{{ jar_files.files[0].path }}"
+        dest: "/opt/{{ app_name }}/{{ app_name }}.jar"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0644"
+
+    - name: Start application
+      ansible.builtin.systemd:
+        name: "{{ app_name }}"
+        state: started
+        enabled: yes
+
+    - name: Wait for application to start
+      ansible.builtin.uri:
+        url: "http://localhost:{{ app_port }}/login"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 5
+
+    - name: Update admin password in database
+      community.postgresql.postgresql_query:
+        db: "{{ db_name }}"
+        login_host: localhost
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        query: "UPDATE users SET password = %s WHERE username = 'admin'"
+        positional_args:
+          - "{{ admin_password_bcrypt }}"
+      when: admin_password_bcrypt is defined
