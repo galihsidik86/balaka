@@ -2,6 +2,7 @@ package com.artivisi.accountingfinance.service;
 
 import com.artivisi.accountingfinance.dto.FormulaContext;
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
+import com.artivisi.accountingfinance.entity.DraftTransaction;
 import com.artivisi.accountingfinance.entity.JournalEntry;
 import com.artivisi.accountingfinance.entity.JournalTemplate;
 import com.artivisi.accountingfinance.entity.JournalTemplateLine;
@@ -296,5 +297,24 @@ public class TransactionService {
             throw new IllegalStateException(
                     String.format("Journal not balanced: Debit=%s, Credit=%s", totalDebit, totalCredit));
         }
+    }
+
+    @Transactional
+    public Transaction createFromDraft(DraftTransaction draft, UUID templateId,
+                                        String description, BigDecimal amount, String createdBy) {
+        JournalTemplate template = journalTemplateService.findByIdWithLines(templateId);
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionNumber(generateTransactionNumber());
+        transaction.setTransactionDate(draft.getTransactionDate() != null ? draft.getTransactionDate() : LocalDate.now());
+        transaction.setJournalTemplate(template);
+        transaction.setAmount(amount != null ? amount : draft.getAmount());
+        transaction.setDescription(description != null ? description : draft.getMerchantName());
+        transaction.setReferenceNumber(draft.getSourceReference());
+        transaction.setStatus(TransactionStatus.DRAFT);
+        transaction.setCreatedBy(createdBy);
+
+        journalTemplateService.recordUsage(template.getId());
+        return transactionRepository.save(transaction);
     }
 }

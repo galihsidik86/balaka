@@ -20,6 +20,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
                 .requestMatchers("/login", "/error").permitAll()
+                .requestMatchers("/api/telegram/webhook").permitAll()
                 .anyRequest().authenticated()
             )
             .csrf(csrf -> csrf

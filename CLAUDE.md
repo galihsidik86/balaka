@@ -20,7 +20,14 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
   - 1.9 Project Tracking: ✅ Complete
   - 1.10 Dashboard KPIs: ✅ Complete
   - 1.11 User Manual: ✅ Complete
-- **Phase 2:** Tax Compliance ⏳ Next
+  - 1.12 Data Import: ✅ Complete
+  - 1.13 Deployment & Operations: ✅ Complete
+- **Phase 2:** Tax Compliance 🚧 In Progress
+  - 2.0 Refactoring: ✅ Complete
+  - 2.1 Document Attachment: ✅ Complete
+  - 2.2 Telegram Receipt Import: ✅ Complete
+  - 2.3-2.5 Tax Accounts/Templates: ✅ Complete
+  - 2.6 Tax Reports: ⏳ Next
   - See `docs/06-implementation-plan.md` for full plan
 
 ## Key Files
@@ -35,6 +42,8 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 | Templates | `src/main/resources/templates/` |
 | Migrations | `src/main/resources/db/migration/` |
 | Functional Tests | `src/test/java/.../functional/` |
+| Infrastructure (Pulumi) | `deploy/pulumi/` |
+| Configuration (Ansible) | `deploy/ansible/` |
 
 ## Development Guidelines
 
@@ -60,7 +69,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 ## Database
 
 - PostgreSQL via Testcontainers (tests)
-- Flyway migrations: V001-V008
+- Flyway migrations: V001-V010
 - Seed data: IT Services COA, admin user (admin/admin)
 
 ## Architecture
@@ -78,5 +87,12 @@ Phase 1 (Core Accounting MVP) is complete. All features implemented:
 - Formula Support, Template Enhancements, HTMX Optimization
 - Amortization Schedules, Project Tracking, Dashboard KPIs
 - User Manual (14 chapters with automated screenshots)
+- Data Import (COA & Templates from JSON/Excel)
+- Deployment & Operations (Pulumi, Ansible, Backup/Restore)
 
-Next: Phase 2 (Tax Compliance) - See `docs/06-implementation-plan.md`
+Phase 2 (Tax Compliance) in progress:
+- Document Attachment, Telegram Receipt Import complete
+- Tax Accounts and Templates (PPN, PPh) complete
+- Next: Tax Reports (2.6)
+
+See `docs/06-implementation-plan.md` for full plan

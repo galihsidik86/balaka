@@ -80,6 +80,18 @@
 			<groupId>nz.net.ultraq.thymeleaf</groupId>
 			<artifactId>thymeleaf-layout-dialect</artifactId>
 		</dependency>
+		<!-- Google Cloud Vision for Receipt OCR -->
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-vision</artifactId>
+			<version>3.55.0</version>
+		</dependency>
+		<!-- Telegram Bot API -->
+		<dependency>
+			<groupId>org.telegram</groupId>
+			<artifactId>telegrambots-client</artifactId>
+			<version>8.0.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>

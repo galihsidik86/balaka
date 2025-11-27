@@ -577,3 +577,96 @@ CREATE INDEX idx_documents_transaction ON documents(id_transaction);
 CREATE INDEX idx_documents_journal_entry ON documents(id_journal_entry);
 CREATE INDEX idx_documents_invoice ON documents(id_invoice);
 CREATE INDEX idx_documents_uploaded_at ON documents(uploaded_at);
+
+-- ============================================
+-- Telegram Receipt Import (Phase 2.2)
+-- ============================================
+
+-- Link Telegram users to app users
+CREATE TABLE telegram_user_links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_user UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    telegram_user_id BIGINT NOT NULL UNIQUE,
+    telegram_username VARCHAR(100),
+    telegram_first_name VARCHAR(255),
+    verification_code VARCHAR(10),
+    verification_expires_at TIMESTAMP,
+    linked_at TIMESTAMP,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_telegram_links_user ON telegram_user_links(id_user);
+CREATE INDEX idx_telegram_links_telegram_id ON telegram_user_links(telegram_user_id);
+CREATE INDEX idx_telegram_links_active ON telegram_user_links(is_active);
+
+-- Merchant pattern to template mapping
+CREATE TABLE merchant_mappings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    merchant_pattern VARCHAR(255) NOT NULL,
+    match_type VARCHAR(20) NOT NULL DEFAULT 'CONTAINS',
+    id_template UUID NOT NULL REFERENCES journal_templates(id),
+    default_description VARCHAR(500),
+    match_count INTEGER NOT NULL DEFAULT 0,
+    last_used_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(100),
+
+    CONSTRAINT chk_match_type CHECK (match_type IN ('EXACT', 'CONTAINS', 'REGEX'))
+);
+
+CREATE INDEX idx_merchant_mappings_pattern ON merchant_mappings(merchant_pattern);
+CREATE INDEX idx_merchant_mappings_template ON merchant_mappings(id_template);
+
+-- Draft transactions from receipt OCR
+CREATE TABLE draft_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source VARCHAR(50) NOT NULL,
+    source_reference VARCHAR(255),
+    telegram_message_id BIGINT,
+    telegram_chat_id BIGINT,
+
+    -- Extracted data
+    merchant_name VARCHAR(255),
+    transaction_date DATE,
+    amount DECIMAL(19, 2),
+    currency VARCHAR(10) DEFAULT 'IDR',
+    raw_ocr_text TEXT,
+    receipt_type VARCHAR(50),
+
+    -- Parsed fields confidence (0.0 - 1.0)
+    merchant_confidence DECIMAL(3, 2),
+    date_confidence DECIMAL(3, 2),
+    amount_confidence DECIMAL(3, 2),
+    overall_confidence DECIMAL(3, 2),
+
+    -- Suggested mapping
+    id_suggested_template UUID REFERENCES journal_templates(id),
+    id_merchant_mapping UUID REFERENCES merchant_mappings(id),
+
+    -- Attached document (receipt image)
+    id_document UUID REFERENCES documents(id),
+
+    -- Workflow status
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    rejection_reason VARCHAR(500),
+
+    -- Created transaction (after approval)
+    id_transaction UUID REFERENCES transactions(id),
+
+    -- Audit
+    created_by VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    processed_by VARCHAR(100),
+    processed_at TIMESTAMP,
+
+    CONSTRAINT chk_draft_source CHECK (source IN ('TELEGRAM', 'MANUAL', 'EMAIL')),
+    CONSTRAINT chk_draft_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'AUTO_APPROVED'))
+);
+
+CREATE INDEX idx_draft_transactions_status ON draft_transactions(status);
+CREATE INDEX idx_draft_transactions_user ON draft_transactions(created_by);
+CREATE INDEX idx_draft_transactions_date ON draft_transactions(transaction_date);
+CREATE INDEX idx_draft_transactions_telegram ON draft_transactions(telegram_chat_id, telegram_message_id);

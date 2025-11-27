@@ -2,10 +2,17 @@ package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.entity.CompanyBankAccount;
 import com.artivisi.accountingfinance.entity.CompanyConfig;
+import com.artivisi.accountingfinance.entity.TelegramUserLink;
+import com.artivisi.accountingfinance.entity.User;
+import com.artivisi.accountingfinance.repository.TelegramUserLinkRepository;
+import com.artivisi.accountingfinance.repository.UserRepository;
 import com.artivisi.accountingfinance.service.CompanyBankAccountService;
 import com.artivisi.accountingfinance.service.CompanyConfigService;
+import com.artivisi.accountingfinance.service.TelegramBotService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -27,6 +35,9 @@ public class SettingsController {
 
     private final CompanyConfigService companyConfigService;
     private final CompanyBankAccountService bankAccountService;
+    private final TelegramBotService telegramBotService;
+    private final TelegramUserLinkRepository telegramLinkRepository;
+    private final UserRepository userRepository;
 
     // ==================== Company Settings ====================
 
@@ -181,5 +192,61 @@ public class SettingsController {
         bankAccountService.delete(id);
         redirectAttributes.addFlashAttribute("successMessage", "Rekening bank berhasil dihapus");
         return "redirect:/settings";
+    }
+
+    // ==================== Telegram Settings ====================
+
+    @GetMapping("/telegram")
+    public String telegramSettings(Authentication authentication, Model model) {
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Optional<TelegramUserLink> telegramLink = telegramLinkRepository.findByUser(user);
+        model.addAttribute("telegramLink", telegramLink.orElse(null));
+        model.addAttribute("telegramEnabled", telegramBotService.isEnabled());
+        model.addAttribute("botUsername", telegramBotService.getBotUsername());
+        model.addAttribute("currentPage", "settings");
+
+        return "settings/telegram";
+    }
+
+    @PostMapping("/telegram/generate-code")
+    public String generateTelegramCode(
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        String code = telegramBotService.generateVerificationCode(user);
+        redirectAttributes.addFlashAttribute("verificationCode", code);
+        redirectAttributes.addFlashAttribute("botUsername", telegramBotService.getBotUsername());
+
+        return "redirect:/settings/telegram";
+    }
+
+    @PostMapping("/telegram/unlink")
+    public String unlinkTelegram(
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Optional<TelegramUserLink> link = telegramLinkRepository.findByUser(user);
+        if (link.isPresent()) {
+            TelegramUserLink telegramLink = link.get();
+            telegramLink.setIsActive(false);
+            telegramLink.setTelegramUserId(null);
+            telegramLink.setTelegramUsername(null);
+            telegramLink.setLinkedAt(null);
+            telegramLinkRepository.save(telegramLink);
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "Akun Telegram berhasil diputus");
+        return "redirect:/settings/telegram";
     }
 }

@@ -185,4 +185,54 @@ public class DocumentStorageService {
     public Path getRootLocation() {
         return rootLocation;
     }
+
+    /**
+     * Store file from byte array.
+     */
+    public String storeFromBytes(byte[] bytes, String filename, String contentType) throws IOException {
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("File content is empty");
+        }
+
+        if (bytes.length > maxFileSize) {
+            throw new IllegalArgumentException(
+                    String.format("File size %d exceeds maximum allowed size %d bytes",
+                            bytes.length, maxFileSize));
+        }
+
+        if (contentType == null || !allowedContentTypes.contains(contentType)) {
+            throw new IllegalArgumentException(
+                    String.format("File type '%s' is not allowed. Allowed types: %s",
+                            contentType, allowedTypes));
+        }
+
+        String extension = getExtension(filename);
+        String storedFilename = UUID.randomUUID().toString() + extension;
+
+        // Organize by year/month
+        LocalDate today = LocalDate.now();
+        String subPath = String.format("%d/%02d", today.getYear(), today.getMonthValue());
+        Path targetDirectory = rootLocation.resolve(subPath);
+        Files.createDirectories(targetDirectory);
+
+        Path targetPath = targetDirectory.resolve(storedFilename);
+        Files.write(targetPath, bytes);
+
+        log.debug("Stored file from bytes: {} -> {}", filename, targetPath);
+
+        return subPath + "/" + storedFilename;
+    }
+
+    /**
+     * Calculate SHA-256 checksum from byte array.
+     */
+    public String calculateChecksumFromBytes(byte[] bytes) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(bytes);
+            return bytesToHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
+    }
 }

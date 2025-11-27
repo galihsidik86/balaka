@@ -129,4 +129,23 @@ public class DocumentService {
 
         return document;
     }
+
+    @Transactional
+    public Document saveFromBytes(byte[] bytes, String filename, String contentType, String uploadedBy) throws IOException {
+        String storagePath = storageService.storeFromBytes(bytes, filename, contentType);
+        String checksum = storageService.calculateChecksumFromBytes(bytes);
+
+        Document document = new Document();
+        document.setFilename(storagePath.substring(storagePath.lastIndexOf('/') + 1));
+        document.setOriginalFilename(filename);
+        document.setContentType(contentType);
+        document.setFileSize((long) bytes.length);
+        document.setStoragePath(storagePath);
+        document.setChecksumSha256(checksum);
+        document.setUploadedBy(uploadedBy);
+
+        Document saved = documentRepository.save(document);
+        log.info("Saved document {} from bytes", saved.getId());
+        return saved;
+    }
 }

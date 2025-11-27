@@ -13,7 +13,7 @@
 |-------|-------|--------|
 | **0** | Project Setup | ✅ Complete |
 | **1** | Core Accounting (MVP) - IT Services | ✅ Complete |
-| **2** | Tax Compliance | 🚧 In Progress (2.0, 2.1, 2.3-2.6, 2.9 done) |
+| **2** | Tax Compliance | 🚧 In Progress (2.0-2.6, 2.9 done) |
 | **3** | Reconciliation | ⏳ Not Started |
 | **4** | Payroll | ⏳ Not Started |
 | **5** | Assets & Budget | ⏳ Not Started |
@@ -1199,7 +1199,7 @@ CREATE INDEX idx_documents_journal_entry ON documents(journal_entry_id);
 
 ---
 
-### 2.2 Telegram Receipt Import
+### 2.2 Telegram Receipt Import ✅
 
 **Purpose:** Capture receipts via Telegram bot, auto-extract transaction data using OCR, create draft transactions for review.
 
@@ -1237,22 +1237,22 @@ CREATE INDEX idx_documents_journal_entry ON documents(journal_entry_id);
 #### Features
 
 ##### Telegram Bot Integration (Webhook Mode)
-- [ ] TelegramBots library dependency (org.telegram:telegrambots-springboot-webhook-starter)
-- [ ] Bot configuration (token, username, webhook URL in application.yml)
-- [ ] Webhook endpoint: POST /api/telegram/webhook
-- [ ] Webhook registration on application startup
-- [ ] Secret token validation (X-Telegram-Bot-Api-Secret-Token header)
-- [ ] User registration flow (link Telegram user to app user)
-- [ ] Photo message handler
-- [ ] Text command handler (/start, /status, /help)
-- [ ] Rate limiting (max 10 receipts/hour per user)
+- [x] TelegramBots library dependency (org.telegram:telegrambots-springboot-webhook-starter)
+- [x] Bot configuration (token, username, webhook URL in application.yml)
+- [x] Webhook endpoint: POST /api/telegram/webhook
+- [x] Webhook registration on application startup
+- [x] Secret token validation (X-Telegram-Bot-Api-Secret-Token header)
+- [x] User registration flow (link Telegram user to app user)
+- [x] Photo message handler
+- [x] Text command handler (/start, /status, /help)
+- [ ] Rate limiting (max 10 receipts/hour per user) - deferred to future enhancement
 
 ##### Receipt OCR (Google Cloud Vision)
-- [ ] Google Cloud Vision client dependency
-- [ ] Vision API configuration (credentials JSON)
-- [ ] Document text detection (DOCUMENT_TEXT_DETECTION)
-- [ ] Receipt data extraction service
-- [ ] Fallback to raw text if parsing fails
+- [x] Google Cloud Vision client dependency
+- [x] Vision API configuration (credentials JSON)
+- [x] Document text detection (DOCUMENT_TEXT_DETECTION)
+- [x] Receipt data extraction service
+- [x] Fallback to raw text if parsing fails
 
 ##### Google Cloud Vision Setup (One-time Admin Setup)
 
@@ -1327,29 +1327,29 @@ google:
 ```
 
 ##### Receipt Parsing
-- [ ] Extract merchant name (usually top of receipt)
-- [ ] Extract transaction date/time
-- [ ] Extract total amount (look for "TOTAL", "GRAND TOTAL", etc.)
-- [ ] Extract payment method (if visible)
-- [ ] Extract items list (optional, for detailed matching)
-- [ ] Indonesian receipt format handling (Rp, IDR)
-- [ ] Confidence scoring per field
+- [x] Extract merchant name (usually top of receipt)
+- [x] Extract transaction date/time
+- [x] Extract total amount (look for "TOTAL", "GRAND TOTAL", etc.)
+- [x] Extract payment method (if visible)
+- [ ] Extract items list (optional, for detailed matching) - deferred
+- [x] Indonesian receipt format handling (Rp, IDR)
+- [x] Confidence scoring per field
 
 ##### Merchant-to-Template Mapping
-- [ ] MerchantMapping entity (pattern → template)
-- [ ] Fuzzy merchant name matching
-- [ ] Auto-learn from user selections
-- [ ] Mapping CRUD UI
-- [ ] Bulk import common merchants
+- [x] MerchantMapping entity (pattern → template)
+- [x] Fuzzy merchant name matching (exact, contains, regex)
+- [ ] Auto-learn from user selections - deferred
+- [x] Mapping CRUD UI
+- [ ] Bulk import common merchants - deferred
 
 ##### Draft Transaction Workflow
-- [ ] DraftTransaction entity (pending external transactions)
-- [ ] Draft list UI with filters (status, date, source)
-- [ ] Draft detail/edit UI
-- [ ] Review and approve workflow
-- [ ] Reject with reason
-- [ ] Batch approve selected drafts
-- [ ] Auto-approve rules (high confidence + known merchant)
+- [x] DraftTransaction entity (pending external transactions)
+- [x] Draft list UI with filters (status, date, source)
+- [x] Draft detail/edit UI
+- [x] Review and approve workflow
+- [x] Reject with reason
+- [ ] Batch approve selected drafts - deferred
+- [ ] Auto-approve rules (high confidence + known merchant) - deferred
 
 ```sql
 -- V010: Telegram Receipt Import

@@ -1,0 +1,348 @@
+package com.artivisi.accountingfinance.service;
+
+import com.artivisi.accountingfinance.config.TelegramConfig;
+import com.artivisi.accountingfinance.entity.Document;
+import com.artivisi.accountingfinance.entity.DraftTransaction;
+import com.artivisi.accountingfinance.entity.TelegramUserLink;
+import com.artivisi.accountingfinance.entity.User;
+import com.artivisi.accountingfinance.repository.TelegramUserLinkRepository;
+import com.artivisi.accountingfinance.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class TelegramBotService {
+
+    private static final Logger log = LoggerFactory.getLogger(TelegramBotService.class);
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy");
+
+    private final TelegramConfig config;
+    private final TelegramUserLinkRepository telegramLinkRepository;
+    private final UserRepository userRepository;
+    private final DraftTransactionService draftService;
+    private final DocumentService documentService;
+    private TelegramClient telegramClient;
+
+    public TelegramBotService(
+            TelegramConfig config,
+            TelegramUserLinkRepository telegramLinkRepository,
+            UserRepository userRepository,
+            DraftTransactionService draftService,
+            DocumentService documentService) {
+        this.config = config;
+        this.telegramLinkRepository = telegramLinkRepository;
+        this.userRepository = userRepository;
+        this.draftService = draftService;
+        this.documentService = documentService;
+
+        if (config.isEnabled() && config.getToken() != null && !config.getToken().isBlank()) {
+            this.telegramClient = new OkHttpTelegramClient(config.getToken());
+            log.info("Telegram bot initialized: @{}", config.getUsername());
+        }
+    }
+
+    public void handleUpdate(Update update) {
+        if (!config.isEnabled() || telegramClient == null) {
+            log.warn("Telegram bot is not enabled");
+            return;
+        }
+
+        if (!update.hasMessage()) {
+            return;
+        }
+
+        var message = update.getMessage();
+        Long chatId = message.getChatId();
+        Long userId = message.getFrom().getId();
+        String username = message.getFrom().getUserName();
+        String firstName = message.getFrom().getFirstName();
+
+        log.info("Received message from {} ({})", username, userId);
+
+        // Check if user is linked
+        Optional<TelegramUserLink> linkOpt = telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(userId);
+
+        if (message.hasText()) {
+            String text = message.getText();
+
+            if (text.startsWith("/start")) {
+                handleStartCommand(chatId, userId, username, firstName, text);
+            } else if (text.equals("/status")) {
+                handleStatusCommand(chatId, linkOpt);
+            } else if (text.equals("/help")) {
+                handleHelpCommand(chatId);
+            } else if (text.startsWith("/link ")) {
+                handleLinkCommand(chatId, userId, username, firstName, text.substring(6).trim());
+            } else {
+                sendMessage(chatId, "Kirim foto struk untuk diproses, atau ketik /help untuk bantuan.");
+            }
+        } else if (message.hasPhoto()) {
+            handlePhotoMessage(chatId, userId, username, message.getPhoto(), message.getMessageId(), linkOpt);
+        }
+    }
+
+    private void handleStartCommand(Long chatId, Long userId, String username, String firstName,
+                                     String commandText) {
+        Optional<TelegramUserLink> existingLink = telegramLinkRepository.findByTelegramUserId(userId);
+
+        if (existingLink.isPresent() && existingLink.get().isLinked()) {
+            sendMessage(chatId, String.format(
+                    "Halo %s! Akun Telegram Anda sudah terhubung.\n\n" +
+                    "Kirim foto struk untuk diproses.\n" +
+                    "Ketik /status untuk melihat draft pending.\n" +
+                    "Ketik /help untuk bantuan.", firstName));
+            return;
+        }
+
+        // Check if there's a verification code in the command
+        if (commandText.length() > 7) {
+            String code = commandText.substring(7).trim();
+            handleLinkCommand(chatId, userId, username, firstName, code);
+            return;
+        }
+
+        sendMessage(chatId, String.format(
+                "Selamat datang %s!\n\n" +
+                "Untuk menghubungkan akun:\n" +
+                "1. Login ke aplikasi akunting\n" +
+                "2. Buka Pengaturan > Telegram\n" +
+                "3. Klik 'Hubungkan Telegram'\n" +
+                "4. Kirim kode verifikasi yang muncul dengan:\n" +
+                "   /link KODE_ANDA\n\n" +
+                "Atau klik link yang muncul di aplikasi.", firstName));
+    }
+
+    private void handleLinkCommand(Long chatId, Long userId, String username, String firstName, String code) {
+        Optional<TelegramUserLink> linkByCode = telegramLinkRepository.findByVerificationCode(code);
+
+        if (linkByCode.isEmpty()) {
+            sendMessage(chatId, "Kode verifikasi tidak valid atau sudah kadaluarsa.");
+            return;
+        }
+
+        TelegramUserLink link = linkByCode.get();
+
+        if (link.isVerificationExpired()) {
+            sendMessage(chatId, "Kode verifikasi sudah kadaluarsa. Silakan generate kode baru dari aplikasi.");
+            return;
+        }
+
+        // Update link with Telegram info
+        link.setTelegramUserId(userId);
+        link.setTelegramUsername(username);
+        link.setTelegramFirstName(firstName);
+        link.setLinkedAt(LocalDateTime.now());
+        link.setVerificationCode(null);
+        link.setVerificationExpiresAt(null);
+        link.setIsActive(true);
+        telegramLinkRepository.save(link);
+
+        sendMessage(chatId, String.format(
+                "Akun berhasil terhubung! 🎉\n\n" +
+                "Halo %s, sekarang Anda dapat:\n" +
+                "• Kirim foto struk untuk diproses otomatis\n" +
+                "• Ketik /status untuk cek draft pending\n\n" +
+                "Kirim foto struk pertama Anda!", firstName));
+    }
+
+    private void handleStatusCommand(Long chatId, Optional<TelegramUserLink> linkOpt) {
+        if (linkOpt.isEmpty()) {
+            sendMessage(chatId, "Akun belum terhubung. Ketik /start untuk mulai.");
+            return;
+        }
+
+        String username = linkOpt.get().getUser().getUsername();
+        long pendingCount = draftService.countPendingByUser(username);
+
+        if (pendingCount == 0) {
+            sendMessage(chatId, "Tidak ada draft yang menunggu review. 👍");
+        } else {
+            sendMessage(chatId, String.format(
+                    "Anda memiliki %d draft menunggu review.\n\n" +
+                    "Buka aplikasi untuk mereview dan approve.", pendingCount));
+        }
+    }
+
+    private void handleHelpCommand(Long chatId) {
+        sendMessage(chatId, """
+                📖 *Panduan Penggunaan*
+
+                *Perintah:*
+                /start - Mulai dan hubungkan akun
+                /link KODE - Hubungkan dengan kode verifikasi
+                /status - Cek jumlah draft pending
+                /help - Tampilkan bantuan ini
+
+                *Cara Pakai:*
+                1. Pastikan akun sudah terhubung
+                2. Kirim foto struk/bukti transfer
+                3. Bot akan ekstrak data otomatis
+                4. Review dan approve di aplikasi web
+
+                *Format Struk yang Didukung:*
+                • Bank Jago
+                • CIMB OCTO
+                • GoPay
+                • BYOND/BSI
+                • Struk umum lainnya
+                """);
+    }
+
+    private void handlePhotoMessage(Long chatId, Long userId, String username,
+                                     List<PhotoSize> photos, Integer messageId,
+                                     Optional<TelegramUserLink> linkOpt) {
+        if (linkOpt.isEmpty()) {
+            sendMessage(chatId, "Akun belum terhubung. Ketik /start untuk mulai.");
+            return;
+        }
+
+        TelegramUserLink link = linkOpt.get();
+        String appUsername = link.getUser().getUsername();
+
+        // Get largest photo
+        PhotoSize photo = photos.stream()
+                .max(Comparator.comparingInt(p -> p.getWidth() * p.getHeight()))
+                .orElse(null);
+
+        if (photo == null) {
+            sendMessage(chatId, "Gagal memproses foto. Silakan coba lagi.");
+            return;
+        }
+
+        sendMessage(chatId, "⏳ Memproses struk...");
+
+        try {
+            // Download photo
+            byte[] photoBytes = downloadPhoto(photo.getFileId());
+
+            // Save as document
+            Document document = documentService.saveFromBytes(
+                    photoBytes, "receipt_" + messageId + ".jpg", "image/jpeg", appUsername);
+
+            // Process receipt
+            DraftTransaction draft = draftService.processReceiptImage(
+                    photoBytes, document, chatId, messageId.longValue(), appUsername);
+
+            // Send result
+            sendProcessingResult(chatId, draft);
+
+        } catch (Exception e) {
+            log.error("Error processing photo", e);
+            sendMessage(chatId, "❌ Gagal memproses struk: " + e.getMessage());
+        }
+    }
+
+    private byte[] downloadPhoto(String fileId) throws Exception {
+        GetFile getFile = new GetFile(fileId);
+        File file = telegramClient.execute(getFile);
+        String filePath = file.getFilePath();
+        String fileUrl = String.format("https://api.telegram.org/file/bot%s/%s", config.getToken(), filePath);
+
+        try (InputStream is = URI.create(fileUrl).toURL().openStream()) {
+            return is.readAllBytes();
+        }
+    }
+
+    private void sendProcessingResult(Long chatId, DraftTransaction draft) {
+        StringBuilder sb = new StringBuilder();
+
+        if (draft.getAmount() != null || draft.getMerchantName() != null) {
+            sb.append("✅ *Struk Diterima*\n\n");
+
+            if (draft.getMerchantName() != null) {
+                sb.append("🏪 ").append(escapeMarkdown(draft.getMerchantName())).append("\n");
+            }
+            if (draft.getAmount() != null) {
+                sb.append("💰 ").append(draft.getAmountFormatted()).append("\n");
+            }
+            if (draft.getTransactionDate() != null) {
+                sb.append("📅 ").append(draft.getTransactionDate().format(DATE_FORMAT)).append("\n");
+            }
+            if (draft.getSuggestedTemplate() != null) {
+                sb.append("📋 Template: ").append(escapeMarkdown(draft.getSuggestedTemplate().getTemplateName())).append("\n");
+            }
+
+            sb.append("\n📊 Confidence: ").append(draft.getConfidencePercentage());
+            sb.append("\n\n_Buka aplikasi untuk review dan approve._");
+        } else {
+            sb.append("⚠️ *Struk Diterima* (data tidak lengkap)\n\n");
+            sb.append("Gagal mengekstrak data dari struk.\n");
+            sb.append("Buka aplikasi untuk input manual.");
+        }
+
+        sendMessage(chatId, sb.toString());
+    }
+
+    private void sendMessage(Long chatId, String text) {
+        if (telegramClient == null) return;
+
+        try {
+            SendMessage message = SendMessage.builder()
+                    .chatId(chatId)
+                    .text(text)
+                    .parseMode("Markdown")
+                    .build();
+            telegramClient.execute(message);
+        } catch (Exception e) {
+            log.error("Failed to send message to {}: {}", chatId, e.getMessage());
+        }
+    }
+
+    private String escapeMarkdown(String text) {
+        if (text == null) return "";
+        return text.replace("_", "\\_")
+                   .replace("*", "\\*")
+                   .replace("[", "\\[")
+                   .replace("`", "\\`");
+    }
+
+    public String generateVerificationCode(User user) {
+        String code = String.format("%06d", RANDOM.nextInt(1000000));
+
+        Optional<TelegramUserLink> existingLink = telegramLinkRepository.findByUser(user);
+        TelegramUserLink link;
+
+        if (existingLink.isPresent()) {
+            link = existingLink.get();
+        } else {
+            link = new TelegramUserLink();
+            link.setUser(user);
+        }
+
+        link.setVerificationCode(code);
+        link.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
+        link.setIsActive(false);
+        telegramLinkRepository.save(link);
+
+        return code;
+    }
+
+    public boolean isEnabled() {
+        return config.isEnabled() && telegramClient != null;
+    }
+
+    public String getBotUsername() {
+        return config.getUsername();
+    }
+}
