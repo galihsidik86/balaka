@@ -1569,12 +1569,19 @@ public void registerWebhook() {
 - [x] PPh 4(2) templates (10% for rental)
 - [x] Tax payment templates (Setor PPh 21/23/4(2)/PPN/25)
 
-### 2.6 Tax Reports
-- [ ] PPN Summary Report
-- [ ] PPN Detail (Keluaran/Masukan)
-- [ ] PPh 23 Withholding Report
-- [ ] e-Faktur CSV export format
-- [ ] e-Bupot export format
+### 2.6 Tax Reports ✅
+- [x] PPN Summary Report
+- [x] PPN Detail (Keluaran/Masukan)
+- [x] PPh 23 Withholding Report
+- [x] Coretax Excel export (e-Faktur Keluaran/Masukan, Bupot Unifikasi)
+- [x] Tax transaction details entity (TaxTransactionDetail)
+- [x] Tax identification fields (NPWP, NITKU, NIK) on Client and CompanyConfig
+- [x] Tax Object Code enum (PPh 23/4(2) codes per KEP-143/PJ/2022)
+
+**Coretax Integration Notes:**
+- Export format matches DJP Converter Excel templates
+- Workflow: App → Excel export → DJP Converter → XML → Coretax import
+- Validated fields: NPWP, NITKU, Kode Objek Pajak, Tarif
 
 ### 2.7 Fiscal Period Management
 - [ ] Fiscal periods entity
