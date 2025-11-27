@@ -1,6 +1,32 @@
 -- Test data for Tax Report functional tests
 
 -- ============================================
+-- Company Config for Coretax Export
+-- ============================================
+INSERT INTO company_config (
+    id, company_name, company_address, company_phone, company_email,
+    tax_id, npwp, nitku, fiscal_year_start_month, currency_code,
+    signing_officer_name, signing_officer_title, created_at, updated_at
+) VALUES (
+    'a0000000-0000-0000-0000-000000000001',
+    'PT Artivisi Intermedia',
+    'Jl. Margonda Raya No. 123, Depok, Jawa Barat 16424',
+    '021-7712345',
+    'info@artivisi.com',
+    '01.234.567.8-012.000',
+    '01.234.567.8-012.000',
+    '0000000000000000000001',
+    1,
+    'IDR',
+    'Endy Muhardin',
+    'Direktur',
+    NOW(),
+    NOW()
+) ON CONFLICT (id) DO UPDATE SET
+    npwp = EXCLUDED.npwp,
+    nitku = EXCLUDED.nitku;
+
+-- ============================================
 -- Tax Transactions - Sales with PPN
 -- ============================================
 
@@ -289,6 +315,66 @@ VALUES (
 );
 
 -- ============================================
+-- Tax Transaction Details for Coretax Export
+-- ============================================
+
+-- TaxTransactionDetail for TRX-TAX-0001 (PPN Keluaran - Sales)
+INSERT INTO tax_transaction_details (
+    id, id_transaction,
+    faktur_number, faktur_date, transaction_code, dpp, ppn, ppnbm,
+    counterparty_npwp, counterparty_nitku, counterparty_id_type, counterparty_name, counterparty_address,
+    tax_type, created_at, updated_at
+) VALUES (
+    'd0000000-0000-0000-0000-000000000001',
+    'c0000000-0000-0000-0000-000000000001',
+    '010.000-24.00000001', CURRENT_DATE - INTERVAL '5 day', '01', 10000000, 1100000, 0,
+    '01.234.567.8-901.000', '0000000000000000000001', 'TIN', 'PT Client ABC', 'Jl. Sudirman No. 123, Jakarta',
+    'PPN_KELUARAN', NOW(), NOW()
+);
+
+-- TaxTransactionDetail for TRX-TAX-0002 (PPN Masukan - Purchase)
+INSERT INTO tax_transaction_details (
+    id, id_transaction,
+    faktur_number, faktur_date, transaction_code, dpp, ppn, ppnbm,
+    counterparty_npwp, counterparty_nitku, counterparty_id_type, counterparty_name, counterparty_address,
+    tax_type, created_at, updated_at
+) VALUES (
+    'd0000000-0000-0000-0000-000000000002',
+    'c0000000-0000-0000-0000-000000000002',
+    '010.000-24.00000002', CURRENT_DATE - INTERVAL '4 day', '01', 5000000, 550000, 0,
+    '02.345.678.9-012.000', '0000000000000000000002', 'TIN', 'PT Vendor XYZ', 'Jl. Gatot Subroto No. 456, Jakarta',
+    'PPN_MASUKAN', NOW(), NOW()
+);
+
+-- TaxTransactionDetail for TRX-TAX-0003 (PPh 23 Withholding)
+INSERT INTO tax_transaction_details (
+    id, id_transaction,
+    bupot_number, tax_object_code, gross_amount, tax_rate, tax_amount,
+    counterparty_npwp, counterparty_nitku, counterparty_id_type, counterparty_name, counterparty_address,
+    tax_type, created_at, updated_at
+) VALUES (
+    'd0000000-0000-0000-0000-000000000003',
+    'c0000000-0000-0000-0000-000000000003',
+    'BP-2024-00001', '24-104-03', 2000000, 2.00, 40000,
+    '03.456.789.0-123.000', '0000000000000000000003', 'TIN', 'CV Konsultan DEF', 'Jl. HR Rasuna Said No. 789, Jakarta',
+    'PPH_23', NOW(), NOW()
+);
+
+-- TaxTransactionDetail for TRX-TAX-0004 (PPN Keluaran - Sales 2)
+INSERT INTO tax_transaction_details (
+    id, id_transaction,
+    faktur_number, faktur_date, transaction_code, dpp, ppn, ppnbm,
+    counterparty_npwp, counterparty_nitku, counterparty_id_type, counterparty_name, counterparty_address,
+    tax_type, created_at, updated_at
+) VALUES (
+    'd0000000-0000-0000-0000-000000000004',
+    'c0000000-0000-0000-0000-000000000004',
+    '010.000-24.00000003', CURRENT_DATE - INTERVAL '2 day', '01', 15000000, 1650000, 0,
+    '04.567.890.1-234.000', '0000000000000000000004', 'TIN', 'PT Customer GHI', 'Jl. Thamrin No. 321, Jakarta',
+    'PPN_KELUARAN', NOW(), NOW()
+);
+
+-- ============================================
 -- Expected Results Summary:
 -- PPN Keluaran (Hutang PPN): 1.100.000 + 1.650.000 = 2.750.000
 -- PPN Masukan: 550.000
@@ -297,4 +383,9 @@ VALUES (
 -- PPh 23 Withheld: 40.000
 -- PPh 23 Deposited: 0
 -- PPh 23 Balance: 40.000
+--
+-- Coretax Export Expected:
+-- e-Faktur Keluaran: 2 records (TRX-TAX-0001, TRX-TAX-0004)
+-- e-Faktur Masukan: 1 record (TRX-TAX-0002)
+-- e-Bupot Unifikasi: 1 record (TRX-TAX-0003)
 -- ============================================

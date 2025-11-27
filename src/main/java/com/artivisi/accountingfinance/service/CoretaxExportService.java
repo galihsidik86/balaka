@@ -356,7 +356,7 @@ public class CoretaxExportService {
     }
 
     private CompanyConfig getCompanyConfig() {
-        return companyConfigRepository.findFirstByOrderByCreatedAtAsc()
+        return companyConfigRepository.findFirst()
                 .orElseThrow(() -> new IllegalStateException("Company configuration not found. Please configure company settings first."));
     }
 

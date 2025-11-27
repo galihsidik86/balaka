@@ -149,14 +149,31 @@ public class TransactionDetailPage {
     }
 
     public void uploadDocument(Path filePath) {
-        // Wait for HTMX response after file upload
-        page.waitForResponse(
-                response -> response.url().contains("/documents/transaction/") && response.status() == 200,
-                () -> page.setInputFiles("input[name='file']", filePath)
-        );
+        String filename = filePath.getFileName().toString();
+
+        // Wait for HTMX to load the document list (file input becomes attached to DOM)
+        // The input is hidden, so we wait for "attached" state instead of "visible"
+        page.locator("input[name='file']").waitFor(
+            new com.microsoft.playwright.Locator.WaitForOptions()
+                .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED)
+                .setTimeout(10000));
+
+        // Small delay to ensure DOM is stable after any previous HTMX swap
+        page.waitForTimeout(200);
+
+        // Set file input - HTMX will auto-submit on change event
+        page.setInputFiles("input[name='file']", filePath);
+
+        // Dispatch change event to trigger HTMX
+        page.locator("input[name='file']").dispatchEvent("change");
+
+        // Wait for the filename to appear in the document list
+        page.locator("#document-list-container >> text=" + filename)
+            .waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setTimeout(15000));
         page.waitForLoadState();
-        // Additional wait for DOM update
-        page.waitForTimeout(300);
+
+        // Small delay to ensure HTMX swap is complete before next operation
+        page.waitForTimeout(200);
     }
 
     public void assertDocumentVisible(String filename) {

@@ -157,17 +157,17 @@ class DocumentAttachmentTest extends PlaywrightTestBase {
             Path imagePath = getTestImage(filename);
 
             transactionDetailPage.navigate(DRAFT_TRANSACTION_ID);
-            int initialCount = getDocumentCount();
 
             transactionDetailPage.uploadDocument(imagePath);
             transactionDetailPage.assertDocumentVisible(filename);
+            int countAfterUpload = getDocumentCount();
 
             // Delete the first document (which should be the one we just uploaded)
             transactionDetailPage.clickDeleteDocumentButton();
 
-            // Verify document count decreased
-            int finalCount = getDocumentCount();
-            org.assertj.core.api.Assertions.assertThat(finalCount).isLessThanOrEqualTo(initialCount);
+            // Verify document count decreased after deletion
+            int countAfterDelete = getDocumentCount();
+            org.assertj.core.api.Assertions.assertThat(countAfterDelete).isLessThan(countAfterUpload);
         }
 
         private int getDocumentCount() {
