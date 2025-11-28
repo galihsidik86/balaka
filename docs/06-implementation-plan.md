@@ -351,43 +351,26 @@
 - [ ] BPJS report
 - [ ] Payslip PDF generation
 
-**Phase 3 Deliverable:** Complete payroll system with tax compliance.
+### 3.7 User Management & Role-Based Access Control
+- [ ] Reorganize sidebar menu (group related features, add icons, collapsible sections)
+- [ ] Roles: ADMIN, OWNER, ACCOUNTANT, STAFF, AUDITOR
+- [ ] Permission entity and role-permission mapping
+- [ ] User entity enhancements (link to roles)
+- [ ] User CRUD UI
+- [ ] Role assignment UI
+- [ ] @PreAuthorize annotations on controllers
+- [ ] Menu/button visibility based on permissions
+- [ ] Audit logging for permission denied and user management
+
+**Phase 3 Deliverable:** Complete payroll system with tax compliance and role-based access control.
 
 ---
 
-## Phase 4: Reconciliation & Analytics
+## Phase 4: Analytics & Reconciliation
 
-**Goal:** Bank/marketplace reconciliation, transaction tagging, analytics, and access control
+**Goal:** Transaction tagging, analytics, and bank reconciliation
 
-### 4.1 Bank Parser Infrastructure
-- [ ] Bank parser config entity
-- [ ] ConfigurableBankStatementParser class
-- [ ] Column name matching with fallback
-- [ ] Preload configs (BCA, BNI, BSI, CIMB)
-- [ ] Admin UI for parser config
-
-### 4.2 Bank Reconciliation
-- [ ] Bank reconciliation entity
-- [ ] Statement items entity
-- [ ] CSV upload and parsing
-- [ ] Auto-matching (exact date + amount)
-- [ ] Fuzzy matching (±1 day)
-- [ ] Manual matching UI
-- [ ] Create missing transactions from statement
-- [ ] Reconciliation report
-
-### 4.3 Marketplace Parser Infrastructure
-- [ ] Marketplace parser config entity
-- [ ] ConfigurableMarketplaceParser class
-- [ ] Preload configs (Tokopedia, Shopee, Bukalapak, Lazada)
-
-### 4.4 Marketplace Reconciliation
-- [ ] Settlement upload and parsing
-- [ ] Order matching
-- [ ] Fee expense auto-creation
-- [ ] Marketplace reconciliation report
-
-### 4.5 Transaction Tags
+### 4.1 Transaction Tags
 - [ ] Tag type entity (user-defined: "Client", "Channel", "Category")
 - [ ] Tag entity (values per type)
 - [ ] Tag type CRUD UI
@@ -396,7 +379,7 @@
 - [ ] Tag filters in transaction list
 - [ ] Tag-based reports (summary by tag)
 
-### 4.6 Trend Analysis
+### 4.2 Trend Analysis
 - [ ] Revenue trend chart (12 months)
 - [ ] Expense trend by category (12 months)
 - [ ] Profit margin trend (12 months)
@@ -404,7 +387,7 @@
 - [ ] Comparison: current period vs previous period
 - [ ] Comparison: current period vs same period last year
 
-### 4.7 Smart Alerts
+### 4.3 Smart Alerts
 - [ ] Project cost overrun alert
 - [ ] Project margin drop alert
 - [ ] Overdue receivables alert
@@ -417,29 +400,43 @@
 - [ ] Alert delivery: Dashboard notification, Email (optional)
 - [ ] Alert history and acknowledgment
 
-### 4.8 Account Balances (Materialized)
-- [ ] Account balances entity
-- [ ] Balance update on journal entry post/void
-- [ ] Period-based aggregation (monthly snapshots)
-- [ ] Balance recalculation utility
+### 4.4 Bank Reconciliation
+- [ ] Bank parser config entity
+- [ ] ConfigurableBankStatementParser class
+- [ ] Column name matching with fallback
+- [ ] Preload configs (BCA, BNI, BSI, CIMB)
+- [ ] Admin UI for parser config
+- [ ] Bank reconciliation entity
+- [ ] Statement items entity
+- [ ] CSV upload and parsing
+- [ ] Auto-matching (exact date + amount)
+- [ ] Fuzzy matching (±1 day)
+- [ ] Manual matching UI
+- [ ] Create missing transactions from statement
+- [ ] Reconciliation report
 
-### 4.9 User Management & Role-Based Access Control
-- [ ] Roles: ADMIN, OWNER, ACCOUNTANT, STAFF, AUDITOR
-- [ ] Permission entity and role-permission mapping
-- [ ] User entity enhancements (link to roles)
-- [ ] User CRUD UI
-- [ ] Role assignment UI
-- [ ] @PreAuthorize annotations on controllers
-- [ ] Menu/button visibility based on permissions
-- [ ] Audit logging for permission denied and user management
+**Value analysis (manual reconciliation time per month):**
+- 20-30 transactions: 5-10 min (easy, no automation needed)
+- 50-100 transactions: 15-30 min (manageable)
+- 200-300 transactions: 1-2 hours (tedious, automation helpful)
+- 500+ transactions: 3+ hours (automation essential)
 
-**Phase 4 Deliverable:** Automated reconciliation, transaction tagging, trend analysis, smart alerts, and role-based access control.
+**For typical small IT services (30-80 tx/month):** Manual reconciliation takes ~15 min/month.
+Bank reconciliation feature becomes valuable at ~150+ transactions/month or with multiple bank accounts.
+
+**Phase 4 Deliverable:** Transaction tagging, trend analysis, smart alerts, and bank reconciliation.
 
 ---
 
 ## Phase 5: Assets & Budget
 
 **Goal:** Fixed asset tracking and budget management
+
+**Implementation note:** Follow payroll pattern for journal posting:
+- Route through Transaction → JournalTemplate → JournalEntry (not direct journal creation)
+- Use extended FormulaContext with domain-specific variables (e.g., `assetCost`, `accumulatedDepreciation`, `disposalProceeds`, `gainLoss`)
+- Create system templates for: asset purchase, depreciation entry, asset disposal
+- Keep asset-specific logic in AssetService, core accounting remains generic
 
 ### 5.1 Fixed Asset Register
 - [ ] Fixed asset entity
@@ -482,6 +479,32 @@
 - [ ] Online Seller COA and journal templates
 - [ ] General Freelancer COA and journal templates
 - [ ] Industry-specific salary component templates
+
+### Marketplace Reconciliation
+- [ ] Marketplace parser config entity
+- [ ] ConfigurableMarketplaceParser class
+- [ ] Preload configs (Tokopedia, Shopee, Bukalapak, Lazada)
+- [ ] Settlement upload and parsing
+- [ ] Order matching
+- [ ] Fee expense auto-creation
+- [ ] Marketplace reconciliation report
+
+### Account Balances (Materialized) - Performance Optimization
+- [ ] Account balances entity
+- [ ] Balance update on journal entry post/void
+- [ ] Period-based aggregation (monthly snapshots)
+- [ ] Balance recalculation utility
+
+**When to implement:** Only when report generation exceeds 2 seconds or users report slowness.
+
+**Performance analysis (PostgreSQL with indexes):**
+- 10,000 journal lines: <50ms (5 years @ 80 tx/month)
+- 50,000 journal lines: ~100ms (5 years @ 400 tx/month)
+- 100,000 journal lines: ~200ms (5 years @ 800 tx/month)
+- 500,000 journal lines: ~500ms (5 years @ 4,000 tx/month)
+
+**For typical small IT services (100 tx/month):** Would take 40+ years to reach 100,000 lines.
+Materialization only needed at ~500+ transactions/month sustained for several years.
 
 ### Document Management Enhancements
 - [ ] S3-compatible storage backend
