@@ -924,8 +924,8 @@ CREATE TABLE payroll_runs (
 
     notes TEXT,
 
-    -- Reference to journal entry when posted
-    id_journal_entry UUID REFERENCES journal_entries(id),
+    -- Reference to transaction when posted
+    id_transaction UUID REFERENCES transactions(id),
     posted_at TIMESTAMP,
     cancelled_at TIMESTAMP,
     cancel_reason VARCHAR(500),
@@ -939,7 +939,7 @@ CREATE TABLE payroll_runs (
 
 CREATE INDEX idx_payroll_runs_period ON payroll_runs(payroll_period);
 CREATE INDEX idx_payroll_runs_status ON payroll_runs(status);
-CREATE INDEX idx_payroll_runs_journal ON payroll_runs(id_journal_entry);
+CREATE INDEX idx_payroll_runs_transaction ON payroll_runs(id_transaction);
 
 CREATE TABLE payroll_details (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

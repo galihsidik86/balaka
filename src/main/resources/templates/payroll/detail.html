@@ -39,6 +39,15 @@
                     </button>
                 </form>
 
+                <!-- Post Button -->
+                <form th:if="${payrollRun.canPost()}" th:action="@{/payroll/{id}/post(id=${payrollRun.id})}" method="post"
+                      onsubmit="return confirm('Posting payroll akan membuat jurnal. Lanjutkan?')">
+                    <button type="submit" id="btn-post"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Post ke Jurnal
+                    </button>
+                </form>
+
                 <!-- Cancel Button -->
                 <form th:if="${payrollRun.canCancel()}" th:action="@{/payroll/{id}/cancel(id=${payrollRun.id})}" method="post"
                       onsubmit="return confirm('Yakin ingin membatalkan payroll ini?')">
@@ -150,6 +159,16 @@
                     </tfoot>
                 </table>
             </div>
+        </div>
+
+        <!-- Transaction Reference (if posted) -->
+        <div th:if="${payrollRun.isPosted() and payrollRun.transaction != null}"
+             class="bg-blue-50 border border-blue-200 rounded-lg p-4" data-testid="journal-reference">
+            <h4 class="text-sm font-medium text-blue-900 mb-1">Transaksi Terposting:</h4>
+            <a th:href="@{/transactions/{id}(id=${payrollRun.transaction.id})}"
+               class="text-blue-600 hover:text-blue-800 underline"
+               th:text="${payrollRun.transaction.transactionNumber}">TRX-2025-0001</a>
+            <p class="text-xs text-blue-500 mt-2" th:text="${'Diposting pada: ' + #temporals.format(payrollRun.postedAt, 'dd MMM yyyy HH:mm')}">Diposting pada: 01 Jan 2025</p>
         </div>
 
         <!-- Cancel Reason (if cancelled) -->

@@ -143,7 +143,28 @@ public class TransactionService {
     @Transactional
     public Transaction post(UUID id, String postedBy) {
         Transaction transaction = findById(id);
+        // Use default context with transaction amount
+        FormulaContext context = FormulaContext.of(transaction.getAmount());
+        return postWithContext(transaction, postedBy, context);
+    }
 
+    /**
+     * Post a transaction with a custom FormulaContext.
+     * Used by external modules (payroll, inventory, etc.) that need to provide
+     * module-specific variables for formula evaluation.
+     *
+     * @param id the transaction ID
+     * @param postedBy who is posting
+     * @param context custom FormulaContext with extended variables
+     * @return the posted transaction
+     */
+    @Transactional
+    public Transaction post(UUID id, String postedBy, FormulaContext context) {
+        Transaction transaction = findById(id);
+        return postWithContext(transaction, postedBy, context);
+    }
+
+    private Transaction postWithContext(Transaction transaction, String postedBy, FormulaContext context) {
         if (!transaction.isDraft()) {
             throw new IllegalStateException("Only draft transactions can be posted");
         }
@@ -159,7 +180,7 @@ public class TransactionService {
 
         for (JournalTemplateLine line : template.getLines()) {
             ChartOfAccount account = accountOverrides.getOrDefault(line.getId(), line.getAccount());
-            BigDecimal amount = calculateAmount(line.getFormula(), transaction.getAmount());
+            BigDecimal amount = calculateAmount(line.getFormula(), context);
 
             JournalEntry entry = new JournalEntry();
             entry.setJournalNumber(journalNumber + "-" + String.format("%02d", ++lineIndex));
@@ -280,8 +301,8 @@ public class TransactionService {
      *
      * @see FormulaEvaluator
      */
-    private BigDecimal calculateAmount(String formula, BigDecimal baseAmount) {
-        return formulaEvaluator.evaluate(formula, FormulaContext.of(baseAmount));
+    private BigDecimal calculateAmount(String formula, FormulaContext context) {
+        return formulaEvaluator.evaluate(formula, context);
     }
 
     private void validateJournalBalance(List<JournalEntry> entries) {

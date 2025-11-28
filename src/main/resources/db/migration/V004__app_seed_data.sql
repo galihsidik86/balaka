@@ -49,6 +49,8 @@ INSERT INTO chart_of_accounts (id, account_code, account_name, account_type, nor
 ('20000000-0000-0000-0000-000000000102', '2.1.02', 'Hutang Pajak', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
 ('20000000-0000-0000-0000-000000000103', '2.1.03', 'Hutang PPN', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
 ('20000000-0000-0000-0000-000000000104', '2.1.04', 'Pendapatan Diterima Dimuka', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
+('20000000-0000-0000-0000-000000000107', '2.1.07', 'Hutang Gaji', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
+('20000000-0000-0000-0000-000000000108', '2.1.08', 'Hutang BPJS', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
 ('20000000-0000-0000-0000-000000000120', '2.1.20', 'Hutang PPh 21', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
 ('20000000-0000-0000-0000-000000000121', '2.1.21', 'Hutang PPh 23', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
 ('20000000-0000-0000-0000-000000000122', '2.1.22', 'Hutang PPh 4(2)', 'LIABILITY', 'CREDIT', '20000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, TRUE),
@@ -100,6 +102,7 @@ INSERT INTO chart_of_accounts (id, account_code, account_name, account_type, nor
 ('50000000-0000-0000-0000-000000000107', '5.1.07', 'Beban Penyusutan', 'EXPENSE', 'DEBIT', '50000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, FALSE),
 ('50000000-0000-0000-0000-000000000108', '5.1.08', 'Beban Asuransi', 'EXPENSE', 'DEBIT', '50000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, FALSE),
 ('50000000-0000-0000-0000-000000000109', '5.1.09', 'Beban Amortisasi', 'EXPENSE', 'DEBIT', '50000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, FALSE),
+('50000000-0000-0000-0000-000000000111', '5.1.11', 'Beban BPJS', 'EXPENSE', 'DEBIT', '50000000-0000-0000-0000-000000000011', 3, FALSE, TRUE, FALSE),
 ('50000000-0000-0000-0000-000000000121', '5.2.01', 'Beban Bank', 'EXPENSE', 'DEBIT', '50000000-0000-0000-0000-000000000012', 3, FALSE, TRUE, FALSE);
 
 -- ============================================
@@ -209,6 +212,24 @@ INSERT INTO journal_templates (id, template_name, category, cash_flow_category, 
 INSERT INTO journal_template_lines (id, id_journal_template, id_account, position, formula, line_order) VALUES
 ('e1000000-0000-0000-0000-000000000025', 'e0000000-0000-0000-0000-000000000013', '20000000-0000-0000-0000-000000000104', 'DEBIT', 'amount', 1),
 ('e1000000-0000-0000-0000-000000000026', 'e0000000-0000-0000-0000-000000000013', '40000000-0000-0000-0000-000000000102', 'CREDIT', 'amount', 2);
+
+-- Template: Post Gaji Bulanan (Payroll Posting)
+-- System template for posting payroll to journal entries
+-- Uses payroll-specific formula variables: grossSalary, companyBpjs, netPay, totalBpjs, pph21
+INSERT INTO journal_templates (id, template_name, category, cash_flow_category, template_type, description, is_system, active) VALUES
+('e0000000-0000-0000-0000-000000000014', 'Post Gaji Bulanan', 'EXPENSE', 'OPERATING', 'SIMPLE', 'Template sistem untuk posting payroll bulanan. Menggunakan variabel: grossSalary, companyBpjs, netPay, totalBpjs, pph21', TRUE, TRUE);
+
+INSERT INTO journal_template_lines (id, id_journal_template, id_account, position, formula, line_order, description) VALUES
+-- Debit: Beban Gaji (gross salary expense)
+('e1000000-0000-0000-0000-000000000027', 'e0000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000101', 'DEBIT', 'grossSalary', 1, 'Beban gaji karyawan'),
+-- Debit: Beban BPJS (company BPJS contribution)
+('e1000000-0000-0000-0000-000000000028', 'e0000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000111', 'DEBIT', 'companyBpjs', 2, 'Beban BPJS perusahaan'),
+-- Credit: Hutang Gaji (net pay to employees)
+('e1000000-0000-0000-0000-000000000029', 'e0000000-0000-0000-0000-000000000014', '20000000-0000-0000-0000-000000000107', 'CREDIT', 'netPay', 3, 'Hutang gaji karyawan'),
+-- Credit: Hutang BPJS (company + employee BPJS)
+('e1000000-0000-0000-0000-000000000030', 'e0000000-0000-0000-0000-000000000014', '20000000-0000-0000-0000-000000000108', 'CREDIT', 'totalBpjs', 4, 'Hutang BPJS'),
+-- Credit: Hutang PPh 21 (tax withheld)
+('e1000000-0000-0000-0000-000000000031', 'e0000000-0000-0000-0000-000000000014', '20000000-0000-0000-0000-000000000120', 'CREDIT', 'pph21', 5, 'Hutang PPh 21');
 
 -- ============================================
 -- Tax Deadlines - Indonesian Tax Calendar

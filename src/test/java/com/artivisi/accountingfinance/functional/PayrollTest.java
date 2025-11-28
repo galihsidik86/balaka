@@ -278,4 +278,67 @@ class PayrollTest extends PlaywrightTestBase {
         detailPage.assertPageTitleContains("Detail Payroll");
         assertThat(detailPage.getEmployeeCount()).isEqualTo("3");
     }
+
+    @Test
+    @DisplayName("Should show post button for approved payroll")
+    void shouldShowPostButtonForApprovedPayroll() {
+        formPage.navigateToNew();
+
+        String period = "2028-10";
+
+        formPage.fillPeriod(period);
+        formPage.fillBaseSalary("10000000");
+        formPage.clickSubmit();
+
+        // Approve the payroll
+        detailPage.clickApproveButton();
+
+        // Should show post button for approved payroll
+        assertThat(detailPage.hasPostButton()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should post approved payroll to journal")
+    void shouldPostApprovedPayrollToJournal() {
+        formPage.navigateToNew();
+
+        String period = "2028-11";
+
+        formPage.fillPeriod(period);
+        formPage.fillBaseSalary("10000000");
+        formPage.clickSubmit();
+
+        // Approve the payroll
+        detailPage.clickApproveButton();
+
+        // Post to journal
+        detailPage.clickPostButton();
+
+        // Should show posted status
+        detailPage.assertStatusBadgeText("Posted");
+        assertThat(detailPage.hasSuccessMessage()).isTrue();
+
+        // Should show transaction reference
+        assertThat(detailPage.hasJournalReference()).isTrue();
+        assertThat(detailPage.getTransactionNumber()).startsWith("TRX-");
+
+        // Post and cancel buttons should be gone
+        assertThat(detailPage.hasPostButton()).isFalse();
+        assertThat(detailPage.hasCancelButton()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should not show post button for non-approved payroll")
+    void shouldNotShowPostButtonForNonApprovedPayroll() {
+        formPage.navigateToNew();
+
+        String period = "2028-12";
+
+        formPage.fillPeriod(period);
+        formPage.fillBaseSalary("10000000");
+        formPage.clickSubmit();
+
+        // Calculated payroll should not have post button
+        assertThat(detailPage.hasPostButton()).isFalse();
+    }
 }

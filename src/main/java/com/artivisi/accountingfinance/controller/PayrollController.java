@@ -154,6 +154,22 @@ public class PayrollController {
         return "redirect:/payroll/" + id;
     }
 
+    @PostMapping("/{id}/post")
+    public String post(
+            @PathVariable UUID id,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            PayrollRun payrollRun = payrollService.postPayroll(id);
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Payroll periode " + payrollRun.getPayrollPeriod() + " berhasil di-posting ke jurnal");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/payroll/" + id;
+    }
+
     @PostMapping("/{id}/recalculate")
     public String recalculate(
             @PathVariable UUID id,

@@ -82,10 +82,10 @@ public class PayrollRun {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
-    // Reference to journal entry created when posted
+    // Reference to transaction created when posted
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_journal_entry")
-    private JournalEntry journalEntry;
+    @JoinColumn(name = "id_transaction")
+    private Transaction transaction;
 
     @Column(name = "posted_at")
     private LocalDateTime postedAt;

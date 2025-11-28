@@ -55,6 +55,12 @@ public class FormulaEvaluator {
             return context.amount();
         }
 
+        // Handle simple extended variable reference (e.g., "grossSalary")
+        // Check if it's a simple identifier that exists in the variables map
+        if (isSimpleIdentifier(trimmed) && context.variables().containsKey(trimmed)) {
+            return context.get(trimmed);
+        }
+
         try {
             SimpleEvaluationContext evalContext = SimpleEvaluationContext
                     .forReadOnlyDataBinding()
@@ -70,6 +76,22 @@ public class FormulaEvaluator {
         } catch (SpelEvaluationException e) {
             throw new IllegalArgumentException("Formula evaluation error: " + formula + " - " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Check if the formula is a simple identifier (variable name).
+     * A simple identifier contains only letters, digits, and underscores,
+     * and starts with a letter or underscore.
+     */
+    private boolean isSimpleIdentifier(String formula) {
+        if (formula.isEmpty()) return false;
+        char first = formula.charAt(0);
+        if (!Character.isLetter(first) && first != '_') return false;
+        for (int i = 1; i < formula.length(); i++) {
+            char c = formula.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '_') return false;
+        }
+        return true;
     }
 
     /**

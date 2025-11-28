@@ -58,6 +58,8 @@ Daftar akun standar yang tersedia dalam aplikasi. Akun dikelompokkan berdasarkan
 | 2.1.01 | Hutang Usaha | Hutang ke vendor/supplier |
 | 2.1.02 | Hutang Gaji | Gaji yang belum dibayar |
 | 2.1.03 | Hutang PPN | PPN yang harus disetor |
+| 2.1.07 | Hutang Gaji (Payroll) | Gaji neto dari payroll bulanan |
+| 2.1.08 | Hutang BPJS | Iuran BPJS yang belum disetor |
 | 2.1.10 | Pendapatan Diterima Dimuka | Pembayaran dimuka dari klien |
 | 2.1.20 | Hutang PPh 21 | PPh 21 yang dipotong |
 | 2.1.21 | Hutang PPh 23 | PPh 23 yang dipotong |
@@ -112,7 +114,8 @@ Daftar akun standar yang tersedia dalam aplikasi. Akun dikelompokkan berdasarkan
 | 5.1.05 | Beban Telepon | Tagihan telepon |
 | 5.1.06 | Beban Internet | Tagihan internet |
 | 5.1.10 | Beban ATK | Alat tulis kantor |
-| 5.1.11 | Beban Perlengkapan | Perlengkapan kantor |
+| 5.1.11 | Beban BPJS | Kontribusi BPJS perusahaan |
+| 5.1.12 | Beban Perlengkapan | Perlengkapan kantor |
 | 5.1.15 | Beban Transportasi | Transport dan perjalanan |
 | 5.1.16 | Beban Parkir | Biaya parkir |
 | 5.1.20 | Beban Makan | Makan karyawan/meeting |

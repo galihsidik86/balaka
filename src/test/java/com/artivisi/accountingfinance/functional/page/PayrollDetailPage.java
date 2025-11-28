@@ -10,8 +10,10 @@ public class PayrollDetailPage {
 
     private static final String PAGE_TITLE = "#page-title";
     private static final String APPROVE_BUTTON = "#btn-approve";
+    private static final String POST_BUTTON = "#btn-post";
     private static final String CANCEL_BUTTON = "#btn-cancel";
     private static final String DELETE_BUTTON = "#btn-delete";
+    private static final String JOURNAL_REFERENCE = "[data-testid='journal-reference']";
     private static final String EMPLOYEE_COUNT = "[data-testid='employee-count']";
     private static final String TOTAL_GROSS = "[data-testid='total-gross']";
     private static final String TOTAL_DEDUCTIONS = "[data-testid='total-deductions']";
@@ -53,6 +55,10 @@ public class PayrollDetailPage {
         return page.locator(APPROVE_BUTTON).isVisible();
     }
 
+    public boolean hasPostButton() {
+        return page.locator(POST_BUTTON).isVisible();
+    }
+
     public boolean hasCancelButton() {
         return page.locator(CANCEL_BUTTON).isVisible();
     }
@@ -63,6 +69,13 @@ public class PayrollDetailPage {
 
     public void clickApproveButton() {
         page.click(APPROVE_BUTTON);
+        page.waitForLoadState();
+    }
+
+    public void clickPostButton() {
+        // Handle confirmation dialog
+        page.onceDialog(dialog -> dialog.accept());
+        page.click(POST_BUTTON);
         page.waitForLoadState();
     }
 
@@ -98,5 +111,13 @@ public class PayrollDetailPage {
 
     public boolean hasEmployeeWithId(String employeeId) {
         return page.locator(EMPLOYEE_DETAILS_TABLE + " tbody tr:has-text('" + employeeId + "')").count() > 0;
+    }
+
+    public boolean hasJournalReference() {
+        return page.locator(JOURNAL_REFERENCE).isVisible();
+    }
+
+    public String getTransactionNumber() {
+        return page.locator(JOURNAL_REFERENCE + " a").textContent();
     }
 }

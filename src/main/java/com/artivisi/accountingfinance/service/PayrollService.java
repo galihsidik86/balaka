@@ -1,11 +1,15 @@
 package com.artivisi.accountingfinance.service;
 
+import com.artivisi.accountingfinance.dto.FormulaContext;
 import com.artivisi.accountingfinance.entity.Employee;
 import com.artivisi.accountingfinance.entity.EmploymentStatus;
+import com.artivisi.accountingfinance.entity.JournalTemplate;
 import com.artivisi.accountingfinance.entity.PayrollDetail;
 import com.artivisi.accountingfinance.entity.PayrollRun;
 import com.artivisi.accountingfinance.entity.PayrollStatus;
+import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.repository.EmployeeRepository;
+import com.artivisi.accountingfinance.repository.JournalTemplateRepository;
 import com.artivisi.accountingfinance.repository.PayrollDetailRepository;
 import com.artivisi.accountingfinance.repository.PayrollRunRepository;
 import org.slf4j.Logger;
@@ -19,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,23 +35,32 @@ public class PayrollService {
 
     private static final int DEFAULT_JKK_RISK_CLASS = 1; // IT Services
 
+    // Payroll journal template ID (from V004 seed data)
+    private static final UUID PAYROLL_TEMPLATE_ID = UUID.fromString("e0000000-0000-0000-0000-000000000014");
+
     private final PayrollRunRepository payrollRunRepository;
     private final PayrollDetailRepository payrollDetailRepository;
     private final EmployeeRepository employeeRepository;
+    private final JournalTemplateRepository journalTemplateRepository;
     private final BpjsCalculationService bpjsCalculationService;
     private final Pph21CalculationService pph21CalculationService;
+    private final TransactionService transactionService;
 
     public PayrollService(
             PayrollRunRepository payrollRunRepository,
             PayrollDetailRepository payrollDetailRepository,
             EmployeeRepository employeeRepository,
+            JournalTemplateRepository journalTemplateRepository,
             BpjsCalculationService bpjsCalculationService,
-            Pph21CalculationService pph21CalculationService) {
+            Pph21CalculationService pph21CalculationService,
+            TransactionService transactionService) {
         this.payrollRunRepository = payrollRunRepository;
         this.payrollDetailRepository = payrollDetailRepository;
         this.employeeRepository = employeeRepository;
+        this.journalTemplateRepository = journalTemplateRepository;
         this.bpjsCalculationService = bpjsCalculationService;
         this.pph21CalculationService = pph21CalculationService;
+        this.transactionService = transactionService;
     }
 
     /**
@@ -166,6 +180,70 @@ public class PayrollService {
         payrollRun.setCancelReason(reason);
 
         log.info("Cancelled payroll for period {}, reason: {}", payrollRun.getPayrollPeriod(), reason);
+
+        return payrollRunRepository.save(payrollRun);
+    }
+
+    /**
+     * Post payroll to journal entries via Transaction.
+     * Creates a Transaction using the payroll template with payroll-specific variables:
+     * - grossSalary: total gross salary (expense)
+     * - companyBpjs: company BPJS contribution (expense)
+     * - netPay: net pay to employees (liability)
+     * - totalBpjs: total BPJS payable (liability)
+     * - pph21: PPh 21 withheld (liability)
+     */
+    public PayrollRun postPayroll(UUID payrollRunId) {
+        PayrollRun payrollRun = payrollRunRepository.findById(payrollRunId)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll run tidak ditemukan"));
+
+        if (!payrollRun.canPost()) {
+            throw new IllegalStateException("Payroll harus dalam status APPROVED untuk di-posting");
+        }
+
+        // Get payroll template
+        JournalTemplate payrollTemplate = journalTemplateRepository.findById(PAYROLL_TEMPLATE_ID)
+            .orElseThrow(() -> new IllegalStateException("Template Post Gaji Bulanan tidak ditemukan"));
+
+        // Calculate total employee BPJS from details
+        List<PayrollDetail> details = payrollDetailRepository.findByPayrollRunIdWithEmployee(payrollRunId);
+        BigDecimal totalEmployeeBpjs = details.stream()
+            .map(PayrollDetail::getTotalEmployeeBpjs)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Create payroll-specific FormulaContext with extended variables
+        BigDecimal totalBpjs = payrollRun.getTotalCompanyBpjs().add(totalEmployeeBpjs);
+        FormulaContext payrollContext = FormulaContext.of(
+            payrollRun.getTotalGross(), // amount = grossSalary for display
+            Map.of(
+                "grossSalary", payrollRun.getTotalGross(),
+                "companyBpjs", payrollRun.getTotalCompanyBpjs(),
+                "totalBpjs", totalBpjs,
+                "pph21", payrollRun.getTotalPph21(),
+                "netPay", payrollRun.getTotalNetPay()
+            )
+        );
+
+        // Create transaction
+        String description = "Payroll " + payrollRun.getPeriodDisplayName();
+        Transaction transaction = new Transaction();
+        transaction.setJournalTemplate(payrollTemplate);
+        transaction.setTransactionDate(payrollRun.getPeriodEnd());
+        transaction.setAmount(payrollRun.getTotalGross());
+        transaction.setDescription(description);
+        transaction.setReferenceNumber("PAYROLL-" + payrollRun.getPayrollPeriod());
+
+        // Create and post transaction with payroll context
+        Transaction savedTransaction = transactionService.create(transaction, null);
+        Transaction postedTransaction = transactionService.post(savedTransaction.getId(), "system", payrollContext);
+
+        // Update payroll run status
+        payrollRun.setStatus(PayrollStatus.POSTED);
+        payrollRun.setPostedAt(LocalDateTime.now());
+        payrollRun.setTransaction(postedTransaction);
+
+        log.info("Posted payroll for period {}, transaction: {}",
+            payrollRun.getPayrollPeriod(), postedTransaction.getTransactionNumber());
 
         return payrollRunRepository.save(payrollRun);
     }

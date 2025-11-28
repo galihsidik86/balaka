@@ -332,14 +332,18 @@
 - [x] Functional tests (12 Playwright tests)
 - [x] User manual (63-kalkulator-pph21.md)
 
-### 3.5 Payroll Processing
-- [ ] Payroll run entity
-- [ ] Payroll details entity
-- [ ] Monthly payroll workflow
-- [ ] Calculate all employees
-- [ ] Review and adjust
-- [ ] Post to journal entries
-- [ ] Generate payslips
+### 3.5 Payroll Processing ✅
+- [x] PayrollRun entity (period, status workflow, totals)
+- [x] PayrollDetail entity (per-employee breakdown, BPJS, PPh 21)
+- [x] PayrollService (create, calculate, approve, post, cancel)
+- [x] Monthly payroll workflow (Draft → Calculated → Approved → Posted)
+- [x] Calculate all active employees with BPJS and PPh 21
+- [x] Payroll UI (list, form, detail with summary and employee breakdown)
+- [x] Post to journal via Transaction/Template system (domain separation)
+- [x] Extended FormulaContext with generic variables map
+- [x] Payroll journal template (grossSalary, companyBpjs, netPay, totalBpjs, pph21)
+- [x] Functional tests (18 Playwright tests)
+- [x] User manual (64-payroll-processing.md, updated 92-referensi-template.md)
 
 ### 3.6 Payroll Reports
 - [ ] Payroll summary report

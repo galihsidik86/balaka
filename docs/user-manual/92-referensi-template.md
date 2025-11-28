@@ -122,6 +122,23 @@ Hutang PPh 23 (Cr) = DPP * 0.02
 | **Setor PPh 23** | Dr. Hutang PPh 23 / Cr. Bank | Setor PPh 23 vendor |
 | **Setor PPh 25** | Dr. Hutang PPh 25 / Cr. Bank | Setor angsuran PPh |
 
+## Payroll (Sistem)
+
+| Template | Jurnal | Kapan Digunakan |
+|----------|--------|-----------------|
+| **Post Gaji Bulanan** | Dr. Beban Gaji / Dr. Beban BPJS / Cr. Hutang Gaji / Cr. Hutang BPJS / Cr. Hutang PPh 21 | Posting hasil payroll bulanan |
+
+**Formula Post Gaji Bulanan**:
+```
+Beban Gaji (Dr)     = grossSalary    (total gaji bruto)
+Beban BPJS (Dr)     = companyBpjs    (kontribusi BPJS perusahaan)
+Hutang Gaji (Cr)    = netPay         (gaji neto yang dibayarkan)
+Hutang BPJS (Cr)    = totalBpjs      (BPJS perusahaan + karyawan)
+Hutang PPh 21 (Cr)  = pph21          (PPh 21 yang dipotong)
+```
+
+Template ini menggunakan variabel yang disuplai oleh modul Payroll, bukan input user. Lihat [Proses Penggajian](64-payroll-processing.md) untuk detail.
+
 ## Formula yang Sering Digunakan
 
 ### Formula Dasar
@@ -155,6 +172,22 @@ amount > 2000000 ? amount * 0.02 : 0
 | `ppn` | Hasil perhitungan PPN (jika ada di baris sebelumnya) |
 | `dpp` | Hasil perhitungan DPP (jika ada di baris sebelumnya) |
 
+### Variabel Extended (Multi-Variable)
+
+Sistem formula mendukung variabel custom yang disuplai oleh modul eksternal. Ini memungkinkan template digunakan untuk skenario kompleks seperti payroll.
+
+**Variabel Payroll**:
+
+| Variabel | Arti |
+|----------|------|
+| `grossSalary` | Total gaji bruto |
+| `companyBpjs` | Kontribusi BPJS perusahaan |
+| `totalBpjs` | Total BPJS (perusahaan + karyawan) |
+| `pph21` | PPh 21 yang dipotong |
+| `netPay` | Gaji neto yang dibayarkan |
+
+Variabel extended hanya tersedia saat template dipanggil dari modul yang menyediakan variabel tersebut. Untuk template transaksi manual, gunakan variabel standar (`amount`, `ppn`, `dpp`).
+
 ## Membuat Template Kustom
 
 Jika template yang Anda butuhkan tidak ada:
@@ -168,4 +201,5 @@ Jika template yang Anda butuhkan tidak ada:
 - [Kelola Template](51-kelola-template.md) - Buat dan edit template
 - [Transaksi PPN](30-transaksi-ppn.md) - Transaksi dengan PPN
 - [Transaksi PPh](31-transaksi-pph.md) - Transaksi dengan PPh
+- [Proses Penggajian](64-payroll-processing.md) - Payroll dan posting jurnal
 - [Referensi Akun](91-referensi-akun.md) - Daftar akun untuk template

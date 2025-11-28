@@ -28,8 +28,9 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
   - 3.1 Employee Management: ✅ Complete
   - 3.2 Salary Components: ✅ Complete
   - 3.3 BPJS Calculation: ✅ Complete
-  - 3.4 PPh 21 Calculation: ⏳ Next
-  - 3.5-3.6: Payroll Processing, Reports
+  - 3.4 PPh 21 Calculation: ✅ Complete
+  - 3.5 Payroll Processing: ✅ Complete
+  - 3.6 Payroll Reports: ⏳ Next
 - **Phase 4:** Reconciliation & Analytics (Bank/Marketplace, Tags, Trends, Alerts, RBAC)
 - **Phase 5:** Assets & Budget
 - See `docs/06-implementation-plan.md` for full plan
@@ -88,24 +89,20 @@ User → Controller (MVC) → Service → Repository → PostgreSQL
 
 Phase 3 (Payroll) in progress.
 
-Phase 3.1 Employee Management complete:
-- Employee entity with PTKP status, employment details, bank account, BPJS numbers
-- Employee CRUD UI (list with search/filters, form, detail view)
-- 13 Indonesian PTKP tax status codes with annual amounts
-- 10 Playwright functional tests
+Phase 3.1-3.5 complete:
+- Employee Management with PTKP status
+- Salary Components (17 preloaded Indonesian components)
+- BPJS Calculation (Kesehatan + Ketenagakerjaan)
+- PPh 21 Calculation (progressive rates, PTKP deduction)
+- Payroll Processing (create, calculate, approve, post workflow)
 
-Phase 3.2 Salary Components complete:
-- SalaryComponent entity with CRUD UI
-- 17 preloaded Indonesian salary components
-- 11 Playwright functional tests
+Phase 3.5 highlights:
+- PayrollRun/PayrollDetail entities for monthly payroll
+- Integration with Transaction/Template system (domain separation)
+- Extended FormulaContext with generic variables map for external modules
+- Payroll journal template with formula variables (grossSalary, companyBpjs, netPay, totalBpjs, pph21)
+- 18 Playwright functional tests
 
-Phase 3.3 BPJS Calculation complete:
-- BpjsCalculationService with BigDecimal precision
-- BPJS Kesehatan (4%+1%, ceiling Rp 12M)
-- BPJS Ketenagakerjaan (JKK, JKM, JHT, JP with respective rates)
-- BPJS Calculator UI with breakdown display
-- 25 unit tests + 9 Playwright functional tests
-
-Next: Phase 3.4 (PPh 21 Calculation)
+Next: Phase 3.6 (Payroll Reports)
 
 See `docs/06-implementation-plan.md` for full plan

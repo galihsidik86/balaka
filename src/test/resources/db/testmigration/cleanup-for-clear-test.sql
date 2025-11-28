@@ -8,6 +8,9 @@ DELETE FROM documents;
 -- Delete invoices (FK reference to transactions via id_transaction)
 DELETE FROM invoices;
 
+-- Delete payroll runs (FK reference to transactions via id_transaction)
+DELETE FROM payroll_runs;
+
 -- Delete all journal entries
 DELETE FROM journal_entries;
 
