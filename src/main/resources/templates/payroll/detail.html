@@ -66,6 +66,42 @@
                     </button>
                 </form>
 
+                <!-- Export Dropdown -->
+                <div th:if="${payrollRun.isCalculated() or payrollRun.isApproved() or payrollRun.isPosted()}"
+                     class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" type="button" id="btn-export"
+                            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center">
+                        <span>Export</span>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                        <div class="py-1">
+                            <p class="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Rekap Gaji</p>
+                            <a th:href="@{/payroll/{id}/export/summary/pdf(id=${payrollRun.id})}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">PDF</a>
+                            <a th:href="@{/payroll/{id}/export/summary/excel(id=${payrollRun.id})}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Excel</a>
+                        </div>
+                        <div class="border-t border-gray-100 py-1">
+                            <p class="px-4 py-2 text-xs font-medium text-gray-500 uppercase">PPh 21</p>
+                            <a th:href="@{/payroll/{id}/export/pph21/pdf(id=${payrollRun.id})}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">PDF</a>
+                            <a th:href="@{/payroll/{id}/export/pph21/excel(id=${payrollRun.id})}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Excel</a>
+                        </div>
+                        <div class="border-t border-gray-100 py-1">
+                            <p class="px-4 py-2 text-xs font-medium text-gray-500 uppercase">BPJS</p>
+                            <a th:href="@{/payroll/{id}/export/bpjs/pdf(id=${payrollRun.id})}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">PDF</a>
+                            <a th:href="@{/payroll/{id}/export/bpjs/excel(id=${payrollRun.id})}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Excel</a>
+                        </div>
+                    </div>
+                </div>
+
                 <a th:href="@{/payroll}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                     Kembali
                 </a>
@@ -125,6 +161,7 @@
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPh 21</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Potongan</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gaji Neto</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Slip Gaji</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -141,6 +178,14 @@
                                 th:text="${'(Rp ' + #numbers.formatDecimal(detail.totalDeductions, 0, 'COMMA', 0, 'POINT') + ')'}">Rp 535,000</td>
                             <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium text-green-600"
                                 th:text="${'Rp ' + #numbers.formatDecimal(detail.netPay, 0, 'COMMA', 0, 'POINT')}">Rp 9,465,000</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <a th:href="@{/payroll/{id}/payslip/{empId}/pdf(id=${payrollRun.id}, empId=${detail.employee.id})}"
+                                   class="text-blue-600 hover:text-blue-800" title="Download Slip Gaji">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </a>
+                            </td>
                         </tr>
                     </tbody>
                     <tfoot class="bg-gray-50">
@@ -155,6 +200,7 @@
                                 th:text="${'(Rp ' + #numbers.formatDecimal(payrollRun.totalDeductions, 0, 'COMMA', 0, 'POINT') + ')'}">Rp 2,675,000</td>
                             <td class="px-4 py-4 text-right text-sm font-medium text-green-600"
                                 th:text="${'Rp ' + #numbers.formatDecimal(payrollRun.totalNetPay, 0, 'COMMA', 0, 'POINT')}">Rp 47,325,000</td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>

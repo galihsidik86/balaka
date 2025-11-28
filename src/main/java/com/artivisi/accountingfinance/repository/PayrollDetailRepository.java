@@ -26,4 +26,19 @@ public interface PayrollDetailRepository extends JpaRepository<PayrollDetail, UU
     void deleteByPayrollRun(PayrollRun payrollRun);
 
     boolean existsByPayrollRunAndEmployeeId(PayrollRun payrollRun, UUID employeeId);
+
+    @Query("SELECT pd FROM PayrollDetail pd " +
+           "JOIN FETCH pd.employee " +
+           "JOIN FETCH pd.payrollRun pr " +
+           "WHERE pd.employee.id = :employeeId " +
+           "AND pr.payrollPeriod LIKE :yearPrefix% " +
+           "AND pr.status = 'POSTED' " +
+           "ORDER BY pr.payrollPeriod")
+    List<PayrollDetail> findPostedByEmployeeIdAndYear(@Param("employeeId") UUID employeeId, @Param("yearPrefix") String yearPrefix);
+
+    @Query("SELECT DISTINCT pd.employee.id FROM PayrollDetail pd " +
+           "JOIN pd.payrollRun pr " +
+           "WHERE pr.payrollPeriod LIKE :yearPrefix% " +
+           "AND pr.status = 'POSTED'")
+    List<UUID> findEmployeeIdsWithPostedPayrollInYear(@Param("yearPrefix") String yearPrefix);
 }

@@ -1,13 +1,18 @@
 package com.artivisi.accountingfinance.controller;
 
+import com.artivisi.accountingfinance.entity.PayrollDetail;
 import com.artivisi.accountingfinance.entity.PayrollRun;
 import com.artivisi.accountingfinance.entity.PayrollStatus;
+import com.artivisi.accountingfinance.service.PayrollReportService;
 import com.artivisi.accountingfinance.service.PayrollService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -29,9 +35,11 @@ import java.util.UUID;
 public class PayrollController {
 
     private final PayrollService payrollService;
+    private final PayrollReportService payrollReportService;
 
-    public PayrollController(PayrollService payrollService) {
+    public PayrollController(PayrollService payrollService, PayrollReportService payrollReportService) {
         this.payrollService = payrollService;
+        this.payrollReportService = payrollReportService;
     }
 
     @GetMapping
@@ -201,6 +209,166 @@ public class PayrollController {
         }
 
         return "redirect:/payroll";
+    }
+
+    // ==================== REPORT ENDPOINTS ====================
+
+    @GetMapping("/{id}/export/summary/pdf")
+    public ResponseEntity<byte[]> exportSummaryPdf(@PathVariable UUID id) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        byte[] pdf = payrollReportService.exportPayrollSummaryToPdf(payrollRun, details);
+        String filename = "rekap-gaji-" + payrollRun.getPayrollPeriod() + ".pdf";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdf);
+    }
+
+    @GetMapping("/{id}/export/summary/excel")
+    public ResponseEntity<byte[]> exportSummaryExcel(@PathVariable UUID id) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        byte[] excel = payrollReportService.exportPayrollSummaryToExcel(payrollRun, details);
+        String filename = "rekap-gaji-" + payrollRun.getPayrollPeriod() + ".xlsx";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            .body(excel);
+    }
+
+    @GetMapping("/{id}/export/pph21/pdf")
+    public ResponseEntity<byte[]> exportPph21Pdf(@PathVariable UUID id) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        byte[] pdf = payrollReportService.exportPph21ReportToPdf(payrollRun, details);
+        String filename = "pph21-" + payrollRun.getPayrollPeriod() + ".pdf";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdf);
+    }
+
+    @GetMapping("/{id}/export/pph21/excel")
+    public ResponseEntity<byte[]> exportPph21Excel(@PathVariable UUID id) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        byte[] excel = payrollReportService.exportPph21ReportToExcel(payrollRun, details);
+        String filename = "pph21-" + payrollRun.getPayrollPeriod() + ".xlsx";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            .body(excel);
+    }
+
+    @GetMapping("/{id}/export/bpjs/pdf")
+    public ResponseEntity<byte[]> exportBpjsPdf(@PathVariable UUID id) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        byte[] pdf = payrollReportService.exportBpjsReportToPdf(payrollRun, details);
+        String filename = "bpjs-" + payrollRun.getPayrollPeriod() + ".pdf";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdf);
+    }
+
+    @GetMapping("/{id}/export/bpjs/excel")
+    public ResponseEntity<byte[]> exportBpjsExcel(@PathVariable UUID id) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        byte[] excel = payrollReportService.exportBpjsReportToExcel(payrollRun, details);
+        String filename = "bpjs-" + payrollRun.getPayrollPeriod() + ".xlsx";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+            .body(excel);
+    }
+
+    @GetMapping("/{id}/payslip/{employeeId}/pdf")
+    public ResponseEntity<byte[]> exportPayslipPdf(@PathVariable UUID id, @PathVariable UUID employeeId) {
+        PayrollRun payrollRun = payrollService.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Payroll tidak ditemukan"));
+        List<PayrollDetail> details = payrollService.getPayrollDetails(id);
+
+        PayrollDetail detail = details.stream()
+            .filter(d -> d.getEmployee().getId().equals(employeeId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Data karyawan tidak ditemukan dalam payroll ini"));
+
+        byte[] pdf = payrollReportService.generatePayslipPdf(payrollRun, detail);
+        String filename = "slip-gaji-" + detail.getEmployeeId() + "-" + payrollRun.getPayrollPeriod() + ".pdf";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdf);
+    }
+
+    // ==================== BUKTI POTONG 1721-A1 ====================
+
+    @GetMapping("/bukti-potong")
+    public String buktiPotongPage(
+            @RequestParam(required = false) Integer year,
+            Model model
+    ) {
+        int selectedYear = year != null ? year : java.time.Year.now().getValue();
+        List<UUID> employeeIds = payrollService.getEmployeesWithPayrollInYear(selectedYear);
+
+        List<PayrollService.YearlyPayrollSummary> summaries = employeeIds.stream()
+            .map(empId -> {
+                try {
+                    return payrollService.getYearlyPayrollSummary(empId, selectedYear);
+                } catch (IllegalArgumentException e) {
+                    return null;
+                }
+            })
+            .filter(s -> s != null)
+            .toList();
+
+        // Generate year options (current year and 2 previous years)
+        int currentYear = java.time.Year.now().getValue();
+        List<Integer> yearOptions = java.util.List.of(currentYear, currentYear - 1, currentYear - 2);
+
+        model.addAttribute("summaries", summaries);
+        model.addAttribute("selectedYear", selectedYear);
+        model.addAttribute("yearOptions", yearOptions);
+        model.addAttribute("currentPage", "payroll");
+
+        return "payroll/bukti-potong";
+    }
+
+    @GetMapping("/bukti-potong/{employeeId}/{year}/pdf")
+    public ResponseEntity<byte[]> exportBuktiPotongPdf(
+            @PathVariable UUID employeeId,
+            @PathVariable int year
+    ) {
+        var summary = payrollService.getYearlyPayrollSummary(employeeId, year);
+        byte[] pdf = payrollReportService.generateBuktiPotong1721A1(summary);
+        String filename = "1721-A1-" + summary.employee().getEmployeeId() + "-" + year + ".pdf";
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(pdf);
     }
 
     private java.util.List<RiskClassOption> getRiskClasses() {

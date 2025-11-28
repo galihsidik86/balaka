@@ -139,6 +139,82 @@ Di halaman daftar payroll:
 2. Pilih status: All, Draft, Calculated, Approved, Posted, Cancelled
 3. Klik periode untuk melihat detail
 
+## Laporan Payroll
+
+Sistem menyediakan beberapa laporan untuk setiap payroll yang sudah dikalkulasi.
+
+### Mengakses Laporan
+
+1. Buka halaman detail payroll
+2. Klik tombol **Export** (dropdown)
+3. Pilih jenis laporan dan format (PDF/Excel)
+
+### Jenis Laporan
+
+#### Rekap Gaji
+
+Ringkasan gaji seluruh karyawan dalam satu periode:
+- NIK dan Nama
+- Gaji Bruto
+- BPJS Karyawan
+- PPh 21
+- Total Potongan
+- Gaji Neto
+
+#### Laporan PPh 21
+
+Laporan untuk pelaporan SPT Masa PPh 21:
+- Nama dan NPWP karyawan
+- Penghasilan Bruto
+- PPh 21 yang dipotong
+- Status PTKP
+
+#### Laporan BPJS
+
+Laporan iuran BPJS untuk penyetoran:
+- BPJS Kesehatan (perusahaan dan karyawan)
+- BPJS Ketenagakerjaan (JKK, JKM, JHT, JP)
+- Total iuran perusahaan dan karyawan
+
+### Slip Gaji
+
+Slip gaji individual untuk setiap karyawan:
+
+1. Di tabel rincian karyawan, klik ikon download pada kolom **Slip Gaji**
+2. PDF akan terunduh dengan rincian:
+   - Informasi karyawan
+   - Pendapatan
+   - Potongan (BPJS, PPh 21)
+   - Gaji bersih
+
+## Bukti Potong 1721-A1
+
+Bukti Potong PPh 21 (1721-A1) adalah dokumen tahunan yang wajib diberikan kepada karyawan.
+
+### Mengakses Bukti Potong
+
+1. Klik menu **Payroll** > **Bukti Potong 1721-A1**
+2. Pilih tahun pajak
+3. Klik **Download PDF** untuk karyawan yang diinginkan
+
+### Isi Bukti Potong
+
+Dokumen berisi:
+- Identitas pemotong pajak (perusahaan)
+- Identitas penerima penghasilan (karyawan)
+- Penghasilan bruto setahun
+- Biaya jabatan (5%, maks Rp 6.000.000)
+- Iuran pensiun/JHT/JP
+- Penghasilan neto
+- PTKP
+- PKP
+- PPh 21 terutang dan yang telah dipotong
+
+### Waktu Pemberian
+
+- Bukti potong wajib diberikan paling lambat 1 bulan setelah tahun pajak berakhir
+- Karyawan menggunakan dokumen ini untuk SPT Tahunan PPh Orang Pribadi
+
 ## Tips
 
 ### Sebelum Memulai Payroll

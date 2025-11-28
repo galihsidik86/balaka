@@ -310,4 +310,67 @@ public class PayrollService {
         payrollRunRepository.delete(payrollRun);
         log.info("Deleted payroll run for period {}", payrollRun.getPayrollPeriod());
     }
+
+    /**
+     * Get yearly payroll details for an employee (for 1721-A1).
+     */
+    @Transactional(readOnly = true)
+    public List<PayrollDetail> getYearlyPayrollDetails(UUID employeeId, int year) {
+        return payrollDetailRepository.findPostedByEmployeeIdAndYear(employeeId, String.valueOf(year));
+    }
+
+    /**
+     * Get employees with posted payroll in a given year.
+     */
+    @Transactional(readOnly = true)
+    public List<UUID> getEmployeesWithPayrollInYear(int year) {
+        return payrollDetailRepository.findEmployeeIdsWithPostedPayrollInYear(String.valueOf(year));
+    }
+
+    /**
+     * Calculate yearly totals for an employee (for 1721-A1).
+     */
+    @Transactional(readOnly = true)
+    public YearlyPayrollSummary getYearlyPayrollSummary(UUID employeeId, int year) {
+        List<PayrollDetail> details = getYearlyPayrollDetails(employeeId, year);
+        if (details.isEmpty()) {
+            throw new IllegalArgumentException("Tidak ada data payroll untuk karyawan ini di tahun " + year);
+        }
+
+        Employee employee = details.get(0).getEmployee();
+        BigDecimal totalGross = details.stream()
+            .map(PayrollDetail::getGrossSalary)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalPph21 = details.stream()
+            .map(PayrollDetail::getPph21)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalBpjsEmployee = details.stream()
+            .map(PayrollDetail::getTotalEmployeeBpjs)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new YearlyPayrollSummary(
+            employee,
+            year,
+            details.size(),
+            totalGross,
+            totalBpjsEmployee,
+            totalPph21
+        );
+    }
+
+    /**
+     * Record for yearly payroll summary.
+     */
+    public record YearlyPayrollSummary(
+        Employee employee,
+        int year,
+        int monthCount,
+        BigDecimal totalGross,
+        BigDecimal totalBpjsEmployee,
+        BigDecimal totalPph21
+    ) {
+        public BigDecimal getNetIncome() {
+            return totalGross.subtract(totalBpjsEmployee).subtract(totalPph21);
+        }
+    }
 }

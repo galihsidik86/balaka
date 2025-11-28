@@ -345,12 +345,15 @@
 - [x] Functional tests (18 Playwright tests)
 - [x] User manual (64-payroll-processing.md, updated 92-referensi-template.md)
 
-### 3.6 Payroll Reports
-- [ ] Payroll summary report
-- [ ] PPh 21 monthly report (for tax filing)
-- [ ] BPJS report (for contribution submission)
-- [ ] Payslip PDF generation (per employee)
-- [ ] Bukti Potong PPh 21 PDF (1721-A1, for employee annual tax filing)
+### 3.6 Payroll Reports ✅
+- [x] Payroll summary report (PDF/Excel)
+- [x] PPh 21 monthly report (PDF/Excel, for tax filing)
+- [x] BPJS report (PDF/Excel, for contribution submission)
+- [x] Payslip PDF generation (per employee)
+- [x] Bukti Potong PPh 21 PDF (1721-A1, for employee annual tax filing)
+- [x] Export dropdown in payroll detail UI
+- [x] Bukti Potong page with year filter and employee list
+- [x] User manual update (64-payroll-processing.md)
 
 ### 3.7 User Management & Role-Based Access Control
 - [ ] Reorganize sidebar menu (group related features, add icons, collapsible sections)
