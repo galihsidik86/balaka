@@ -221,11 +221,13 @@
 
 - name: Display B2 connection test result
   ansible.builtin.debug:
-    msg: |
-      B2 Connection Test:
-      Return code: {{ b2_connection_test.rc }}
-      Stdout: {{ b2_connection_test.stdout }}
-      Stderr: {{ b2_connection_test.stderr }}
+    msg:
+      - ""
+      - "B2 Connection Test:"
+      - "Return code: {{ b2_connection_test.rc }}"
+      - "Stdout: {{ b2_connection_test.stdout }}"
+      - "Stderr: {{ b2_connection_test.stderr }}"
+      - ""
   when: backup_b2_enabled | default(false)
 
 - name: Run test B2 upload
@@ -284,15 +286,13 @@
 
 - name: Display backup verification results
   ansible.builtin.debug:
-    msg: |
-
-      ┌──────────────────────────────────────────────────────────────────┐
-      │ BACKUP VERIFICATION COMPLETE                                     │
-      ├──────────────────────────────────────────────────────────────────┤
-      │ Local backup:    ✓ {{ backup_files.files[0].path | basename }}
-      │ B2 upload:       {{ '✓ Verified' if backup_b2_enabled | default(false) else '○ Disabled' }}
-      │ Google Drive:    {{ '✓ Verified' if backup_gdrive_enabled | default(false) else '○ Disabled' }}
-      └──────────────────────────────────────────────────────────────────┘
+    msg:
+      - ""
+      - "BACKUP VERIFICATION COMPLETE:"
+      - "  Local backup:    ✓ {{ backup_files.files[0].path | basename }}"
+      - "  B2 upload:       {{ '✓ Verified' if backup_b2_enabled | default(false) else '○ Disabled' }}"
+      - "  Google Drive:    {{ '✓ Verified' if backup_gdrive_enabled | default(false) else '○ Disabled' }}"
+      - ""
 
 # Telegram verification (if enabled)
 - name: Verify Telegram bot token
@@ -334,21 +334,18 @@
 
 - name: Display Telegram verification results
   ansible.builtin.debug:
-    msg: |
-
-      ┌──────────────────────────────────────────────────────────────────┐
-      │ TELEGRAM VERIFICATION                                            │
-      ├──────────────────────────────────────────────────────────────────┤
-      │ Bot token:       {{ '✓ Valid (@' + telegram_bot_info.json.result.username + ')' if telegram_bot_info.status | default(0) == 200 else '✗ Invalid' }}
-      │ Test message:    {{ '✓ Sent to chat ' + telegram_admin_chat_id | string if telegram_send_result.status | default(0) == 200 else '✗ Failed or no chat ID' }}
-      └──────────────────────────────────────────────────────────────────┘
-
-      📱 MANUAL VERIFICATION REQUIRED (after app JAR deployed):
-      1. Deploy the app JAR and restart the service
-      2. Register webhook: curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://{{ app_domain }}/api/telegram/webhook"
-      3. Open Telegram and send a photo to @{{ telegram_bot_username | default('YourBot') }}
-      4. Check the app: the receipt should appear in Transaksi > Dokumen
-
+    msg:
+      - ""
+      - "TELEGRAM VERIFICATION:"
+      - "  Bot token:       {{ '✓ Valid (@' + telegram_bot_info.json.result.username + ')' if telegram_bot_info.status | default(0) == 200 else '✗ Invalid' }}"
+      - "  Test message:    {{ '✓ Sent to chat ' + telegram_admin_chat_id | string if telegram_send_result.status | default(0) == 200 else '✗ Failed or no chat ID' }}"
+      - ""
+      - "MANUAL VERIFICATION REQUIRED (after app JAR deployed):"
+      - "  1. Deploy the app JAR and restart the service"
+      - "  2. Register webhook: curl -X POST \"https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://{{ app_domain }}/api/telegram/webhook\""
+      - "  3. Open Telegram and send a photo to @{{ telegram_bot_username | default('YourBot') }}"
+      - "  4. Check the app: the receipt should appear in Transaksi > Dokumen"
+      - ""
   when: telegram_bot_enabled | default(false)
 
 - name: Fail if Telegram bot token is invalid
@@ -384,16 +381,13 @@
 
 - name: Display Google Cloud Vision verification results
   ansible.builtin.debug:
-    msg: |
-
-      ┌──────────────────────────────────────────────────────────────────┐
-      │ GOOGLE CLOUD VISION VERIFICATION                                 │
-      ├──────────────────────────────────────────────────────────────────┤
-      │ Credentials file: {{ '✓ Found' if gcp_credentials_file.stat.exists | default(false) else '✗ Missing' }}
-      │ JSON valid:       {{ '✓ Valid' if gcp_json_valid.rc | default(1) == 0 else '✗ Invalid' }}
-      └──────────────────────────────────────────────────────────────────┘
-
-      📋 OCR will be used when uploading receipts via Telegram.
-      Test by sending a receipt photo after app is running.
-
+    msg:
+      - ""
+      - "GOOGLE CLOUD VISION VERIFICATION:"
+      - "  Credentials file: {{ '✓ Found' if gcp_credentials_file.stat.exists | default(false) else '✗ Missing' }}"
+      - "  JSON valid:       {{ '✓ Valid' if gcp_json_valid.rc | default(1) == 0 else '✗ Invalid' }}"
+      - ""
+      - "OCR will be used when uploading receipts via Telegram."
+      - "Test by sending a receipt photo after app is running."
+      - ""
   when: google_cloud_vision_enabled | default(false)
