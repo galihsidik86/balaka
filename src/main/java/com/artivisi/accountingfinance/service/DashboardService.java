@@ -213,4 +213,29 @@ public class DashboardService {
             String accountName,
             BigDecimal balance
     ) {}
+
+    public List<RecentTransaction> getRecentTransactions(int limit) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusMonths(1);
+        
+        return transactionRepository.findPostedTransactionsBetweenDates(startDate, endDate)
+                .stream()
+                .limit(limit)
+                .map(tx -> new RecentTransaction(
+                        tx.getTransactionNumber(),
+                        tx.getDescription(),
+                        tx.getTransactionDate(),
+                        tx.getAmount(),
+                        tx.getJournalTemplate().getCategory()
+                ))
+                .toList();
+    }
+
+    public record RecentTransaction(
+            String transactionNumber,
+            String description,
+            LocalDate transactionDate,
+            BigDecimal amount,
+            com.artivisi.accountingfinance.enums.TemplateCategory category
+    ) {}
 }

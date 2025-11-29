@@ -45,6 +45,21 @@ public class DashboardController {
         return "fragments/dashboard-kpis :: kpis";
     }
 
+    @GetMapping("/dashboard/cash-bank-breakdown")
+    public String cashBankBreakdown(Model model) {
+        var kpi = dashboardService.calculateKPIs(YearMonth.now());
+        model.addAttribute("cashBankItems", kpi.cashBankItems());
+        model.addAttribute("totalCash", kpi.cashBalance());
+        return "fragments/cash-bank-breakdown :: breakdown";
+    }
+
+    @GetMapping("/dashboard/recent-transactions")
+    public String recentTransactions(Model model) {
+        var transactions = dashboardService.getRecentTransactions(10);
+        model.addAttribute("transactions", transactions);
+        return "fragments/recent-transactions :: transactions";
+    }
+
     @GetMapping("/login")
     @PreAuthorize("permitAll()")
     public String login() {
