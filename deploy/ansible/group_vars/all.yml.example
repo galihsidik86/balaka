@@ -24,6 +24,21 @@ java_heap_max: "1024m"
 ssl_enabled: true
 ssl_email: "admin@artivisi.com"
 
+# Document Storage Configuration (optional)
+# document_max_file_size: 10485760  # 10MB
+# document_allowed_types: "image/jpeg,image/png,image/gif,application/pdf"
+
+# Telegram Bot Configuration (optional)
+telegram_bot_enabled: false
+# telegram_bot_token: "your-bot-token"
+# telegram_bot_username: "YourBotUsername"
+# telegram_webhook_url: "https://akunting.artivisi.id/api/telegram/webhook"
+# telegram_webhook_secret: "your-webhook-secret"
+
+# Google Cloud Vision Configuration (optional - for receipt OCR)
+google_cloud_vision_enabled: false
+# google_cloud_credentials_path: "/opt/accounting-finance/gcp-credentials.json"
+
 # Backup Configuration
 backup_cron_enabled: true
 backup_cron_hour: "2"

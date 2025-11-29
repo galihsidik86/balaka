@@ -20,3 +20,29 @@ spring.thymeleaf.cache=true
 # Logging
 logging.file.name=/var/log/{{ app_name }}/application.log
 logging.level.root=INFO
+
+# Document storage configuration
+app.storage.documents.path=/opt/{{ app_name }}/documents
+app.storage.documents.max-file-size={{ document_max_file_size | default(10485760) }}
+app.storage.documents.allowed-types={{ document_allowed_types | default('image/jpeg,image/png,image/gif,application/pdf') }}
+
+# Telegram Bot configuration
+telegram.bot.enabled={{ telegram_bot_enabled | default(false) }}
+{% if telegram_bot_token is defined %}
+telegram.bot.token={{ telegram_bot_token }}
+{% endif %}
+{% if telegram_bot_username is defined %}
+telegram.bot.username={{ telegram_bot_username }}
+{% endif %}
+{% if telegram_webhook_url is defined %}
+telegram.bot.webhook.url={{ telegram_webhook_url }}
+{% endif %}
+{% if telegram_webhook_secret is defined %}
+telegram.bot.webhook.secret-token={{ telegram_webhook_secret }}
+{% endif %}
+
+# Google Cloud Vision configuration
+google.cloud.vision.enabled={{ google_cloud_vision_enabled | default(false) }}
+{% if google_cloud_credentials_path is defined %}
+google.cloud.vision.credentials-path={{ google_cloud_credentials_path }}
+{% endif %}
