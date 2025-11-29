@@ -88,10 +88,10 @@
                 </div>
 
                 <!-- Roles -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                <fieldset>
+                    <legend class="block text-sm font-medium text-gray-700 mb-2">
                         Roles <span class="text-red-500">*</span>
-                    </label>
+                    </legend>
                     <p class="text-xs text-gray-500 mb-3">Pilih minimal satu role. Pengguna mendapat gabungan hak akses dari semua role yang dipilih.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         <div th:each="role : ${roles}" class="relative">
@@ -107,7 +107,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </fieldset>
 
                 <!-- Submit Buttons -->
                 <div class="flex justify-end gap-3 pt-4 border-t">
