@@ -284,7 +284,8 @@
 					</formats>
 					<nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
 					<suppressionFile>dependency-check-suppressions.xml</suppressionFile>
-					<ossIndexEnabled>false</ossIndexEnabled>
+					<!-- Disable Sonatype OSS Index to avoid 401/rate limit errors -->
+					<ossIndexAnalyzerEnabled>false</ossIndexAnalyzerEnabled>
 				</configuration>
 			</plugin>
 			<!-- SpotBugs with FindSecBugs for static security analysis
