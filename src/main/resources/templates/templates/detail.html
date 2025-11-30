@@ -149,78 +149,72 @@
 
                     <!-- Template Lines -->
                     <div class="divide-y divide-gray-100">
-                        <!-- Line 1: Debit -->
-                        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center">
+                        <!-- Dynamic Template Lines -->
+                        <div th:each="line, lineStat : ${template.lines}" class="grid grid-cols-12 gap-4 px-6 py-4 items-center">
                             <div class="col-span-1">
-                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600">1</span>
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600" 
+                                      th:text="${lineStat.index + 1}">1</span>
                             </div>
                             <div class="col-span-3">
                                 <div class="flex items-center">
-                                    <span class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center mr-2">
-                                        <span class="text-xs font-mono text-blue-600">?</span>
+                                    <!-- Dynamic Account Indicator (?) -->
+                                    <span th:if="${line.account == null}"
+                                          class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center mr-2">
+                                        <span class="text-xs font-mono text-blue-600 font-bold">?</span>
+                                    </span>
+                                    <!-- Fixed Account Code -->
+                                    <span th:if="${line.account != null}"
+                                          class="w-8 h-8 rounded bg-green-50 flex items-center justify-center mr-2">
+                                        <span class="text-xs font-mono text-green-600" th:text="${line.account.accountCode}">1.1.01</span>
                                     </span>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">Bank/Kas</p>
-                                        <p class="text-xs text-gray-500">Dipilih saat input transaksi</p>
+                                        <!-- Account Name or Hint -->
+                                        <p class="text-sm font-medium text-gray-900" 
+                                           th:text="${line.account != null} ? ${line.account.accountName} : (${line.accountHint != null and !#strings.isEmpty(line.accountHint)} ? ${line.accountHint} : 'Pilih saat transaksi')">
+                                            Account Name
+                                        </p>
+                                        <p class="text-xs text-gray-500" 
+                                           th:text="${line.account != null} ? 'Akun tetap' : 'Dipilih saat input transaksi'">
+                                            Status
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-span-2">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                    Debit
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium"
+                                      th:classappend="${line.position.name() == 'DEBIT'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                      th:text="${line.position.name() == 'DEBIT'} ? 'Debit' : 'Kredit'">
+                                    Position
                                 </span>
                             </div>
                             <div class="col-span-3">
-                                <code class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-700">amount</code>
-                                <p class="text-xs text-gray-500 mt-1">= Jumlah transaksi</p>
+                                <code class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-700" th:text="${line.formula}">amount</code>
                             </div>
                             <div class="col-span-3">
-                                <p class="text-sm text-gray-600">Penerimaan dari klien</p>
-                            </div>
-                        </div>
-
-                        <!-- Line 2: Credit -->
-                        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center">
-                            <div class="col-span-1">
-                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600">2</span>
-                            </div>
-                            <div class="col-span-3">
-                                <div class="flex items-center">
-                                    <span class="w-8 h-8 rounded bg-green-50 flex items-center justify-center mr-2">
-                                        <span class="text-xs font-mono text-green-600">4.1.01</span>
-                                    </span>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Pendapatan Jasa Konsultasi</p>
-                                        <p class="text-xs text-gray-500">Akun tetap</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-span-2">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                    Kredit
-                                </span>
-                            </div>
-                            <div class="col-span-3">
-                                <code class="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-700">amount</code>
-                                <p class="text-xs text-gray-500 mt-1">= Jumlah transaksi</p>
-                            </div>
-                            <div class="col-span-3">
-                                <p class="text-sm text-gray-600">Pendapatan jasa</p>
+                                <p class="text-sm text-gray-600" th:text="${line.description}" th:if="${line.description != null and !#strings.isEmpty(line.description)}">Description</p>
+                                <span class="text-xs text-gray-400" th:unless="${line.description != null and !#strings.isEmpty(line.description)}">-</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Balance Preview -->
-                    <div class="px-6 py-4 bg-accent-50 border-t border-accent-200">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center text-sm text-accent-700">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Template Valid: Total Debit = Total Kredit
+
+                    <!-- Balance Summary -->
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-gray-600">Total baris: <span class="font-medium text-gray-900" th:text="${template.lines.size()}">0</span></span>
+                                <span class="text-gray-400">|</span>
+                                <span class="text-gray-600">Debit: <span class="font-medium text-gray-900" th:text="${template.lines.stream().filter(l -> l.position.name() == 'DEBIT').count()}">0</span></span>
+                                <span class="text-gray-600">Kredit: <span class="font-medium text-gray-900" th:text="${template.lines.stream().filter(l -> l.position.name() == 'CREDIT').count()}">0</span></span>
                             </div>
-                            <div class="text-xs text-accent-600">
-                                Debit: <code class="font-mono">amount</code> | Kredit: <code class="font-mono">amount</code>
+                            <div class="flex items-center text-xs">
+                                <span th:if="${template.lines.stream().filter(l -> l.position.name() == 'DEBIT').count() > 0 and template.lines.stream().filter(l -> l.position.name() == 'CREDIT').count() > 0}" 
+                                      class="flex items-center text-accent-700">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Struktur valid
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -263,22 +257,13 @@
                 </div>
 
                 <div class="p-6">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="text-center">
-                            <p class="text-3xl font-bold text-primary-600">15</p>
+                            <p class="text-3xl font-bold text-primary-600" th:text="${template.usageCount != null} ? ${template.usageCount} : '0'">0</p>
                             <p class="text-xs text-gray-500 mt-1">Total penggunaan</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-3xl font-bold text-gray-900">3</p>
-                            <p class="text-xs text-gray-500 mt-1">Bulan ini</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-3xl font-bold text-gray-900">Rp 75jt</p>
-                            <p class="text-xs text-gray-500 mt-1">Total nominal</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-3xl font-bold text-gray-900">2 jam</p>
-                            <p class="text-xs text-gray-500 mt-1">Terakhir digunakan</p>
+                            <p class="text-sm text-gray-500 mt-4">Statistik detail akan tersedia di versi mendatang</p>
                         </div>
                     </div>
                 </div>
@@ -294,19 +279,21 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div>
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">ID Template</p>
-                            <p class="text-sm text-gray-900 mt-1 font-mono">income-consulting</p>
+                            <p class="text-sm text-gray-900 mt-1 font-mono break-all" th:text="${template.id}">ID</p>
                         </div>
                         <div>
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Versi</p>
-                            <p class="text-sm text-gray-900 mt-1">1.0</p>
+                            <p class="text-sm text-gray-900 mt-1" th:text="${template.version}">1</p>
                         </div>
                         <div>
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat</p>
-                            <p class="text-sm text-gray-900 mt-1">Sistem (preload)</p>
+                            <p class="text-sm text-gray-900 mt-1" 
+                               th:text="${template.createdAt != null} ? ${#temporals.format(template.createdAt, 'dd MMM yyyy HH:mm')} : '-'">-</p>
                         </div>
                         <div>
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Terakhir Diubah</p>
-                            <p class="text-sm text-gray-900 mt-1">-</p>
+                            <p class="text-sm text-gray-900 mt-1" 
+                               th:text="${template.updatedAt != null} ? ${#temporals.format(template.updatedAt, 'dd MMM yyyy HH:mm')} : '-'">-</p>
                         </div>
                     </div>
                 </div>
