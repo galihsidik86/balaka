@@ -1,0 +1,40 @@
+package com.artivisi.accountingfinance.config;
+
+import com.artivisi.accountingfinance.service.telegram.TelegramApiClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.support.RestClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
+
+/**
+ * Configuration for Telegram Bot API HTTP client using Spring's HTTP Interface.
+ */
+@Configuration
+@ConditionalOnProperty(prefix = "telegram", name = "enabled", havingValue = "true")
+public class TelegramApiConfig {
+
+    private final TelegramConfig telegramConfig;
+
+    public TelegramApiConfig(TelegramConfig telegramConfig) {
+        this.telegramConfig = telegramConfig;
+    }
+
+    @Bean
+    public RestClient telegramRestClient() {
+        String baseUrl = String.format("https://api.telegram.org/bot%s", telegramConfig.getToken());
+        
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .build();
+    }
+
+    @Bean
+    public TelegramApiClient telegramApiClient(RestClient telegramRestClient) {
+        RestClientAdapter adapter = RestClientAdapter.create(telegramRestClient);
+        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
+        
+        return factory.createClient(TelegramApiClient.class);
+    }
+}

@@ -86,12 +86,7 @@
 			<artifactId>google-cloud-vision</artifactId>
 			<version>3.55.0</version>
 		</dependency>
-		<!-- Telegram Bot API -->
-		<dependency>
-			<groupId>org.telegram</groupId>
-			<artifactId>telegrambots-client</artifactId>
-			<version>8.0.0</version>
-		</dependency>
+		<!-- Telegram Bot API: Using custom DTOs and Spring HTTP Interface instead of telegrambots-client -->
 
 		<dependency>
 			<groupId>org.postgresql</groupId>

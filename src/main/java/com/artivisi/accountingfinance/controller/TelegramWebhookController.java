@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.config.TelegramConfig;
+import com.artivisi.accountingfinance.dto.telegram.TelegramUpdate;
 import com.artivisi.accountingfinance.service.TelegramBotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/telegram")
@@ -29,7 +30,7 @@ public class TelegramWebhookController {
 
     @PostMapping("/webhook")
     public ResponseEntity<String> onUpdate(
-            @RequestBody Update update,
+            @RequestBody TelegramUpdate update,
             @RequestHeader(value = "X-Telegram-Bot-Api-Secret-Token", required = false) String secretToken) {
 
         // Validate secret token if configured

@@ -1,27 +1,25 @@
 package com.artivisi.accountingfinance.service;
 
 import com.artivisi.accountingfinance.config.TelegramConfig;
+import com.artivisi.accountingfinance.dto.telegram.TelegramMessage;
+import com.artivisi.accountingfinance.dto.telegram.TelegramPhotoSize;
+import com.artivisi.accountingfinance.dto.telegram.TelegramUpdate;
 import com.artivisi.accountingfinance.entity.Document;
 import com.artivisi.accountingfinance.entity.DraftTransaction;
 import com.artivisi.accountingfinance.entity.TelegramUserLink;
 import com.artivisi.accountingfinance.entity.User;
 import com.artivisi.accountingfinance.repository.TelegramUserLinkRepository;
 import com.artivisi.accountingfinance.repository.UserRepository;
+import com.artivisi.accountingfinance.service.telegram.TelegramApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.File;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,40 +40,41 @@ public class TelegramBotService {
     private final UserRepository userRepository;
     private final DraftTransactionService draftService;
     private final DocumentService documentService;
-    private TelegramClient telegramClient;
+    private TelegramApiClient telegramApiClient;
 
     public TelegramBotService(
             TelegramConfig config,
             TelegramUserLinkRepository telegramLinkRepository,
             UserRepository userRepository,
             DraftTransactionService draftService,
-            DocumentService documentService) {
+            DocumentService documentService,
+            @Autowired(required = false) TelegramApiClient telegramApiClient) {
         this.config = config;
         this.telegramLinkRepository = telegramLinkRepository;
         this.userRepository = userRepository;
         this.draftService = draftService;
         this.documentService = documentService;
+        this.telegramApiClient = telegramApiClient;
 
-        if (config.isEnabled() && config.getToken() != null && !config.getToken().isBlank()) {
-            this.telegramClient = new OkHttpTelegramClient(config.getToken());
+        if (config.isEnabled() && telegramApiClient != null) {
             log.info("Telegram bot initialized: @{}", config.getUsername());
         }
     }
 
-    public void handleUpdate(Update update) {
-        if (!config.isEnabled() || telegramClient == null) {
+    public void handleUpdate(TelegramUpdate update) {
+        if (!config.isEnabled() || telegramApiClient == null) {
             log.warn("Telegram bot is not enabled");
             return;
         }
 
-        if (!update.hasMessage()) {
+        TelegramMessage message = update.getMessage();
+        if (message == null) {
             return;
         }
 
-        var message = update.getMessage();
-        Long chatId = message.getChatId();
+        Long chatId = message.getChat().getId();
         Long userId = message.getFrom().getId();
-        String username = message.getFrom().getUserName();
+        String username = message.getFrom().getUsername();
         String firstName = message.getFrom().getFirstName();
 
         log.info("Received message from {} ({})", username, userId);
@@ -210,7 +209,7 @@ public class TelegramBotService {
     }
 
     private void handlePhotoMessage(Long chatId, Long userId, String username,
-                                     List<PhotoSize> photos, Integer messageId,
+                                     List<TelegramPhotoSize> photos, Long messageId,
                                      Optional<TelegramUserLink> linkOpt) {
         if (linkOpt.isEmpty()) {
             sendMessage(chatId, "Akun belum terhubung. Ketik /start untuk mulai.");
@@ -221,7 +220,7 @@ public class TelegramBotService {
         String appUsername = link.getUser().getUsername();
 
         // Get largest photo
-        PhotoSize photo = photos.stream()
+        TelegramPhotoSize photo = photos.stream()
                 .max(Comparator.comparingInt(p -> p.getWidth() * p.getHeight()))
                 .orElse(null);
 
@@ -242,7 +241,7 @@ public class TelegramBotService {
 
             // Process receipt
             DraftTransaction draft = draftService.processReceiptImage(
-                    photoBytes, document, chatId, messageId.longValue(), appUsername);
+                    photoBytes, document, chatId, messageId, appUsername);
 
             // Send result
             sendProcessingResult(chatId, draft);
@@ -254,9 +253,14 @@ public class TelegramBotService {
     }
 
     private byte[] downloadPhoto(String fileId) throws Exception {
-        GetFile getFile = new GetFile(fileId);
-        File file = telegramClient.execute(getFile);
-        String filePath = file.getFilePath();
+        var getFileRequest = new TelegramApiClient.GetFileRequest(fileId);
+        var fileResponse = telegramApiClient.getFile(getFileRequest);
+        
+        if (!Boolean.TRUE.equals(fileResponse.ok()) || fileResponse.result() == null) {
+            throw new RuntimeException("Failed to get file info: " + fileResponse.description());
+        }
+        
+        String filePath = fileResponse.result().file_path();
         String fileUrl = String.format("https://api.telegram.org/file/bot%s/%s", config.getToken(), filePath);
 
         try (InputStream is = URI.create(fileUrl).toURL().openStream()) {
@@ -295,15 +299,15 @@ public class TelegramBotService {
     }
 
     private void sendMessage(Long chatId, String text) {
-        if (telegramClient == null) return;
+        if (telegramApiClient == null) return;
 
         try {
-            SendMessage message = SendMessage.builder()
-                    .chatId(chatId)
-                    .text(text)
-                    .parseMode("Markdown")
-                    .build();
-            telegramClient.execute(message);
+            var request = new TelegramApiClient.SendMessageRequest(chatId, text, "Markdown");
+            var response = telegramApiClient.sendMessage(request);
+            
+            if (!Boolean.TRUE.equals(response.ok())) {
+                log.error("Failed to send message to {}: {}", chatId, response.description());
+            }
         } catch (Exception e) {
             log.error("Failed to send message to {}: {}", chatId, e.getMessage());
         }
@@ -339,7 +343,7 @@ public class TelegramBotService {
     }
 
     public boolean isEnabled() {
-        return config.isEnabled() && telegramClient != null;
+        return config.isEnabled() && telegramApiClient != null;
     }
 
     public String getBotUsername() {
