@@ -358,20 +358,20 @@
 # Google Cloud Vision verification (if enabled)
 - name: Check Google Cloud credentials file exists
   ansible.builtin.stat:
-    path: "{{ google_cloud_credentials_path }}"
+    path: "/opt/{{ app_name }}/gcp-credentials.json"
   register: gcp_credentials_file
   when: google_cloud_vision_enabled | default(false)
 
 - name: Fail if Google Cloud credentials file missing
   ansible.builtin.fail:
-    msg: "Google Cloud credentials file not found at {{ google_cloud_credentials_path }}. Upload the service account JSON file."
+    msg: "Google Cloud credentials file not found at /opt/{{ app_name }}/gcp-credentials.json. Upload the service account JSON file."
   when:
     - google_cloud_vision_enabled | default(false)
     - not gcp_credentials_file.stat.exists | default(false)
 
 - name: Validate Google Cloud credentials JSON
   ansible.builtin.command:
-    cmd: "python3 -c \"import json; json.load(open('{{ google_cloud_credentials_path }}'))\""
+    cmd: "python3 -c \"import json; json.load(open('/opt/{{ app_name }}/gcp-credentials.json'))\""
   register: gcp_json_valid
   when:
     - google_cloud_vision_enabled | default(false)

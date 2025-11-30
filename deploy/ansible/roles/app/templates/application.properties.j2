@@ -27,7 +27,7 @@ app.storage.documents.max-file-size={{ document_max_file_size | default(10485760
 app.storage.documents.allowed-types={{ document_allowed_types | default('image/jpeg,image/png,image/gif,application/pdf') }}
 
 # Telegram Bot configuration
-telegram.bot.enabled={{ telegram_bot_enabled | default(false) }}
+telegram.bot.enabled={{ telegram_bot_enabled | default(false) | lower }}
 {% if telegram_bot_token is defined %}
 telegram.bot.token={{ telegram_bot_token }}
 {% endif %}
@@ -42,7 +42,7 @@ telegram.bot.webhook.secret-token={{ telegram_webhook_secret }}
 {% endif %}
 
 # Google Cloud Vision configuration
-google.cloud.vision.enabled={{ google_cloud_vision_enabled | default(false) }}
-{% if google_cloud_credentials_path is defined %}
-google.cloud.vision.credentials-path={{ google_cloud_credentials_path }}
+google.cloud.vision.enabled={{ google_cloud_vision_enabled | default(false) | lower }}
+{% if google_cloud_vision_enabled | default(false) %}
+google.cloud.vision.credentials-path=/opt/{{ app_name }}/gcp-credentials.json
 {% endif %}

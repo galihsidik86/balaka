@@ -92,6 +92,10 @@ app_domain: "your-domain.com"  # or IP address
 ssl_enabled: true
 ssl_email: "your-email@example.com"
 
+# Optional: Enable Google Cloud Vision for Receipt OCR
+google_cloud_vision_enabled: true
+google_cloud_credentials_file: "~/gcp-credentials/accounting-app-credentials.json"
+
 # Optional: Enable Backblaze B2 Backup
 backup_b2_enabled: true
 backup_b2_account_id: "0123456789abcdef0123"  # Your B2 Account ID (NOT email)
@@ -116,6 +120,42 @@ backup_b2_bucket: "your-bucket-name"
    - `backup_b2_application_key` = the **applicationKey** (the long secret)
 
 **Note:** The **Account ID** and **Application Key ID** (keyID) are typically the SAME value in B2. You only need the Account ID shown at the top of the App Keys page.
+
+#### Setting up Google Cloud Vision
+
+To enable receipt OCR with Google Cloud Vision:
+
+1. **Create GCP Project**:
+   - Go to https://console.cloud.google.com
+   - Create a new project (e.g., "accounting-ocr")
+
+2. **Enable Vision API**:
+   - In the project, go to APIs & Services → Library
+   - Search for "Cloud Vision API"
+   - Click Enable
+
+3. **Create Service Account**:
+   - Go to IAM & Admin → Service Accounts
+   - Click "Create Service Account"
+   - Name: "accounting-ocr-service"
+   - Click "Create and Continue"
+   - Grant role: "Cloud Vision API User"
+   - Click "Done"
+
+4. **Download JSON Key**:
+   - Click on the service account you just created
+   - Go to "Keys" tab
+   - Click "Add Key" → "Create new key"
+   - Choose "JSON" format
+   - Save the file (e.g., `~/gcp-credentials/accounting-app-credentials.json`)
+
+5. **Configure in Ansible**:
+   ```yaml
+   google_cloud_vision_enabled: true
+   google_cloud_credentials_file: "~/gcp-credentials/accounting-app-credentials.json"
+   ```
+
+6. **Deploy**: Ansible will automatically upload the credentials to the server
 
 ### 3. Run Initial Setup
 

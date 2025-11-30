@@ -41,8 +41,15 @@ telegram_bot_enabled: false
 # telegram_admin_chat_id: "123456789"  # Your Telegram user ID for deployment notifications
 
 # Google Cloud Vision Configuration (optional - for receipt OCR)
+# To enable:
+# 1. Create a GCP project and enable Vision API
+# 2. Create a service account with Vision API permissions
+# 3. Download the JSON key file
+# 4. Save it locally (e.g., ~/gcp-credentials/accounting-app-credentials.json)
+# 5. Set google_cloud_credentials_file to your local file path
+# 6. Ansible will automatically upload it to the server
 google_cloud_vision_enabled: false
-# google_cloud_credentials_path: "/opt/accounting-finance/gcp-credentials.json"
+# google_cloud_credentials_file: "~/gcp-credentials/accounting-app-credentials.json"
 
 # Backup Configuration
 backup_cron_enabled: true

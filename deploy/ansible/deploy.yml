@@ -52,6 +52,26 @@
         state: stopped
       ignore_errors: yes
 
+    - name: Upload Google Cloud credentials (if enabled and file exists locally)
+      ansible.builtin.copy:
+        src: "{{ google_cloud_credentials_file }}"
+        dest: "/opt/{{ app_name }}/gcp-credentials.json"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0600"
+      when:
+        - google_cloud_vision_enabled | default(false)
+        - google_cloud_credentials_file is defined
+        - google_cloud_credentials_file | length > 0
+
+    - name: Update application configuration
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/roles/app/templates/application.properties.j2"
+        dest: "/opt/{{ app_name }}/application.properties"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0600"
+
     - name: Copy jar to server
       ansible.builtin.copy:
         src: "{{ jar_files.files[0].path }}"
