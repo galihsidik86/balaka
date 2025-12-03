@@ -130,6 +130,35 @@
                         </div>
                     </div>
 
+                    <!-- Inventori Group -->
+                    <div x-data="{ open: $persist(false).as('nav-inventori') }" class="space-y-1">
+                        <button id="nav-group-inventori" @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                Inventori
+                            </span>
+                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 space-y-1">
+                            <a sec:authorize="hasAuthority('INVENTORY_VIEW')" id="nav-inventory-stock" th:href="@{/inventory/stock}"
+                               th:classappend="${#strings.equals(currentPage, 'inventory-stock')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Stok Barang</a>
+                            <a sec:authorize="hasAuthority('INVENTORY_VIEW')" id="nav-inventory-transactions" th:href="@{/inventory/transactions}"
+                               th:classappend="${#strings.equals(currentPage, 'inventory-transactions')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Transaksi Stok</a>
+                            <a sec:authorize="hasAuthority('PRODUCT_VIEW')" id="nav-products" th:href="@{/products}"
+                               th:classappend="${#strings.equals(currentPage, 'products')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Produk</a>
+                            <a sec:authorize="hasAuthority('PRODUCT_VIEW')" id="nav-product-categories" th:href="@{/products/categories}"
+                               th:classappend="${#strings.equals(currentPage, 'product-categories')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Kategori Produk</a>
+                        </div>
+                    </div>
+
                     <!-- Payroll Group -->
                     <div x-data="{ open: $persist(false).as('nav-payroll') }" class="space-y-1">
                         <button id="nav-group-payroll" @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors">
@@ -372,6 +401,35 @@
                             <a sec:authorize="hasAuthority('INVOICE_VIEW')" th:href="@{/invoices}"
                                th:classappend="${#strings.equals(currentPage, 'invoices')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
                                class="flex items-center px-3 py-2 rounded-lg transition-colors">Invoice</a>
+                        </div>
+                    </div>
+
+                    <!-- Inventori Group -->
+                    <div x-data="{ open: false }" class="space-y-1">
+                        <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                Inventori
+                            </span>
+                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 space-y-1">
+                            <a sec:authorize="hasAuthority('INVENTORY_VIEW')" th:href="@{/inventory/stock}"
+                               th:classappend="${#strings.equals(currentPage, 'inventory-stock')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Stok Barang</a>
+                            <a sec:authorize="hasAuthority('INVENTORY_VIEW')" th:href="@{/inventory/transactions}"
+                               th:classappend="${#strings.equals(currentPage, 'inventory-transactions')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Transaksi Stok</a>
+                            <a sec:authorize="hasAuthority('PRODUCT_VIEW')" th:href="@{/products}"
+                               th:classappend="${#strings.equals(currentPage, 'products')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Produk</a>
+                            <a sec:authorize="hasAuthority('PRODUCT_VIEW')" th:href="@{/products/categories}"
+                               th:classappend="${#strings.equals(currentPage, 'product-categories')} ? 'bg-primary-600' : 'hover:bg-primary-600'"
+                               class="flex items-center px-3 py-2 rounded-lg transition-colors">Kategori Produk</a>
                         </div>
                     </div>
 

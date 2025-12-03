@@ -1,0 +1,194 @@
+package com.artivisi.accountingfinance.controller;
+
+import com.artivisi.accountingfinance.entity.CostingMethod;
+import com.artivisi.accountingfinance.entity.Product;
+import com.artivisi.accountingfinance.entity.ProductCategory;
+import com.artivisi.accountingfinance.repository.ChartOfAccountRepository;
+import com.artivisi.accountingfinance.security.Permission;
+import com.artivisi.accountingfinance.service.ProductCategoryService;
+import com.artivisi.accountingfinance.service.ProductService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
+import java.util.UUID;
+
+@Controller
+@RequestMapping("/products")
+@RequiredArgsConstructor
+@PreAuthorize("hasAuthority('" + Permission.PRODUCT_VIEW + "')")
+public class ProductController {
+
+    private final ProductService productService;
+    private final ProductCategoryService categoryService;
+    private final ChartOfAccountRepository chartOfAccountRepository;
+
+    @GetMapping
+    public String list(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) Boolean active,
+            @RequestHeader(value = "HX-Request", required = false) String hxRequest,
+            @PageableDefault(size = 20) Pageable pageable,
+            Model model) {
+
+        Page<Product> products = productService.findByFilters(search, categoryId, active, pageable);
+
+        model.addAttribute("products", products);
+        model.addAttribute("search", search);
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("active", active);
+        model.addAttribute("categories", categoryService.findAllActive());
+        model.addAttribute("currentPage", "products");
+
+        if ("true".equals(hxRequest)) {
+            return "products/fragments/product-table :: table";
+        }
+
+        return "products/list";
+    }
+
+    @GetMapping("/new")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_CREATE + "')")
+    public String newForm(Model model) {
+        Product product = new Product();
+        product.setCostingMethod(CostingMethod.WEIGHTED_AVERAGE);
+        product.setTrackInventory(true);
+        product.setActive(true);
+
+        model.addAttribute("product", product);
+        addFormAttributes(model);
+        return "products/form";
+    }
+
+    @PostMapping("/new")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_CREATE + "')")
+    public String create(
+            @Valid @ModelAttribute("product") Product product,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            addFormAttributes(model);
+            return "products/form";
+        }
+
+        try {
+            productService.create(product);
+            redirectAttributes.addFlashAttribute("successMessage", "Produk berhasil ditambahkan");
+            return "redirect:/products";
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Kode")) {
+                bindingResult.rejectValue("code", "duplicate", e.getMessage());
+            } else {
+                bindingResult.reject("error", e.getMessage());
+            }
+            addFormAttributes(model);
+            return "products/form";
+        }
+    }
+
+    @GetMapping("/{id}")
+    public String detail(@PathVariable UUID id, Model model) {
+        Product product = productService.findByIdWithDetails(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produk tidak ditemukan: " + id));
+
+        model.addAttribute("product", product);
+        model.addAttribute("currentPage", "products");
+        return "products/detail";
+    }
+
+    @GetMapping("/{id}/edit")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
+    public String editForm(@PathVariable UUID id, Model model) {
+        Product product = productService.findByIdWithDetails(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produk tidak ditemukan: " + id));
+
+        model.addAttribute("product", product);
+        addFormAttributes(model);
+        return "products/form";
+    }
+
+    @PostMapping("/{id}/edit")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
+    public String update(
+            @PathVariable UUID id,
+            @Valid @ModelAttribute("product") Product product,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            addFormAttributes(model);
+            return "products/form";
+        }
+
+        try {
+            productService.update(id, product);
+            redirectAttributes.addFlashAttribute("successMessage", "Produk berhasil diubah");
+            return "redirect:/products";
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Kode")) {
+                bindingResult.rejectValue("code", "duplicate", e.getMessage());
+            } else {
+                bindingResult.reject("error", e.getMessage());
+            }
+            addFormAttributes(model);
+            return "products/form";
+        }
+    }
+
+    @PostMapping("/{id}/activate")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
+    public String activate(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        productService.activate(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Produk berhasil diaktifkan");
+        return "redirect:/products";
+    }
+
+    @PostMapping("/{id}/deactivate")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
+    public String deactivate(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        productService.deactivate(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Produk berhasil dinonaktifkan");
+        return "redirect:/products";
+    }
+
+    @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAuthority('" + Permission.PRODUCT_DELETE + "')")
+    public String delete(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        try {
+            productService.delete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Produk berhasil dihapus");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/products";
+    }
+
+    private void addFormAttributes(Model model) {
+        List<ProductCategory> categories = categoryService.findAllActive();
+        model.addAttribute("categories", categories);
+        model.addAttribute("costingMethods", CostingMethod.values());
+        model.addAttribute("inventoryAccounts", chartOfAccountRepository.findAssetAccounts());
+        model.addAttribute("cogsAccounts", chartOfAccountRepository.findExpenseAccounts());
+        model.addAttribute("salesAccounts", chartOfAccountRepository.findRevenueAccounts());
+        model.addAttribute("currentPage", "products");
+    }
+}

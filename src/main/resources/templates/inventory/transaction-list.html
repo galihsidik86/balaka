@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/main}"
+      lang="id">
+<head>
+    <title>Transaksi Persediaan</title>
+</head>
+<body>
+    <h1 id="page-title" layout:fragment="page-title">Transaksi Persediaan</h1>
+
+    <div layout:fragment="content" class="space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
+                <!-- Filter Product -->
+                <select name="productId"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        hx-get="/inventory/transactions/table"
+                        hx-trigger="change"
+                        hx-target="#transaction-table"
+                        hx-swap="outerHTML"
+                        hx-include="[name='transactionType'], [name='startDate'], [name='endDate']">
+                    <option value="" th:selected="${productId == null}">Semua Produk</option>
+                    <option th:each="p : ${products}"
+                            th:value="${p.id}"
+                            th:text="${p.code + ' - ' + p.name}"
+                            th:selected="${productId != null && productId.equals(p.id)}">Produk</option>
+                </select>
+
+                <!-- Filter Type -->
+                <select name="transactionType"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        hx-get="/inventory/transactions/table"
+                        hx-trigger="change"
+                        hx-target="#transaction-table"
+                        hx-swap="outerHTML"
+                        hx-include="[name='productId'], [name='startDate'], [name='endDate']">
+                    <option value="" th:selected="${transactionType == null}">Semua Tipe</option>
+                    <option th:each="t : ${transactionTypes}"
+                            th:value="${t.name()}"
+                            th:text="${t.displayName}"
+                            th:selected="${transactionType != null && transactionType.name().equals(t.name())}">Tipe</option>
+                </select>
+
+                <!-- Date Range -->
+                <input type="date"
+                       name="startDate"
+                       th:value="${startDate}"
+                       class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                       hx-get="/inventory/transactions/table"
+                       hx-trigger="change"
+                       hx-target="#transaction-table"
+                       hx-swap="outerHTML"
+                       hx-include="[name='productId'], [name='transactionType'], [name='endDate']">
+                <span class="text-gray-500">s/d</span>
+                <input type="date"
+                       name="endDate"
+                       th:value="${endDate}"
+                       class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                       hx-get="/inventory/transactions/table"
+                       hx-trigger="change"
+                       hx-target="#transaction-table"
+                       hx-swap="outerHTML"
+                       hx-include="[name='productId'], [name='transactionType'], [name='startDate']">
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a th:href="@{/inventory/stock}" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Stok Barang
+                </a>
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Transaksi Baru
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-transition
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                        <a sec:authorize="hasAuthority('INVENTORY_PURCHASE')" th:href="@{/inventory/purchase}"
+                           class="block px-4 py-2 hover:bg-gray-50 text-gray-700">
+                            Pembelian
+                        </a>
+                        <a sec:authorize="hasAuthority('INVENTORY_SALE')" th:href="@{/inventory/sale}"
+                           class="block px-4 py-2 hover:bg-gray-50 text-gray-700">
+                            Penjualan
+                        </a>
+                        <a sec:authorize="hasAuthority('INVENTORY_ADJUST')" th:href="@{/inventory/adjustment}"
+                           class="block px-4 py-2 hover:bg-gray-50 text-gray-700">
+                            Penyesuaian
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Table -->
+        <div class="bg-white rounded-lg shadow">
+            <th:block th:insert="~{inventory/fragments/transaction-table :: transactionTable}"/>
+        </div>
+    </div>
+</body>
+</html>

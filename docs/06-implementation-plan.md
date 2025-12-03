@@ -16,7 +16,7 @@
 | **2** | Tax Compliance + Cash Flow | ✅ Complete |
 | **3** | Payroll + RBAC + Self-Service | ✅ Complete |
 | **4** | Fixed Assets | ✅ Complete |
-| **5** | Inventory & Production | ⏳ Not Started |
+| **5** | Inventory & Production | 🔄 In Progress |
 | **6** | API Foundation | ⏳ Not Started |
 | **7** | Online Seller Support | ⏳ Not Started |
 | **8** | Bank Reconciliation | ⏳ Not Started |
@@ -482,28 +482,32 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
 - Create system templates for: inventory purchase, inventory adjustment, sales with COGS, production transfer
 - Keep inventory-specific logic in InventoryService, core accounting remains generic
 
-### 5.1 Product Master
-- [ ] Product entity (code, name, unit, category, costing_method)
-- [ ] ProductCategory entity (code, name, parent)
-- [ ] CostingMethod enum (FIFO, WEIGHTED_AVERAGE)
-- [ ] Product CRUD UI (list with search/category filter, form, detail)
-- [ ] Category CRUD UI
-- [ ] Link to inventory accounts (raw material, finished goods)
-- [ ] Functional tests
+### 5.1 Product Master ✅
+- [x] Product entity (code, name, unit, category, costing_method)
+- [x] ProductCategory entity (code, name, parent)
+- [x] CostingMethod enum (FIFO, WEIGHTED_AVERAGE)
+- [x] Product CRUD UI (list with search/category filter, form, detail)
+- [x] Category CRUD UI
+- [x] Link to inventory accounts (raw material, finished goods)
+- [x] Functional tests (22 Playwright tests)
 - [ ] User manual
 
-### 5.2 Inventory Transactions
-- [ ] InventoryTransaction entity (product, quantity, unit_cost, type, reference)
-- [ ] InventoryTransactionType enum (PURCHASE, SALE, ADJUSTMENT, PRODUCTION_IN, PRODUCTION_OUT)
-- [ ] InventoryBalance entity (product, quantity, total_cost, average_cost)
-- [ ] InventoryService (record transaction, update balance, calculate cost)
-- [ ] FIFO cost calculation
-- [ ] Weighted average cost calculation
-- [ ] Purchase recording UI (product, quantity, unit cost)
-- [ ] Sale recording UI (product, quantity → auto-calculate COGS)
-- [ ] Adjustment UI (stock opname corrections)
+### 5.2 Inventory Transactions ✅
+- [x] InventoryTransaction entity (product, quantity, unit_cost, type, reference)
+- [x] InventoryTransactionType enum (PURCHASE, SALE, ADJUSTMENT_IN/OUT, PRODUCTION_IN/OUT, TRANSFER_IN/OUT)
+- [x] InventoryBalance entity (product, quantity, total_cost, average_cost)
+- [x] InventoryFifoLayer entity (for FIFO cost tracking)
+- [x] InventoryService (record transaction, update balance, calculate cost)
+- [x] FIFO cost calculation
+- [x] Weighted average cost calculation
+- [x] Purchase recording UI (product, date, quantity, unit cost)
+- [x] Sale recording UI (product, date, quantity → auto-calculate COGS)
+- [x] Adjustment UI (stock opname corrections)
+- [x] Stock list with low stock alerts
+- [x] Stock card per product (transaction history, FIFO layers)
+- [x] Transaction list with filters
+- [x] Functional tests (13 Playwright tests)
 - [ ] Auto-journal generation via templates
-- [ ] Functional tests
 - [ ] User manual
 
 ### 5.3 Inventory Reports

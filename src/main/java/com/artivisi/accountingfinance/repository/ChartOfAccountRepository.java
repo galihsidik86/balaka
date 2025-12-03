@@ -53,4 +53,8 @@ public interface ChartOfAccountRepository extends JpaRepository<ChartOfAccount, 
     @Query("SELECT c FROM ChartOfAccount c WHERE c.active = true AND c.isHeader = false AND " +
            "c.accountType = 'EXPENSE' ORDER BY c.accountCode")
     List<ChartOfAccount> findExpenseAccounts();
+
+    @Query("SELECT c FROM ChartOfAccount c WHERE c.active = true AND c.isHeader = false AND " +
+           "c.accountType = 'REVENUE' ORDER BY c.accountCode")
+    List<ChartOfAccount> findRevenueAccounts();
 }

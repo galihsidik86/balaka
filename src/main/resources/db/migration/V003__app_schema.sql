@@ -1011,3 +1011,123 @@ CREATE TABLE depreciation_entries (
 CREATE INDEX idx_depreciation_entries_asset ON depreciation_entries(id_fixed_asset);
 CREATE INDEX idx_depreciation_entries_status ON depreciation_entries(status);
 CREATE INDEX idx_depreciation_entries_period_end ON depreciation_entries(period_end);
+
+-- ============================================
+-- Product Categories (Phase 5 - Inventory)
+-- ============================================
+
+CREATE TABLE product_categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(20) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
+    id_parent UUID REFERENCES product_categories(id),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_product_categories_code ON product_categories(code);
+CREATE INDEX idx_product_categories_parent ON product_categories(id_parent);
+CREATE INDEX idx_product_categories_active ON product_categories(active);
+
+-- ============================================
+-- Products (Phase 5 - Inventory)
+-- ============================================
+
+CREATE TABLE products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(200) NOT NULL,
+    description VARCHAR(500),
+    unit VARCHAR(20) NOT NULL,
+    id_category UUID REFERENCES product_categories(id),
+    costing_method VARCHAR(20) NOT NULL DEFAULT 'WEIGHTED_AVERAGE',
+    track_inventory BOOLEAN NOT NULL DEFAULT TRUE,
+    minimum_stock DECIMAL(15, 4),
+    selling_price DECIMAL(19, 2),
+    id_inventory_account UUID REFERENCES chart_of_accounts(id),
+    id_cogs_account UUID REFERENCES chart_of_accounts(id),
+    id_sales_account UUID REFERENCES chart_of_accounts(id),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_costing_method CHECK (costing_method IN ('FIFO', 'WEIGHTED_AVERAGE'))
+);
+
+CREATE INDEX idx_products_code ON products(code);
+CREATE INDEX idx_products_name ON products(name);
+CREATE INDEX idx_products_category ON products(id_category);
+CREATE INDEX idx_products_active ON products(active);
+
+-- ============================================
+-- Inventory Balances (Phase 5 - Inventory)
+-- ============================================
+
+CREATE TABLE inventory_balances (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_product UUID NOT NULL UNIQUE REFERENCES products(id),
+    quantity DECIMAL(15, 4) NOT NULL DEFAULT 0,
+    total_cost DECIMAL(19, 2) NOT NULL DEFAULT 0,
+    average_cost DECIMAL(19, 4) NOT NULL DEFAULT 0,
+    last_transaction_date TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_inventory_balances_product ON inventory_balances(id_product);
+
+-- ============================================
+-- Inventory Transactions (Phase 5 - Inventory)
+-- ============================================
+
+CREATE TABLE inventory_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_product UUID NOT NULL REFERENCES products(id),
+    transaction_type VARCHAR(20) NOT NULL,
+    transaction_date DATE NOT NULL,
+    quantity DECIMAL(15, 4) NOT NULL,
+    unit_cost DECIMAL(19, 4) NOT NULL,
+    total_cost DECIMAL(19, 2) NOT NULL,
+    unit_price DECIMAL(19, 4),
+    reference_number VARCHAR(100),
+    notes VARCHAR(500),
+    id_transaction UUID REFERENCES transactions(id),
+    balance_after DECIMAL(15, 4) NOT NULL,
+    total_cost_after DECIMAL(19, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(100),
+
+    CONSTRAINT chk_inv_transaction_type CHECK (transaction_type IN (
+        'PURCHASE', 'SALE', 'ADJUSTMENT_IN', 'ADJUSTMENT_OUT',
+        'PRODUCTION_IN', 'PRODUCTION_OUT', 'TRANSFER_IN', 'TRANSFER_OUT'
+    ))
+);
+
+CREATE INDEX idx_inv_transactions_product ON inventory_transactions(id_product);
+CREATE INDEX idx_inv_transactions_type ON inventory_transactions(transaction_type);
+CREATE INDEX idx_inv_transactions_date ON inventory_transactions(transaction_date);
+CREATE INDEX idx_inv_transactions_reference ON inventory_transactions(reference_number);
+
+-- ============================================
+-- Inventory FIFO Layers (Phase 5 - Inventory)
+-- ============================================
+
+CREATE TABLE inventory_fifo_layers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_product UUID NOT NULL REFERENCES products(id),
+    id_inventory_transaction UUID NOT NULL REFERENCES inventory_transactions(id),
+    layer_date DATE NOT NULL,
+    original_quantity DECIMAL(15, 4) NOT NULL,
+    remaining_quantity DECIMAL(15, 4) NOT NULL,
+    unit_cost DECIMAL(19, 4) NOT NULL,
+    fully_consumed BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_fifo_layers_product ON inventory_fifo_layers(id_product);
+CREATE INDEX idx_fifo_layers_date ON inventory_fifo_layers(layer_date);
+CREATE INDEX idx_fifo_layers_consumed ON inventory_fifo_layers(fully_consumed);

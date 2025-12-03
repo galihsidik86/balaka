@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/main}"
+      lang="id">
+<head>
+    <title>Stok Barang</title>
+</head>
+<body>
+    <h1 id="page-title" layout:fragment="page-title">Stok Barang</h1>
+
+    <div layout:fragment="content" class="space-y-6">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Total Nilai Persediaan</div>
+                <div class="text-2xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(totalInventoryValue, 0, 'COMMA', 0, 'POINT')}">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Produk dengan Stok</div>
+                <div class="text-2xl font-bold text-green-600" th:text="${balances.totalElements}">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Stok Minimum</div>
+                <div class="text-2xl font-bold" th:classappend="${#lists.size(lowStockProducts) > 0} ? 'text-red-600' : 'text-gray-600'" th:text="${#lists.size(lowStockProducts)}">0</div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div th:if="${#lists.size(lowStockProducts) > 0}" class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center gap-2 text-red-800 font-semibold mb-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                Produk di bawah stok minimum
+            </div>
+            <div class="space-y-1">
+                <div th:each="item : ${lowStockProducts}" class="flex justify-between text-sm">
+                    <span th:text="${item.product.code + ' - ' + item.product.name}">Product</span>
+                    <span class="text-red-600" th:text="${item.quantity + ' ' + item.product.unit + ' (min: ' + item.product.minimumStock + ')'}">Qty</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
+                <!-- Search -->
+                <div class="relative">
+                    <input type="text"
+                           id="search-input"
+                           name="search"
+                           th:value="${search}"
+                           placeholder="Cari produk..."
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                           hx-get="/inventory/stock/table"
+                           hx-trigger="keyup changed delay:300ms"
+                           hx-target="#stock-table"
+                           hx-swap="outerHTML"
+                           hx-include="[name='categoryId']">
+                    <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+
+                <!-- Filter Category -->
+                <select name="categoryId"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                        hx-get="/inventory/stock/table"
+                        hx-trigger="change"
+                        hx-target="#stock-table"
+                        hx-swap="outerHTML"
+                        hx-include="[name='search']">
+                    <option value="" th:selected="${categoryId == null}">Semua Kategori</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.code + ' - ' + cat.name}"
+                            th:selected="${categoryId != null && categoryId.equals(cat.id)}">Kategori</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a th:href="@{/inventory/transactions}" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Riwayat Transaksi
+                </a>
+            </div>
+        </div>
+
+        <!-- Stock Table -->
+        <div class="bg-white rounded-lg shadow">
+            <th:block th:insert="~{inventory/fragments/stock-table :: stockTable}"/>
+        </div>
+    </div>
+</body>
+</html>

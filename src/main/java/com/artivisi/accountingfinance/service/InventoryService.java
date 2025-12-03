@@ -1,0 +1,400 @@
+package com.artivisi.accountingfinance.service;
+
+import com.artivisi.accountingfinance.entity.CostingMethod;
+import com.artivisi.accountingfinance.entity.InventoryBalance;
+import com.artivisi.accountingfinance.entity.InventoryFifoLayer;
+import com.artivisi.accountingfinance.entity.InventoryTransaction;
+import com.artivisi.accountingfinance.entity.InventoryTransactionType;
+import com.artivisi.accountingfinance.entity.Product;
+import com.artivisi.accountingfinance.repository.InventoryBalanceRepository;
+import com.artivisi.accountingfinance.repository.InventoryFifoLayerRepository;
+import com.artivisi.accountingfinance.repository.InventoryTransactionRepository;
+import com.artivisi.accountingfinance.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class InventoryService {
+
+    private final InventoryTransactionRepository transactionRepository;
+    private final InventoryBalanceRepository balanceRepository;
+    private final InventoryFifoLayerRepository fifoLayerRepository;
+    private final ProductRepository productRepository;
+
+    /**
+     * Record an inventory purchase.
+     * Creates a new FIFO layer and updates balance.
+     */
+    @Transactional
+    public InventoryTransaction recordPurchase(UUID productId, LocalDate date,
+                                                BigDecimal quantity, BigDecimal unitCost,
+                                                String referenceNumber, String notes) {
+        Product product = getProduct(productId);
+        return recordInboundTransaction(product, InventoryTransactionType.PURCHASE, date,
+                quantity, unitCost, referenceNumber, notes);
+    }
+
+    /**
+     * Record an inventory sale.
+     * Calculates COGS based on product's costing method.
+     */
+    @Transactional
+    public InventoryTransaction recordSale(UUID productId, LocalDate date,
+                                           BigDecimal quantity, BigDecimal unitPrice,
+                                           String referenceNumber, String notes) {
+        Product product = getProduct(productId);
+        return recordOutboundTransaction(product, InventoryTransactionType.SALE, date,
+                quantity, unitPrice, referenceNumber, notes);
+    }
+
+    /**
+     * Record an inventory adjustment (increase).
+     */
+    @Transactional
+    public InventoryTransaction recordAdjustmentIn(UUID productId, LocalDate date,
+                                                    BigDecimal quantity, BigDecimal unitCost,
+                                                    String referenceNumber, String notes) {
+        Product product = getProduct(productId);
+        return recordInboundTransaction(product, InventoryTransactionType.ADJUSTMENT_IN, date,
+                quantity, unitCost, referenceNumber, notes);
+    }
+
+    /**
+     * Record an inventory adjustment (decrease).
+     */
+    @Transactional
+    public InventoryTransaction recordAdjustmentOut(UUID productId, LocalDate date,
+                                                     BigDecimal quantity,
+                                                     String referenceNumber, String notes) {
+        Product product = getProduct(productId);
+        return recordOutboundTransaction(product, InventoryTransactionType.ADJUSTMENT_OUT, date,
+                quantity, null, referenceNumber, notes);
+    }
+
+    /**
+     * Record production output (finished goods).
+     */
+    @Transactional
+    public InventoryTransaction recordProductionIn(UUID productId, LocalDate date,
+                                                    BigDecimal quantity, BigDecimal unitCost,
+                                                    String referenceNumber, String notes) {
+        Product product = getProduct(productId);
+        return recordInboundTransaction(product, InventoryTransactionType.PRODUCTION_IN, date,
+                quantity, unitCost, referenceNumber, notes);
+    }
+
+    /**
+     * Record production consumption (raw materials).
+     */
+    @Transactional
+    public InventoryTransaction recordProductionOut(UUID productId, LocalDate date,
+                                                     BigDecimal quantity,
+                                                     String referenceNumber, String notes) {
+        Product product = getProduct(productId);
+        return recordOutboundTransaction(product, InventoryTransactionType.PRODUCTION_OUT, date,
+                quantity, null, referenceNumber, notes);
+    }
+
+    /**
+     * Get or create inventory balance for a product.
+     */
+    @Transactional
+    public InventoryBalance getOrCreateBalance(Product product) {
+        return balanceRepository.findByProduct(product)
+                .orElseGet(() -> {
+                    InventoryBalance balance = new InventoryBalance();
+                    balance.setProduct(product);
+                    balance.setQuantity(BigDecimal.ZERO);
+                    balance.setTotalCost(BigDecimal.ZERO);
+                    balance.setAverageCost(BigDecimal.ZERO);
+                    return balanceRepository.save(balance);
+                });
+    }
+
+    /**
+     * Get current stock quantity for a product.
+     */
+    public BigDecimal getCurrentStock(UUID productId) {
+        return balanceRepository.findByProductId(productId)
+                .map(InventoryBalance::getQuantity)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * Get current average cost for a product.
+     */
+    public BigDecimal getCurrentAverageCost(UUID productId) {
+        return balanceRepository.findByProductId(productId)
+                .map(InventoryBalance::getAverageCost)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * Calculate COGS for a quantity based on product's costing method.
+     */
+    public BigDecimal calculateCogs(UUID productId, BigDecimal quantity) {
+        Product product = getProduct(productId);
+        if (product.getCostingMethod() == CostingMethod.FIFO) {
+            return calculateFifoCogs(productId, quantity);
+        } else {
+            return calculateWeightedAverageCogs(productId, quantity);
+        }
+    }
+
+    /**
+     * Find transactions with filters.
+     */
+    public Page<InventoryTransaction> findTransactions(UUID productId,
+                                                       InventoryTransactionType transactionType,
+                                                       LocalDate startDate,
+                                                       LocalDate endDate,
+                                                       Pageable pageable) {
+        return transactionRepository.findByFilters(productId, transactionType, startDate, endDate, pageable);
+    }
+
+    /**
+     * Get transaction by ID with product loaded.
+     */
+    public Optional<InventoryTransaction> findById(UUID id) {
+        return Optional.ofNullable(transactionRepository.findByIdWithProduct(id));
+    }
+
+    /**
+     * Get transactions for a product.
+     */
+    public List<InventoryTransaction> findByProductId(UUID productId) {
+        return transactionRepository.findByProductId(productId);
+    }
+
+    /**
+     * Find inventory balances with filters.
+     */
+    public Page<InventoryBalance> findBalances(String search, UUID categoryId, Pageable pageable) {
+        return balanceRepository.findByFilters(search, categoryId, pageable);
+    }
+
+    /**
+     * Get balance for a product.
+     */
+    public Optional<InventoryBalance> findBalanceByProductId(UUID productId) {
+        return balanceRepository.findByProductId(productId);
+    }
+
+    /**
+     * Get products below minimum stock.
+     */
+    public List<InventoryBalance> findLowStockProducts() {
+        return balanceRepository.findLowStockProducts();
+    }
+
+    /**
+     * Get FIFO layers for a product.
+     */
+    public List<InventoryFifoLayer> getFifoLayers(UUID productId) {
+        return fifoLayerRepository.findByProductId(productId);
+    }
+
+    /**
+     * Get total inventory value.
+     */
+    public BigDecimal getTotalInventoryValue() {
+        return balanceRepository.getTotalInventoryValue();
+    }
+
+    // Private helper methods
+
+    private Product getProduct(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Produk tidak ditemukan: " + productId));
+    }
+
+    private InventoryTransaction recordInboundTransaction(Product product,
+                                                          InventoryTransactionType type,
+                                                          LocalDate date,
+                                                          BigDecimal quantity,
+                                                          BigDecimal unitCost,
+                                                          String referenceNumber,
+                                                          String notes) {
+        log.info("Recording inbound {} for product {} qty {} @ {}", type, product.getCode(), quantity, unitCost);
+
+        InventoryBalance balance = getOrCreateBalance(product);
+
+        // Update balance
+        balance.addInventory(quantity, unitCost);
+        balanceRepository.save(balance);
+
+        // Create transaction
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setProduct(product);
+        transaction.setTransactionType(type);
+        transaction.setTransactionDate(date);
+        transaction.setQuantity(quantity);
+        transaction.setUnitCost(unitCost);
+        transaction.setTotalCost(quantity.multiply(unitCost));
+        transaction.setReferenceNumber(referenceNumber);
+        transaction.setNotes(notes);
+        transaction.setBalanceAfter(balance.getQuantity());
+        transaction.setTotalCostAfter(balance.getTotalCost());
+        transaction.setCreatedBy(getCurrentUsername());
+
+        transaction = transactionRepository.save(transaction);
+
+        // Create FIFO layer if product uses FIFO
+        if (product.getCostingMethod() == CostingMethod.FIFO) {
+            InventoryFifoLayer layer = new InventoryFifoLayer();
+            layer.setProduct(product);
+            layer.setInventoryTransaction(transaction);
+            layer.setLayerDate(date);
+            layer.setOriginalQuantity(quantity);
+            layer.setRemainingQuantity(quantity);
+            layer.setUnitCost(unitCost);
+            fifoLayerRepository.save(layer);
+        }
+
+        log.info("Inbound transaction recorded. New balance: {} @ avg cost {}",
+                balance.getQuantity(), balance.getAverageCost());
+
+        return transaction;
+    }
+
+    private InventoryTransaction recordOutboundTransaction(Product product,
+                                                           InventoryTransactionType type,
+                                                           LocalDate date,
+                                                           BigDecimal quantity,
+                                                           BigDecimal unitPrice,
+                                                           String referenceNumber,
+                                                           String notes) {
+        log.info("Recording outbound {} for product {} qty {}", type, product.getCode(), quantity);
+
+        InventoryBalance balance = getOrCreateBalance(product);
+
+        // Check sufficient stock
+        if (balance.getQuantity().compareTo(quantity) < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Stok tidak mencukupi untuk %s. Stok saat ini: %s, diminta: %s",
+                            product.getCode(), balance.getQuantity(), quantity));
+        }
+
+        // Calculate cost based on costing method
+        BigDecimal unitCost;
+        BigDecimal totalCost;
+
+        if (product.getCostingMethod() == CostingMethod.FIFO) {
+            totalCost = consumeFifoLayers(product, quantity);
+            unitCost = totalCost.divide(quantity, 4, RoundingMode.HALF_UP);
+        } else {
+            unitCost = balance.getAverageCost();
+            totalCost = balance.removeInventory(quantity);
+        }
+
+        // Update balance for FIFO (already done in consumeFifoLayers for weighted average)
+        if (product.getCostingMethod() == CostingMethod.FIFO) {
+            balance.setQuantity(balance.getQuantity().subtract(quantity));
+            balance.setTotalCost(balance.getTotalCost().subtract(totalCost));
+            if (balance.getQuantity().compareTo(BigDecimal.ZERO) > 0) {
+                balance.setAverageCost(balance.getTotalCost().divide(balance.getQuantity(), 4, RoundingMode.HALF_UP));
+            } else {
+                balance.setAverageCost(BigDecimal.ZERO);
+                balance.setTotalCost(BigDecimal.ZERO);
+            }
+            balance.setLastTransactionDate(LocalDateTime.now());
+        }
+        balanceRepository.save(balance);
+
+        // Create transaction
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setProduct(product);
+        transaction.setTransactionType(type);
+        transaction.setTransactionDate(date);
+        transaction.setQuantity(quantity);
+        transaction.setUnitCost(unitCost);
+        transaction.setTotalCost(totalCost);
+        transaction.setUnitPrice(unitPrice);
+        transaction.setReferenceNumber(referenceNumber);
+        transaction.setNotes(notes);
+        transaction.setBalanceAfter(balance.getQuantity());
+        transaction.setTotalCostAfter(balance.getTotalCost());
+        transaction.setCreatedBy(getCurrentUsername());
+
+        transaction = transactionRepository.save(transaction);
+
+        log.info("Outbound transaction recorded. COGS: {}, New balance: {}",
+                totalCost, balance.getQuantity());
+
+        return transaction;
+    }
+
+    private BigDecimal consumeFifoLayers(Product product, BigDecimal quantity) {
+        List<InventoryFifoLayer> layers = fifoLayerRepository.findAvailableLayers(product.getId());
+
+        BigDecimal remainingQty = quantity;
+        BigDecimal totalCost = BigDecimal.ZERO;
+
+        for (InventoryFifoLayer layer : layers) {
+            if (remainingQty.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal consumed = layer.consume(remainingQty);
+            totalCost = totalCost.add(layer.getCostForQuantity(consumed));
+            remainingQty = remainingQty.subtract(consumed);
+
+            fifoLayerRepository.save(layer);
+        }
+
+        if (remainingQty.compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalStateException(
+                    String.format("FIFO layers insufficient for %s. Missing: %s", product.getCode(), remainingQty));
+        }
+
+        return totalCost;
+    }
+
+    private BigDecimal calculateFifoCogs(UUID productId, BigDecimal quantity) {
+        List<InventoryFifoLayer> layers = fifoLayerRepository.findAvailableLayers(productId);
+
+        BigDecimal remainingQty = quantity;
+        BigDecimal totalCost = BigDecimal.ZERO;
+
+        for (InventoryFifoLayer layer : layers) {
+            if (remainingQty.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal available = layer.getRemainingQuantity();
+            BigDecimal toConsume = available.min(remainingQty);
+            totalCost = totalCost.add(layer.getCostForQuantity(toConsume));
+            remainingQty = remainingQty.subtract(toConsume);
+        }
+
+        return totalCost;
+    }
+
+    private BigDecimal calculateWeightedAverageCogs(UUID productId, BigDecimal quantity) {
+        BigDecimal avgCost = getCurrentAverageCost(productId);
+        return quantity.multiply(avgCost);
+    }
+
+    private String getCurrentUsername() {
+        try {
+            return SecurityContextHolder.getContext().getAuthentication().getName();
+        } catch (Exception e) {
+            return "system";
+        }
+    }
+}

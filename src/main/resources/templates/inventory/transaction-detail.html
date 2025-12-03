@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}"
+      lang="id">
+<head>
+    <title>Detail Transaksi Persediaan</title>
+</head>
+<body>
+    <h1 id="page-title" layout:fragment="page-title">Detail Transaksi Persediaan</h1>
+
+    <div layout:fragment="content" class="max-w-3xl space-y-6">
+        <!-- Success Message -->
+        <div th:if="${success}" class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex items-center gap-2 text-green-800">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span th:text="${success}">Success message</span>
+            </div>
+        </div>
+
+        <!-- Transaction Info Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <span class="px-3 py-1 text-sm rounded-full"
+                          th:classappend="${transaction.inbound} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                          th:text="${transaction.transactionType.displayName}">Pembelian</span>
+                </div>
+                <div class="text-sm text-gray-500" th:text="${#temporals.format(transaction.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Product Info -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Produk</h3>
+                    <a th:href="@{/inventory/stock/{id}(id=${transaction.product.id})}"
+                       class="text-lg font-semibold text-primary-600 hover:text-primary-800"
+                       th:text="${transaction.product.code + ' - ' + transaction.product.name}">PRD001 - Produk A</a>
+                </div>
+
+                <!-- Transaction Date -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Tanggal Transaksi</h3>
+                    <p class="text-lg" th:text="${#temporals.format(transaction.transactionDate, 'dd MMMM yyyy')}">01 Januari 2024</p>
+                </div>
+
+                <!-- Quantity -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Kuantitas</h3>
+                    <p class="text-lg">
+                        <span th:classappend="${transaction.inbound} ? 'text-green-600' : 'text-red-600'"
+                              th:text="${(transaction.inbound ? '+' : '-') + #numbers.formatDecimal(transaction.quantity, 0, 'COMMA', 2, 'POINT')}">+100</span>
+                        <span class="text-gray-500" th:text="${transaction.product.unit}">pcs</span>
+                    </p>
+                </div>
+
+                <!-- Unit Cost -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Harga Satuan</h3>
+                    <p class="text-lg" th:text="'Rp ' + ${#numbers.formatDecimal(transaction.unitCost, 0, 'COMMA', 2, 'POINT')}">Rp 10,000.00</p>
+                </div>
+
+                <!-- Total Cost -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Total Biaya</h3>
+                    <p class="text-xl font-bold" th:text="'Rp ' + ${#numbers.formatDecimal(transaction.totalCost, 0, 'COMMA', 0, 'POINT')}">Rp 1,000,000</p>
+                </div>
+
+                <!-- Unit Price (for sales) -->
+                <div th:if="${transaction.unitPrice != null}">
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Harga Jual</h3>
+                    <p class="text-lg" th:text="'Rp ' + ${#numbers.formatDecimal(transaction.unitPrice, 0, 'COMMA', 2, 'POINT')}">Rp 15,000.00</p>
+                </div>
+
+                <!-- Reference Number -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Nomor Referensi</h3>
+                    <p class="text-lg" th:text="${transaction.referenceNumber ?: '-'}">INV-001</p>
+                </div>
+
+                <!-- Balance After -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Saldo Setelah Transaksi</h3>
+                    <p class="text-lg">
+                        <span th:text="${#numbers.formatDecimal(transaction.balanceAfter, 0, 'COMMA', 2, 'POINT')}">200</span>
+                        <span class="text-gray-500" th:text="${transaction.product.unit}">pcs</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div th:if="${transaction.notes}" class="mt-6 pt-6 border-t">
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Catatan</h3>
+                <p class="text-gray-700" th:text="${transaction.notes}">Notes</p>
+            </div>
+
+            <!-- Created By -->
+            <div class="mt-6 pt-6 border-t text-sm text-gray-500">
+                Dibuat oleh: <span th:text="${transaction.createdBy ?: 'system'}">admin</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-4">
+            <a th:href="@{/inventory/transactions}" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Kembali ke Daftar
+            </a>
+            <a th:href="@{/inventory/stock/{id}(id=${transaction.product.id})}" class="px-4 py-2 text-primary-600 border border-primary-300 rounded-lg hover:bg-primary-50">
+                Lihat Kartu Stok
+            </a>
+        </div>
+    </div>
+</body>
+</html>
