@@ -136,4 +136,11 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, UUID
             @Param("accountId") UUID accountId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    // Fiscal year closing queries
+    @Query("SELECT COUNT(j) FROM JournalEntry j WHERE j.referenceNumber LIKE :pattern AND j.status = 'POSTED'")
+    long countByReferenceNumberLike(@Param("pattern") String pattern);
+
+    @Query("SELECT j FROM JournalEntry j WHERE j.referenceNumber LIKE :pattern ORDER BY j.referenceNumber, j.id")
+    List<JournalEntry> findByReferenceNumberLike(@Param("pattern") String pattern);
 }

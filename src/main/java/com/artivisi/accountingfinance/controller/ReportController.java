@@ -6,6 +6,8 @@ import com.artivisi.accountingfinance.service.CompanyConfigService;
 import com.artivisi.accountingfinance.service.ProjectProfitabilityService;
 import com.artivisi.accountingfinance.service.ProjectService;
 import com.artivisi.accountingfinance.service.ReportExportService;
+import com.artivisi.accountingfinance.service.DepreciationReportService;
+import com.artivisi.accountingfinance.service.FiscalYearClosingService;
 import com.artivisi.accountingfinance.service.ReportService;
 import com.artivisi.accountingfinance.service.TaxReportService;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,6 +41,8 @@ public class ReportController {
     private final ClientService clientService;
     private final CompanyConfigService companyConfigService;
     private final TaxReportService taxReportService;
+    private final DepreciationReportService depreciationReportService;
+    private final FiscalYearClosingService fiscalYearClosingService;
 
     private static final DateTimeFormatter FILE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -542,5 +549,95 @@ public class ReportController {
         model.addAttribute("company", company);
 
         return "reports/pph23-withholding-print";
+    }
+
+    // ==================== DEPRECIATION REPORT ====================
+
+    @GetMapping("/depreciation")
+    public String depreciationReport(
+            @RequestParam(required = false) Integer year,
+            Model model) {
+        model.addAttribute("currentPage", "reports");
+        model.addAttribute("reportType", "depreciation");
+
+        int reportYear = year != null ? year : LocalDate.now().getYear();
+        model.addAttribute("year", reportYear);
+        model.addAttribute("report", depreciationReportService.generateReport(reportYear));
+
+        return "reports/depreciation";
+    }
+
+    @GetMapping("/depreciation/print")
+    public String printDepreciationReport(
+            @RequestParam(required = false) Integer year,
+            Model model) {
+        int reportYear = year != null ? year : LocalDate.now().getYear();
+        CompanyConfig company = companyConfigService.getConfig();
+
+        model.addAttribute("year", reportYear);
+        model.addAttribute("report", depreciationReportService.generateReport(reportYear));
+        model.addAttribute("company", company);
+
+        return "reports/depreciation-print";
+    }
+
+    @GetMapping("/api/depreciation")
+    @ResponseBody
+    public ResponseEntity<DepreciationReportService.DepreciationReport> apiDepreciationReport(
+            @RequestParam(required = false) Integer year) {
+        int reportYear = year != null ? year : LocalDate.now().getYear();
+        return ResponseEntity.ok(depreciationReportService.generateReport(reportYear));
+    }
+
+    // ==================== FISCAL YEAR CLOSING ====================
+
+    @GetMapping("/fiscal-closing")
+    public String fiscalClosing(
+            @RequestParam(required = false) Integer year,
+            Model model) {
+        model.addAttribute("currentPage", "reports");
+        model.addAttribute("reportType", "fiscal-closing");
+
+        int closingYear = year != null ? year : LocalDate.now().getYear() - 1;
+        model.addAttribute("year", closingYear);
+        model.addAttribute("preview", fiscalYearClosingService.previewClosing(closingYear));
+
+        return "reports/fiscal-closing";
+    }
+
+    @PostMapping("/fiscal-closing/{year}/execute")
+    public String executeFiscalClosing(
+            @PathVariable int year,
+            RedirectAttributes redirectAttributes) {
+        try {
+            var entries = fiscalYearClosingService.executeClosing(year);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Jurnal penutup berhasil dibuat: " + entries.size() + " jurnal");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/reports/fiscal-closing?year=" + year;
+    }
+
+    @PostMapping("/fiscal-closing/{year}/reverse")
+    public String reverseFiscalClosing(
+            @PathVariable int year,
+            @RequestParam String reason,
+            RedirectAttributes redirectAttributes) {
+        try {
+            int count = fiscalYearClosingService.reverseClosing(year, reason);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Jurnal penutup berhasil dibatalkan: " + count + " jurnal");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/reports/fiscal-closing?year=" + year;
+    }
+
+    @GetMapping("/api/fiscal-closing/preview")
+    @ResponseBody
+    public ResponseEntity<FiscalYearClosingService.ClosingPreview> apiFiscalClosingPreview(
+            @RequestParam int year) {
+        return ResponseEntity.ok(fiscalYearClosingService.previewClosing(year));
     }
 }
