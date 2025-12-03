@@ -392,7 +392,8 @@ class PayrollReportTest extends PlaywrightTestBase {
     @Test
     @DisplayName("Should handle invalid payroll ID gracefully")
     void shouldHandleInvalidPayrollIdGracefully() {
-        page.navigate(baseUrl() + "/payroll/99999/export/summary/pdf");
+        // Use a valid UUID format that doesn't exist in the database
+        page.navigate(baseUrl() + "/payroll/00000000-0000-0000-0000-000000099999/export/summary/pdf");
 
         // Should show error page or redirect
         assertThat(page.url()).matches(".*/(error|payroll|404).*");
@@ -401,7 +402,8 @@ class PayrollReportTest extends PlaywrightTestBase {
     @Test
     @DisplayName("Should handle invalid employee ID in payslip gracefully")
     void shouldHandleInvalidEmployeeIdInPayslipGracefully() {
-        page.navigate(payrollDetailUrl + "/payslip/INVALID999/pdf");
+        // Use a valid UUID format that doesn't exist in the database
+        page.navigate(payrollDetailUrl + "/payslip/00000000-0000-0000-0000-000000099999/pdf");
 
         // Should show error page or redirect
         assertThat(page.url()).matches(".*/(error|payroll|404).*");

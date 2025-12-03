@@ -97,7 +97,7 @@ class TemplateDetailAndPreviewTest extends PlaywrightTestBase {
         page.locator("button:has-text('Preview')").click();
 
         // Wait for modal to appear
-        page.waitForSelector("#previewModal", new com.microsoft.playwright.Page.WaitForSelectorOptions().setTimeout(10000));
+        page.waitForSelector("#previewModal");
 
         // Modal should be visible
         assertThat(page.locator("#previewModal")).isVisible();

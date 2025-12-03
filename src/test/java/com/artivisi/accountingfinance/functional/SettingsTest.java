@@ -324,6 +324,130 @@ class SettingsTest extends PlaywrightTestBase {
     }
 
     @Nested
+    @DisplayName("Company Logo Upload")
+    class CompanyLogoUploadTests {
+
+        @Test
+        @DisplayName("Should display logo upload form")
+        void shouldDisplayLogoUploadForm() {
+            page.navigate(baseUrl() + "/settings");
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            // Verify logo upload section exists
+            assertThat(page.locator("text=Logo Perusahaan").count()).isGreaterThan(0);
+            assertThat(page.locator("#logoFile").isVisible()).isTrue();
+            assertThat(page.locator("button:has-text('Upload Logo')").isVisible()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should upload company logo")
+        void shouldUploadCompanyLogo() {
+            page.navigate(baseUrl() + "/settings");
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            // Create a test image file
+            java.nio.file.Path testImage = createTestImage();
+
+            // Upload the file
+            page.locator("#logoFile").setInputFiles(testImage);
+            page.locator("button:has-text('Upload Logo')").click();
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            // Verify success message
+            assertThat(page.locator("text=berhasil").count()).isGreaterThan(0);
+
+            // Verify logo preview is displayed
+            assertThat(page.locator("img[alt='Company Logo']").count()).isGreaterThan(0);
+
+            // Cleanup
+            deleteTestImage(testImage);
+        }
+
+        @Test
+        @DisplayName("Should delete company logo")
+        void shouldDeleteCompanyLogo() {
+            page.navigate(baseUrl() + "/settings");
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            // First upload a logo if none exists
+            Locator logoPreview = page.locator("img[alt='Company Logo']");
+            if (logoPreview.count() == 0) {
+                java.nio.file.Path testImage = createTestImage();
+                page.locator("#logoFile").setInputFiles(testImage);
+                page.locator("button:has-text('Upload Logo')").click();
+                page.waitForLoadState(LoadState.NETWORKIDLE);
+                deleteTestImage(testImage);
+            }
+
+            // Now delete the logo
+            page.navigate(baseUrl() + "/settings");
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            Locator deleteButton = page.locator("button:has-text('Hapus Logo')");
+            if (deleteButton.count() > 0) {
+                page.onDialog(dialog -> dialog.accept());
+                deleteButton.click();
+                page.waitForLoadState(LoadState.NETWORKIDLE);
+
+                // Verify success message
+                assertThat(page.locator("text=berhasil").count()).isGreaterThan(0);
+            }
+        }
+
+        @Test
+        @DisplayName("Should serve company logo image")
+        void shouldServeCompanyLogoImage() {
+            // First upload a logo
+            page.navigate(baseUrl() + "/settings");
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            java.nio.file.Path testImage = createTestImage();
+            page.locator("#logoFile").setInputFiles(testImage);
+            page.locator("button:has-text('Upload Logo')").click();
+            page.waitForLoadState(LoadState.NETWORKIDLE);
+
+            // Navigate to logo URL and verify it returns an image
+            var response = page.navigate(baseUrl() + "/settings/company/logo");
+            assertThat(response).isNotNull();
+            assertThat(response.status()).isEqualTo(200);
+            assertThat(response.headerValue("content-type")).startsWith("image/");
+
+            // Cleanup
+            deleteTestImage(testImage);
+        }
+
+        private java.nio.file.Path createTestImage() {
+            try {
+                java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("test-logo-", ".png");
+                // Create a minimal valid PNG file (1x1 pixel)
+                byte[] pngBytes = {
+                    (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+                    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+                    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 pixel
+                    0x08, 0x02, 0x00, 0x00, 0x00, (byte) 0x90, 0x77, 0x53, (byte) 0xDE, // 8-bit RGB
+                    0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, // IDAT chunk
+                    0x08, (byte) 0xD7, 0x63, (byte) 0xF8, 0x0F, 0x00, 0x00, 0x01, 0x01, 0x00, 0x05, 0x1B, (byte) 0xB4,
+                    (byte) 0xD5, // compressed data
+                    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, // IEND chunk
+                    (byte) 0xAE, 0x42, 0x60, (byte) 0x82
+                };
+                java.nio.file.Files.write(tempFile, pngBytes);
+                return tempFile;
+            } catch (java.io.IOException e) {
+                throw new RuntimeException("Failed to create test image", e);
+            }
+        }
+
+        private void deleteTestImage(java.nio.file.Path path) {
+            try {
+                java.nio.file.Files.deleteIfExists(path);
+            } catch (java.io.IOException e) {
+                // Ignore cleanup errors
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("About Page")
     class AboutPageTests {
 

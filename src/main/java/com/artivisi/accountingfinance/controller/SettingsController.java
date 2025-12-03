@@ -8,11 +8,17 @@ import com.artivisi.accountingfinance.repository.TelegramUserLinkRepository;
 import com.artivisi.accountingfinance.repository.UserRepository;
 import com.artivisi.accountingfinance.service.CompanyBankAccountService;
 import com.artivisi.accountingfinance.service.CompanyConfigService;
+import com.artivisi.accountingfinance.service.DocumentStorageService;
 import com.artivisi.accountingfinance.service.TelegramBotService;
 import com.artivisi.accountingfinance.service.VersionInfoService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +29,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
+import java.util.Set;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,14 +44,21 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/settings")
 @RequiredArgsConstructor
+@Slf4j
 @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('" + com.artivisi.accountingfinance.security.Permission.SETTINGS_VIEW + "')")
 public class SettingsController {
 
     private static final String ATTR_SUCCESS_MESSAGE = "successMessage";
+    private static final String ATTR_ERROR_MESSAGE = "errorMessage";
     private static final String ATTR_CURRENT_PAGE = "currentPage";
+    private static final Set<String> ALLOWED_LOGO_TYPES = Set.of(
+            "image/png", "image/jpeg", "image/gif", "image/webp"
+    );
+    private static final long MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
 
     private final CompanyConfigService companyConfigService;
     private final CompanyBankAccountService bankAccountService;
+    private final DocumentStorageService documentStorageService;
     private final TelegramBotService telegramBotService;
     private final TelegramUserLinkRepository telegramLinkRepository;
     private final UserRepository userRepository;
@@ -77,6 +96,114 @@ public class SettingsController {
         companyConfigService.update(config.getId(), config);
         redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Pengaturan perusahaan berhasil disimpan");
         return "redirect:/settings";
+    }
+
+    // ==================== Company Logo ====================
+
+    @PostMapping("/company/logo")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('" + com.artivisi.accountingfinance.security.Permission.SETTINGS_EDIT + "')")
+    public String uploadCompanyLogo(
+            @RequestParam("logoFile") MultipartFile logoFile,
+            RedirectAttributes redirectAttributes) {
+
+        if (logoFile.isEmpty()) {
+            redirectAttributes.addFlashAttribute(ATTR_ERROR_MESSAGE, "File tidak boleh kosong");
+            return "redirect:/settings";
+        }
+
+        String contentType = logoFile.getContentType();
+        if (contentType == null || !ALLOWED_LOGO_TYPES.contains(contentType)) {
+            redirectAttributes.addFlashAttribute(ATTR_ERROR_MESSAGE,
+                    "Format file tidak didukung. Gunakan PNG, JPG, GIF, atau WebP.");
+            return "redirect:/settings";
+        }
+
+        if (logoFile.getSize() > MAX_LOGO_SIZE) {
+            redirectAttributes.addFlashAttribute(ATTR_ERROR_MESSAGE,
+                    "Ukuran file terlalu besar. Maksimal 2MB.");
+            return "redirect:/settings";
+        }
+
+        try {
+            // Delete old logo if exists
+            CompanyConfig config = companyConfigService.getConfig();
+            if (config.getCompanyLogoPath() != null && !config.getCompanyLogoPath().isEmpty()) {
+                try {
+                    documentStorageService.delete(config.getCompanyLogoPath());
+                } catch (IOException e) {
+                    log.warn("Failed to delete old logo: {}", e.getMessage());
+                }
+            }
+
+            // Store new logo
+            String storedPath = documentStorageService.store(logoFile);
+            config.setCompanyLogoPath(storedPath);
+            companyConfigService.save(config);
+
+            redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Logo perusahaan berhasil diupload");
+        } catch (IOException e) {
+            log.error("Failed to upload company logo: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute(ATTR_ERROR_MESSAGE,
+                    "Gagal mengupload logo: " + e.getMessage());
+        }
+
+        return "redirect:/settings";
+    }
+
+    @GetMapping("/company/logo")
+    @ResponseBody
+    public ResponseEntity<Resource> getCompanyLogo() {
+        CompanyConfig config = companyConfigService.getConfig();
+
+        if (config.getCompanyLogoPath() == null || config.getCompanyLogoPath().isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            Resource resource = documentStorageService.loadAsResource(config.getCompanyLogoPath());
+
+            // Determine content type from file extension
+            String filename = config.getCompanyLogoPath();
+            String contentType = determineContentType(filename);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
+                    .body(resource);
+        } catch (Exception e) {
+            log.error("Failed to load company logo: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/company/logo/delete")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('" + com.artivisi.accountingfinance.security.Permission.SETTINGS_EDIT + "')")
+    public String deleteCompanyLogo(RedirectAttributes redirectAttributes) {
+        CompanyConfig config = companyConfigService.getConfig();
+
+        if (config.getCompanyLogoPath() != null && !config.getCompanyLogoPath().isEmpty()) {
+            try {
+                documentStorageService.delete(config.getCompanyLogoPath());
+            } catch (IOException e) {
+                log.warn("Failed to delete logo file: {}", e.getMessage());
+            }
+
+            config.setCompanyLogoPath(null);
+            companyConfigService.save(config);
+            redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Logo perusahaan berhasil dihapus");
+        }
+
+        return "redirect:/settings";
+    }
+
+    private String determineContentType(String filename) {
+        if (filename == null) return "application/octet-stream";
+        String lower = filename.toLowerCase();
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        if (lower.endsWith(".gif")) return "image/gif";
+        if (lower.endsWith(".webp")) return "image/webp";
+        return "application/octet-stream";
     }
 
     // ==================== Bank Accounts ====================

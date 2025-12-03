@@ -41,7 +41,7 @@ public class TemplateFormPage {
     private void waitForAlpineInit() {
         // Wait for Alpine.js to initialize (same pattern as JournalFormPage)
         page.waitForSelector("[x-data]");
-        page.waitForSelector("#line-account-0", new Page.WaitForSelectorOptions().setTimeout(10000));
+        page.waitForSelector("#line-account-0");
     }
 
     public void assertPageTitleVisible() {
