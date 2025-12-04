@@ -41,3 +41,4 @@ src/main/frontend/node/
 # Application Data
 db-accounting
 data
+clients/artivisi/artivisi-seed-data.zip
