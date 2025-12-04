@@ -1,5 +1,6 @@
 package com.artivisi.accountingfinance.service;
 
+import com.artivisi.accountingfinance.exception.ReportGenerationException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -45,6 +46,8 @@ public class ReportExportService {
     private final InventoryReportService inventoryReportService;
 
     private static final String COMPANY_NAME = "PT ArtiVisi Intermedia";
+    private static final String PDF_GENERATION_ERROR = "Failed to generate PDF: ";
+    private static final String EXCEL_GENERATION_ERROR = "Failed to generate Excel: ";
     private static final DecimalFormat NUMBER_FORMAT;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
 
@@ -109,7 +112,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Trial Balance PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -153,7 +156,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Trial Balance Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -209,7 +212,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Balance Sheet PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -280,7 +283,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Balance Sheet Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -326,7 +329,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Income Statement PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -382,7 +385,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Income Statement Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -439,7 +442,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Cash Flow PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -515,7 +518,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Cash Flow Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -602,7 +605,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Depreciation Report PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -668,7 +671,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Depreciation Report Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -737,7 +740,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Stock Balance PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -794,7 +797,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Stock Balance Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -856,7 +859,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Stock Movement PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -930,7 +933,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Stock Movement Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -986,7 +989,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Valuation PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -1043,7 +1046,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Valuation Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -1128,7 +1131,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Product Profitability PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
@@ -1191,7 +1194,7 @@ public class ReportExportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Product Profitability Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
     }
 
