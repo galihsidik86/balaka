@@ -151,7 +151,43 @@ public class ScreenshotCapture {
             new PageDefinition("self-service-bukti-potong", "Bukti Potong Saya", "/self-service/bukti-potong", true,
                     "Bukti potong PPh 21 (1721-A1)", "layanan-mandiri"),
             new PageDefinition("self-service-profile", "Profil Saya", "/self-service/profile", true,
-                    "Informasi profil karyawan", "layanan-mandiri")
+                    "Informasi profil karyawan", "layanan-mandiri"),
+
+            // Inventory - Products
+            new PageDefinition("products-list", "Daftar Produk", "/products", true,
+                    "Daftar produk dengan pencarian dan filter kategori", "kelola-produk"),
+            new PageDefinition("products-form", "Form Produk", "/products/new", true,
+                    "Form untuk menambah atau mengubah produk", "kelola-produk"),
+
+            // Inventory - Categories
+            new PageDefinition("product-categories-list", "Kategori Produk", "/products/categories", true,
+                    "Daftar kategori produk", "kelola-produk"),
+
+            // Inventory - Stock
+            new PageDefinition("stock-list", "Stok Barang", "/inventory/stock", true,
+                    "Daftar stok dengan peringatan stok minimum", "kartu-stok"),
+
+            // Inventory - Transactions
+            new PageDefinition("inventory-transactions", "Transaksi Inventori", "/inventory/transactions", true,
+                    "Daftar transaksi inventori dengan filter", "transaksi-inventori"),
+            new PageDefinition("inventory-purchase", "Pembelian", "/inventory/purchase", true,
+                    "Form pencatatan pembelian barang", "transaksi-inventori"),
+            new PageDefinition("inventory-sale", "Penjualan", "/inventory/sale", true,
+                    "Form pencatatan penjualan barang", "transaksi-inventori"),
+            new PageDefinition("inventory-adjustment", "Penyesuaian Stok", "/inventory/adjustment", true,
+                    "Form penyesuaian stok barang", "transaksi-inventori"),
+
+            // Inventory - BOM
+            new PageDefinition("bom-list", "Bill of Materials", "/inventory/bom", true,
+                    "Daftar BOM dengan pencarian", "produksi-bom"),
+            new PageDefinition("bom-form", "Form BOM", "/inventory/bom/create", true,
+                    "Form untuk membuat BOM baru", "produksi-bom"),
+
+            // Inventory - Production
+            new PageDefinition("production-list", "Production Orders", "/inventory/production", true,
+                    "Daftar production order dengan filter status", "produksi-bom"),
+            new PageDefinition("production-form", "Form Production Order", "/inventory/production/create", true,
+                    "Form untuk membuat production order baru", "produksi-bom")
         );
     }
 

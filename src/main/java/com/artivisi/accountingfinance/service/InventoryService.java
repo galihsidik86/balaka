@@ -231,6 +231,15 @@ public class InventoryService {
         return balanceRepository.getTotalInventoryValue();
     }
 
+    /**
+     * Get available quantity for a product.
+     */
+    public BigDecimal getAvailableQuantity(UUID productId) {
+        return balanceRepository.findByProductId(productId)
+                .map(InventoryBalance::getQuantity)
+                .orElse(BigDecimal.ZERO);
+    }
+
     // Private helper methods
 
     private Product getProduct(UUID productId) {

@@ -520,19 +520,22 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
 - [ ] Functional tests
 - [ ] User manual
 
-### 5.4 Simple Production (BOM)
-- [ ] BillOfMaterial entity (finished product, components with quantities)
-- [ ] BOM CRUD UI
-- [ ] ProductionOrder entity (BOM, quantity, status)
-- [ ] ProductionOrderStatus enum (DRAFT, IN_PROGRESS, COMPLETED, CANCELLED)
-- [ ] Production workflow:
-  - [ ] Create order → reserve raw materials
-  - [ ] Complete order → deduct raw materials, add finished goods
-  - [ ] Cost accumulation (sum of component costs)
-- [ ] Production order UI (create, view, complete)
-- [ ] Auto-journal for production (WIP transfers)
-- [ ] Functional tests
-- [ ] User manual
+### 5.4 Simple Production (BOM) ✅
+- [x] BillOfMaterial entity (finished product, components with quantities)
+- [x] BillOfMaterialLine entity (component, quantity, notes)
+- [x] BOM CRUD UI (list, form, detail pages)
+- [x] ProductionOrder entity (BOM, quantity, status, cost tracking)
+- [x] ProductionOrderStatus enum (DRAFT, IN_PROGRESS, COMPLETED, CANCELLED)
+- [x] Production workflow:
+  - [x] Create order from BOM
+  - [x] Start production (status → IN_PROGRESS)
+  - [x] Complete production → deduct components, add finished goods
+  - [x] Cost accumulation (weighted average from components)
+- [x] Production order UI (list, form, detail with workflow actions)
+- [x] Cost calculation on completion (total cost, unit cost)
+- [x] Inventory integration (PRODUCTION_IN/PRODUCTION_OUT transaction types)
+- [x] Functional tests (6 Playwright tests)
+- [x] User manual (80-produksi-bom.md)
 
 ### 5.5 Integration with Sales
 - [ ] Link Transaction to InventoryTransaction

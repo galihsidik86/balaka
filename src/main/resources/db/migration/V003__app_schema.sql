@@ -1123,3 +1123,73 @@ CREATE TABLE inventory_fifo_layers (
 CREATE INDEX idx_fifo_layers_product ON inventory_fifo_layers(id_product);
 CREATE INDEX idx_fifo_layers_date ON inventory_fifo_layers(layer_date);
 CREATE INDEX idx_fifo_layers_consumed ON inventory_fifo_layers(fully_consumed);
+
+-- ============================================
+-- Bill of Materials (Phase 5.4 - Production)
+-- ============================================
+
+CREATE TABLE bill_of_materials (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_product UUID NOT NULL REFERENCES products(id),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(200) NOT NULL,
+    description VARCHAR(500),
+    output_quantity DECIMAL(15, 4) NOT NULL DEFAULT 1,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_bom_product ON bill_of_materials(id_product);
+CREATE INDEX idx_bom_code ON bill_of_materials(code);
+CREATE INDEX idx_bom_active ON bill_of_materials(active);
+
+-- ============================================
+-- Bill of Materials Lines (Phase 5.4 - Production)
+-- ============================================
+
+CREATE TABLE bill_of_material_lines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_bill_of_material UUID NOT NULL REFERENCES bill_of_materials(id) ON DELETE CASCADE,
+    id_component UUID NOT NULL REFERENCES products(id),
+    quantity DECIMAL(15, 4) NOT NULL,
+    notes VARCHAR(255),
+    line_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_bom_lines_bom ON bill_of_material_lines(id_bill_of_material);
+CREATE INDEX idx_bom_lines_component ON bill_of_material_lines(id_component);
+
+-- ============================================
+-- Production Orders (Phase 5.4 - Production)
+-- ============================================
+
+CREATE TABLE production_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number VARCHAR(50) NOT NULL UNIQUE,
+    id_bill_of_material UUID NOT NULL REFERENCES bill_of_materials(id),
+    quantity DECIMAL(15, 4) NOT NULL,
+    order_date DATE NOT NULL,
+    planned_completion_date DATE,
+    actual_completion_date DATE,
+    status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
+    notes VARCHAR(500),
+    total_component_cost DECIMAL(19, 2) NOT NULL DEFAULT 0,
+    unit_cost DECIMAL(19, 4) NOT NULL DEFAULT 0,
+    id_transaction UUID REFERENCES transactions(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(100),
+    completed_by VARCHAR(100),
+
+    CONSTRAINT chk_production_order_status CHECK (status IN (
+        'DRAFT', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'
+    ))
+);
+
+CREATE INDEX idx_production_orders_number ON production_orders(order_number);
+CREATE INDEX idx_production_orders_bom ON production_orders(id_bill_of_material);
+CREATE INDEX idx_production_orders_status ON production_orders(status);
+CREATE INDEX idx_production_orders_date ON production_orders(order_date);
