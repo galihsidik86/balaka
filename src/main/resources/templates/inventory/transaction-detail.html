@@ -74,6 +74,24 @@
                     <p class="text-lg" th:text="'Rp ' + ${#numbers.formatDecimal(transaction.unitPrice, 0, 'COMMA', 2, 'POINT')}">Rp 15,000.00</p>
                 </div>
 
+                <!-- Sales Revenue (for sales) -->
+                <div th:if="${transaction.unitPrice != null}">
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Total Pendapatan</h3>
+                    <p class="text-lg font-semibold text-green-600" th:text="'Rp ' + ${#numbers.formatDecimal(transaction.quantity * transaction.unitPrice, 0, 'COMMA', 0, 'POINT')}">Rp 1,500,000</p>
+                </div>
+
+                <!-- Margin (for sales) -->
+                <div th:if="${transaction.unitPrice != null}">
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Margin</h3>
+                    <th:block th:with="marginAmount=${(transaction.unitPrice - transaction.unitCost) * transaction.quantity}, marginPercent=${transaction.unitPrice > 0 ? ((transaction.unitPrice - transaction.unitCost) / transaction.unitPrice * 100) : 0}">
+                        <p class="text-lg">
+                            <span class="font-semibold" th:classappend="${marginAmount >= 0} ? 'text-green-600' : 'text-red-600'"
+                                  th:text="'Rp ' + ${#numbers.formatDecimal(marginAmount, 0, 'COMMA', 0, 'POINT')}">Rp 500,000</span>
+                            <span class="text-sm text-gray-500" th:text="'(' + ${#numbers.formatDecimal(marginPercent, 0, 'COMMA', 1, 'POINT')} + '%)'"> (33.3%)</span>
+                        </p>
+                    </th:block>
+                </div>
+
                 <!-- Reference Number -->
                 <div>
                     <h3 class="text-sm font-medium text-gray-500 mb-1">Nomor Referensi</h3>

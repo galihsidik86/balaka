@@ -275,4 +275,128 @@ public class InventoryReportService {
             BigDecimal totalValue,
             String costingMethod
     ) {}
+
+    /**
+     * Generate product profitability report.
+     * Shows sales revenue, COGS, and margin per product.
+     */
+    public ProfitabilityReport generateProfitabilityReport(
+            LocalDate startDate, LocalDate endDate,
+            UUID categoryId, UUID productId) {
+
+        List<InventoryTransaction> salesTransactions;
+
+        if (productId != null) {
+            salesTransactions = transactionRepository.findByProductIdAndTypeAndDateRange(
+                    productId, InventoryTransactionType.SALE, startDate, endDate);
+        } else if (categoryId != null) {
+            salesTransactions = transactionRepository.findByCategoryIdAndTypeAndDateRange(
+                    categoryId, InventoryTransactionType.SALE, startDate, endDate);
+        } else {
+            salesTransactions = transactionRepository.findByTypeAndDateRange(
+                    InventoryTransactionType.SALE, startDate, endDate);
+        }
+
+        // Group by product and calculate profitability
+        var productProfitability = salesTransactions.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        tx -> tx.getProduct().getId(),
+                        java.util.stream.Collectors.toList()
+                ));
+
+        List<ProfitabilityItem> items = productProfitability.entrySet().stream()
+                .map(entry -> createProfitabilityItem(entry.getValue()))
+                .sorted((a, b) -> b.margin().compareTo(a.margin()))
+                .toList();
+
+        BigDecimal totalRevenue = items.stream()
+                .map(ProfitabilityItem::revenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalCogs = items.stream()
+                .map(ProfitabilityItem::cogs)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalMargin = items.stream()
+                .map(ProfitabilityItem::margin)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalQuantitySold = items.stream()
+                .map(ProfitabilityItem::quantitySold)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new ProfitabilityReport(startDate, endDate, items,
+                totalRevenue, totalCogs, totalMargin, totalQuantitySold);
+    }
+
+    private ProfitabilityItem createProfitabilityItem(List<InventoryTransaction> transactions) {
+        if (transactions.isEmpty()) {
+            throw new IllegalArgumentException("Cannot create profitability item from empty transactions");
+        }
+
+        Product product = transactions.getFirst().getProduct();
+        String categoryName = product.getCategory() != null ? product.getCategory().getName() : "-";
+
+        BigDecimal quantitySold = transactions.stream()
+                .map(InventoryTransaction::getQuantity)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal cogs = transactions.stream()
+                .map(InventoryTransaction::getTotalCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal revenue = transactions.stream()
+                .map(tx -> tx.getQuantity().multiply(
+                        tx.getUnitPrice() != null ? tx.getUnitPrice() : BigDecimal.ZERO))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal margin = revenue.subtract(cogs);
+        BigDecimal marginPercent = revenue.compareTo(BigDecimal.ZERO) > 0
+                ? margin.multiply(BigDecimal.valueOf(100)).divide(revenue, 2, java.math.RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
+        return new ProfitabilityItem(
+                product.getCode(),
+                product.getName(),
+                categoryName,
+                product.getUnit(),
+                quantitySold,
+                revenue,
+                cogs,
+                margin,
+                marginPercent,
+                transactions.size()
+        );
+    }
+
+    public record ProfitabilityReport(
+            LocalDate startDate,
+            LocalDate endDate,
+            List<ProfitabilityItem> items,
+            BigDecimal totalRevenue,
+            BigDecimal totalCogs,
+            BigDecimal totalMargin,
+            BigDecimal totalQuantitySold
+    ) {
+        public BigDecimal getTotalMarginPercent() {
+            if (totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
+                return totalMargin.multiply(BigDecimal.valueOf(100))
+                        .divide(totalRevenue, 2, java.math.RoundingMode.HALF_UP);
+            }
+            return BigDecimal.ZERO;
+        }
+    }
+
+    public record ProfitabilityItem(
+            String productCode,
+            String productName,
+            String categoryName,
+            String unit,
+            BigDecimal quantitySold,
+            BigDecimal revenue,
+            BigDecimal cogs,
+            BigDecimal margin,
+            BigDecimal marginPercent,
+            int transactionCount
+    ) {}
 }

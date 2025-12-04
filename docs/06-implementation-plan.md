@@ -537,12 +537,12 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
 - [x] Functional tests (6 Playwright tests)
 - [x] User manual (80-produksi-bom.md)
 
-### 5.5 Integration with Sales
-- [ ] Link Transaction to InventoryTransaction
-- [ ] Auto-COGS on sales transaction posting
-- [ ] Sales template with COGS variables (`cogsAmount`, `inventoryAccount`)
-- [ ] Margin calculation per sale
-- [ ] Product profitability report
+### 5.5 Integration with Sales ✅
+- [x] Link Transaction to InventoryTransaction (already exists in InventoryTransaction.transaction field)
+- [x] Auto-COGS on sales transaction posting (InventoryService.createJournalEntry)
+- [x] Sales template with COGS variables (`cogsAmount`, `revenueAmount`) in V004 seed data
+- [x] Margin calculation per sale (transaction detail shows revenue, margin amount, margin %)
+- [x] Product profitability report (inventory/reports/profitability)
 - [ ] Functional tests
 - [ ] User manual
 

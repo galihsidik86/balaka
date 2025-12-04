@@ -33,11 +33,11 @@ public class ScreenshotCapture {
             String section
     ) {}
 
-    // Seed data UUIDs for detail pages
+    // Seed data codes for detail pages (from V905__profitability_test_data.sql)
     private static final String TEMPLATE_ID = "e0000000-0000-0000-0000-000000000001"; // Pendapatan Jasa Konsultasi
     private static final String TRANSACTION_ID = "a0000000-0000-0000-0000-000000000002"; // TRX-TEST-0002
-    private static final String CLIENT_ID = "c0500000-0000-0000-0000-000000000001"; // PT ABC Technology
-    private static final String PROJECT_ID = "a0500000-0000-0000-0000-000000000001"; // Website Development ABC
+    private static final String CLIENT_CODE = "CLI-001"; // PT ABC Technology
+    private static final String PROJECT_CODE = "PRJ-TEST-001"; // Website Development ABC
 
     public static List<PageDefinition> getPageDefinitions() {
         return List.of(
@@ -92,7 +92,7 @@ public class ScreenshotCapture {
             // Clients
             new PageDefinition("clients-list", "Daftar Klien", "/clients", true,
                     "Daftar klien dengan pencarian", "kelola-klien"),
-            new PageDefinition("clients-detail", "Detail Klien", "/clients/" + CLIENT_ID, true,
+            new PageDefinition("clients-detail", "Detail Klien", "/clients/" + CLIENT_CODE, true,
                     "Detail klien dengan daftar proyek", "kelola-klien"),
             new PageDefinition("clients-form", "Form Klien", "/clients/new", true,
                     "Form untuk menambah klien baru", "kelola-klien"),
@@ -100,7 +100,7 @@ public class ScreenshotCapture {
             // Projects
             new PageDefinition("projects-list", "Daftar Proyek", "/projects", true,
                     "Daftar proyek dengan filter status dan klien", "tracking-proyek"),
-            new PageDefinition("projects-detail", "Detail Proyek", "/projects/" + PROJECT_ID, true,
+            new PageDefinition("projects-detail", "Detail Proyek", "/projects/" + PROJECT_CODE, true,
                     "Detail proyek dengan milestone dan termin pembayaran", "tracking-proyek"),
             new PageDefinition("projects-form", "Form Proyek", "/projects/new", true,
                     "Form untuk membuat proyek baru", "setup-proyek"),
@@ -187,7 +187,13 @@ public class ScreenshotCapture {
             new PageDefinition("production-list", "Production Orders", "/inventory/production", true,
                     "Daftar production order dengan filter status", "produksi-bom"),
             new PageDefinition("production-form", "Form Production Order", "/inventory/production/create", true,
-                    "Form untuk membuat production order baru", "produksi-bom")
+                    "Form untuk membuat production order baru", "produksi-bom"),
+
+            // Inventory - Reports
+            new PageDefinition("inventory-reports", "Laporan Persediaan", "/inventory/reports", true,
+                    "Daftar laporan persediaan yang tersedia", "laporan-inventori"),
+            new PageDefinition("inventory-reports-profitability", "Profitabilitas Produk", "/inventory/reports/profitability", true,
+                    "Analisis margin dan profit per produk", "analisis-profitabilitas-produk")
         );
     }
 

@@ -83,4 +83,41 @@ public interface InventoryTransactionRepository extends JpaRepository<InventoryT
             @Param("categoryId") UUID categoryId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT t FROM InventoryTransaction t " +
+           "LEFT JOIN FETCH t.product p " +
+           "LEFT JOIN FETCH p.category " +
+           "WHERE t.transactionType = :transactionType " +
+           "AND t.transactionDate BETWEEN :startDate AND :endDate " +
+           "ORDER BY t.transactionDate, t.createdAt")
+    List<InventoryTransaction> findByTypeAndDateRange(
+            @Param("transactionType") InventoryTransactionType transactionType,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT t FROM InventoryTransaction t " +
+           "LEFT JOIN FETCH t.product p " +
+           "LEFT JOIN FETCH p.category " +
+           "WHERE t.product.id = :productId " +
+           "AND t.transactionType = :transactionType " +
+           "AND t.transactionDate BETWEEN :startDate AND :endDate " +
+           "ORDER BY t.transactionDate, t.createdAt")
+    List<InventoryTransaction> findByProductIdAndTypeAndDateRange(
+            @Param("productId") UUID productId,
+            @Param("transactionType") InventoryTransactionType transactionType,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT t FROM InventoryTransaction t " +
+           "LEFT JOIN FETCH t.product p " +
+           "LEFT JOIN FETCH p.category " +
+           "WHERE p.category.id = :categoryId " +
+           "AND t.transactionType = :transactionType " +
+           "AND t.transactionDate BETWEEN :startDate AND :endDate " +
+           "ORDER BY t.transactionDate, t.createdAt")
+    List<InventoryTransaction> findByCategoryIdAndTypeAndDateRange(
+            @Param("categoryId") UUID categoryId,
+            @Param("transactionType") InventoryTransactionType transactionType,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }

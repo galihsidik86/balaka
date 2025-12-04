@@ -87,6 +87,14 @@ Klik transaksi untuk melihat:
 - Stok sebelum dan sesudah
 - Biaya/HPP yang dihitung
 
+### Analisis Margin (Penjualan)
+
+Untuk transaksi penjualan, detail menampilkan:
+- **Harga Jual**: Harga per unit saat dijual
+- **Total Pendapatan**: Kuantitas × Harga Jual
+- **Margin**: Selisih pendapatan dan HPP
+- **Margin %**: Persentase margin terhadap pendapatan
+
 ## Integrasi Jurnal
 
 Transaksi inventori dapat menghasilkan jurnal akuntansi otomatis:

@@ -132,4 +132,46 @@ public class InventoryReportController {
 
         return "inventory/reports/valuation-print";
     }
+
+    @GetMapping("/profitability")
+    public String productProfitability(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) UUID productId,
+            Model model) {
+
+        LocalDate start = startDate != null ? startDate : LocalDate.now().withDayOfMonth(1);
+        LocalDate end = endDate != null ? endDate : LocalDate.now();
+
+        model.addAttribute("currentPage", "inventory-reports");
+        model.addAttribute("reportType", "profitability");
+        model.addAttribute("startDate", start);
+        model.addAttribute("endDate", end);
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("productId", productId);
+        model.addAttribute("categories", categoryService.findAllActive());
+        model.addAttribute("products", productService.findAllActive());
+        model.addAttribute("report", reportService.generateProfitabilityReport(start, end, categoryId, productId));
+
+        return "inventory/reports/profitability";
+    }
+
+    @GetMapping("/profitability/print")
+    public String productProfitabilityPrint(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) UUID productId,
+            Model model) {
+
+        LocalDate start = startDate != null ? startDate : LocalDate.now().withDayOfMonth(1);
+        LocalDate end = endDate != null ? endDate : LocalDate.now();
+
+        model.addAttribute("startDate", start);
+        model.addAttribute("endDate", end);
+        model.addAttribute("report", reportService.generateProfitabilityReport(start, end, categoryId, productId));
+
+        return "inventory/reports/profitability-print";
+    }
 }
