@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layouts/main}"
       lang="id">
 <head>
@@ -87,8 +88,9 @@
                             </svg>
                             Edit
                         </a>
-                        <!-- Post Button (Draft only) -->
+                        <!-- Post Button (Draft only, requires TRANSACTION_POST permission) -->
                         <button th:if="${transaction.status.name() == 'DRAFT'}"
+                                sec:authorize="hasAuthority('TRANSACTION_POST')"
                                 id="btn-post"
                                 th:data-id="${transaction.id}"
                                 class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-accent-700 bg-accent-50 border border-accent-200 rounded-lg hover:bg-accent-100 transition-colors">
@@ -221,7 +223,7 @@
                             </svg>
                             <h3 class="mt-2 text-sm font-medium text-gray-900">Jurnal belum dibuat</h3>
                             <p class="mt-1 text-sm text-gray-500">Jurnal entry akan dibuat otomatis saat transaksi di-posting</p>
-                            <div class="mt-6">
+                            <div class="mt-6" sec:authorize="hasAuthority('TRANSACTION_POST')">
                                 <button th:if="${transaction.status.name() == 'DRAFT'}"
                                         hx-post="/transactions/api/{id}/post"
                                         th:hx-post="@{/transactions/api/{id}/post(id=${transaction.id})}"

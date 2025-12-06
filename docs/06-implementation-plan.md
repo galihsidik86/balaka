@@ -631,6 +631,10 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
 - [x] Add @Pattern validation for sensitive fields (NPWP, NIK format) - already in Employee entity
 - [x] Sanitize user input in log statements (prevent log injection)
 - [x] Generic error messages to clients (no stack traces, no path exposure) - GlobalExceptionHandler configured
+- [x] Custom 403 error page (`templates/error/403.html`) with `#access-denied-page` ID for testing
+- [x] AccessDeniedHandler for proper 403 responses (browser → HTML page, API → JSON)
+- [x] MvcExceptionHandler for controller-level AccessDeniedException handling
+- [x] NoResourceFoundException handler (404 with debug-level logging)
 
 ### 6.5 Comprehensive Audit Logging (P2) ✅
 - [x] AuditEventType enum (LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT, USER_CREATE, USER_UPDATE, etc.)
@@ -836,15 +840,15 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
 **2. Authorization Testing (Playwright)**
 - [x] RBAC restrictions (`SecurityRegressionTest.AuthorizationTests`)
   - [x] Admin access to user management - PASS
-  - [x] Staff accessing /users → FAIL (SECURITY GAP - needs fix)
-  - [x] Employee accessing /payroll → FAIL (SECURITY GAP - needs fix)
-  - [x] Auditor accessing /transactions/new → FAIL (SECURITY GAP - needs fix)
-  - [x] Staff seeing POST button → FAIL (SECURITY GAP - needs fix)
-  - [x] Employee accessing /dashboard → FAIL (SECURITY GAP - needs fix)
+  - [x] Staff accessing /users → 403 (FIXED - AccessDeniedHandler)
+  - [x] Employee accessing /payroll → 403 (FIXED - AccessDeniedHandler)
+  - [x] Auditor accessing /transactions/new → 403 (FIXED - AccessDeniedHandler)
+  - [x] Staff seeing POST button → hidden (FIXED - sec:authorize in template)
+  - [x] Employee accessing /dashboard → 403 (FIXED - AccessDeniedHandler)
 - [x] IDOR tests (`SecurityRegressionTest.AuthorizationTests`)
-  - [x] Employee accessing other employee's profile → FAIL (SECURITY GAP)
-  - [x] Employee accessing other user's payslips via URL param → test implemented
-  - [x] Staff accessing transaction edit page → FAIL (SECURITY GAP)
+  - [x] Employee accessing other employee's profile → 403 (FIXED - ownership check)
+  - [x] Employee accessing other user's payslips via URL param → userId ignored (secure by design)
+  - [x] Staff accessing transaction edit page → 403 (FIXED - @PreAuthorize)
 
 **3. Input Validation (Playwright + ZAP)**
 - [x] SQL injection in search (`SecurityRegressionTest.shouldRejectSqlInjection`)
@@ -853,8 +857,12 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
   - [x] Reject .exe disguised as .pdf
   - [x] Reject PHP/HTML disguised as image
   - [x] Validate PDF, JPEG, PNG, GIF, XLSX, DOCX signatures
-- [ ] File upload: reject oversized files (>10MB)
-- [ ] File upload: reject path traversal filenames
+- [x] File upload: reject path traversal filenames (`SecurityRegressionTest.shouldRejectPathTraversalFilename`)
+- [x] File upload: reject executable files (`SecurityRegressionTest.shouldRejectExecutableFile`)
+- [x] File upload: reject content-type spoofing (`SecurityRegressionTest.shouldRejectContentTypeSpoofing`)
+- [x] File upload: reject empty filename (`SecurityRegressionTest.shouldRejectEmptyFilename`)
+- [x] File upload: accept valid PDF (`SecurityRegressionTest.shouldAcceptValidPdfUpload`)
+- [ ] File upload: reject oversized files (>10MB) - not yet tested
 - [ ] Template injection in user input
 
 **4. Security Headers (ZAP + Playwright)**
