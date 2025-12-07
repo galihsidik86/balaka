@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*-RELEASE'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build JAR
+        run: ./mvnw package -DskipTests
+
+      - name: Get release notes
+        id: release_notes
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          NOTES_FILE="docs/releases/${TAG_NAME}.md"
+
+          if [ -f "$NOTES_FILE" ]; then
+            echo "Found release notes: $NOTES_FILE"
+            # Use delimiter for multiline output
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            cat "$NOTES_FILE" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "No release notes found at $NOTES_FILE, using auto-generated notes"
+            echo "notes=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.release_notes.outputs.notes }}
+          generate_release_notes: ${{ steps.release_notes.outputs.notes == '' }}
+          files: |
+            target/*.jar
