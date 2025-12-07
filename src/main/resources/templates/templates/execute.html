@@ -89,6 +89,32 @@
                         </div>
                     </div>
 
+                    <!-- Dynamic Account Selection -->
+                    <div th:if="${hasDynamicAccounts}" class="mt-6">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Pilih Akun</h3>
+                        <p class="text-xs text-gray-500 mb-3">Pilih akun untuk baris jurnal yang memerlukan pemilihan akun saat transaksi</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div th:each="dal : ${dynamicAccountLines}" class="relative">
+                                <label th:for="${'account_' + dal.lineOrder()}" class="block text-xs font-medium text-gray-600 mb-1">
+                                    <span th:text="${dal.hint()}">Pilih akun</span>
+                                    <span th:classappend="${dal.position() == 'DEBIT'} ? 'text-red-600' : 'text-green-600'"
+                                          th:text="${dal.position() == 'DEBIT' ? '(Debit)' : '(Kredit)'}"></span>
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <select th:id="${'account_' + dal.lineOrder()}"
+                                        th:name="${'account_' + dal.lineOrder()}"
+                                        th:data-line-order="${dal.lineOrder()}"
+                                        class="account-select w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                        required>
+                                    <option value="">-- Pilih Akun --</option>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.accountCode + ' - ' + account.accountName}">Account</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Variable inputs for DETAILED templates -->
                     <div th:if="${isDetailedTemplate}" class="mt-6">
                         <h3 class="text-sm font-semibold text-gray-700 mb-3">Saldo per Akun</h3>
@@ -228,7 +254,7 @@
                             Nomor Jurnal: <span id="journal-number" class="font-mono font-semibold" x-text="journalNumber"></span>
                         </p>
                         <div class="flex items-center space-x-3">
-                            <a :href="'/journals/' + journalNumber" id="btn-view-journal"
+                            <a :href="'/transactions/' + transactionId" id="btn-view-journal"
                                class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
                                 Lihat Jurnal
                             </a>
@@ -287,6 +313,7 @@
                 error: false,
                 errorMessage: '',
                 journalNumber: '',
+                transactionId: '',
 
                 formatAmount() {
                     let value = this.form.amountDisplay.replace(/[^0-9]/g, '');
@@ -318,6 +345,18 @@
                     return variables;
                 },
 
+                collectAccountMappings() {
+                    const mappings = {};
+                    document.querySelectorAll('.account-select').forEach(select => {
+                        const lineOrder = select.dataset.lineOrder;
+                        const accountId = select.value;
+                        if (lineOrder && accountId) {
+                            mappings[lineOrder] = accountId;
+                        }
+                    });
+                    return mappings;
+                },
+
                 validateForm() {
                     if (!this.form.transactionDate || !this.form.description) {
                         return 'Tanggal dan keterangan wajib diisi';
@@ -329,6 +368,13 @@
                         }
                     } else if (!this.form.amount) {
                         return 'Jumlah wajib diisi';
+                    }
+                    // Validate dynamic account selections
+                    const accountSelects = document.querySelectorAll('.account-select');
+                    for (const select of accountSelects) {
+                        if (!select.value) {
+                            return 'Semua akun dinamis harus dipilih';
+                        }
                     }
                     return null;
                 },
@@ -343,6 +389,11 @@
                         body.amount = 0;
                     } else {
                         body.amount = this.form.amount;
+                    }
+                    // Include account mappings for dynamic accounts
+                    const accountMappings = this.collectAccountMappings();
+                    if (Object.keys(accountMappings).length > 0) {
+                        body.accountMappings = accountMappings;
                     }
                     return body;
                 },
@@ -411,6 +462,7 @@
                         }
 
                         this.journalNumber = data.journalNumber;
+                        this.transactionId = data.transactionId;
                         this.preview = false;
                         this.success = true;
                     } catch (err) {
@@ -439,6 +491,7 @@
                     this.error = false;
                     this.errorMessage = '';
                     this.journalNumber = '';
+                    this.transactionId = '';
                 }
             }
         }

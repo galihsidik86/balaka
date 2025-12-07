@@ -329,13 +329,17 @@ public class JournalEntryService {
                 .map(JournalEntry::getDebitAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Get the MANUAL_ENTRY template
-        JournalTemplate manualTemplate = journalTemplateRepository.findById(MANUAL_ENTRY_TEMPLATE_ID)
-                .orElseThrow(() -> new IllegalStateException("Manual entry template not found"));
-
         // Set transaction properties
         transaction.setTransactionNumber(generateTransactionNumber());
-        transaction.setJournalTemplate(manualTemplate);
+        
+        // Only set MANUAL_ENTRY template if no template was already provided
+        // This allows TemplateExecutionEngine to pass its own template
+        if (transaction.getJournalTemplate() == null) {
+            JournalTemplate manualTemplate = journalTemplateRepository.findById(MANUAL_ENTRY_TEMPLATE_ID)
+                    .orElseThrow(() -> new IllegalStateException("Manual entry template not found"));
+            transaction.setJournalTemplate(manualTemplate);
+        }
+        
         transaction.setAmount(totalDebit);
         transaction.setStatus(TransactionStatus.DRAFT);
         transaction.setCreatedBy(getCurrentUsername());

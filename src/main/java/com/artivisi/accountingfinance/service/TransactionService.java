@@ -170,6 +170,21 @@ public class TransactionService {
             throw new IllegalStateException("Only draft transactions can be posted");
         }
 
+        // Check if transaction already has journal entries (created via TemplateExecutionEngine)
+        // In this case, we just need to update their status - accounts are already set
+        if (!transaction.getJournalEntries().isEmpty()) {
+            // Journal entries were already created during template execution
+            // Just validate balance and update status
+            validateJournalBalance(transaction.getJournalEntries());
+
+            transaction.setStatus(TransactionStatus.POSTED);
+            transaction.setPostedAt(LocalDateTime.now());
+            transaction.setPostedBy(postedBy);
+
+            return transactionRepository.save(transaction);
+        }
+
+        // No existing journal entries - create them from template (traditional flow)
         JournalTemplate template = journalTemplateService.findByIdWithLines(transaction.getJournalTemplate().getId());
         Map<UUID, ChartOfAccount> accountOverrides = new HashMap<>();
         for (TransactionAccountMapping mapping : transaction.getAccountMappings()) {

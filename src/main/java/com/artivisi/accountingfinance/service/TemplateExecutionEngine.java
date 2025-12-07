@@ -1,12 +1,14 @@
 package com.artivisi.accountingfinance.service;
 
 import com.artivisi.accountingfinance.dto.FormulaContext;
+import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.JournalEntry;
 import com.artivisi.accountingfinance.entity.JournalTemplate;
 import com.artivisi.accountingfinance.entity.JournalTemplateLine;
 import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.enums.JournalPosition;
 import com.artivisi.accountingfinance.enums.TemplateType;
+import com.artivisi.accountingfinance.repository.ChartOfAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class TemplateExecutionEngine {
     private final JournalEntryService journalEntryService;
     private final JournalTemplateService journalTemplateService;
     private final FormulaEvaluator formulaEvaluator;
+    private final ChartOfAccountRepository chartOfAccountRepository;
 
     /**
      * Execute a template and create journal entries via Transaction.
@@ -51,6 +55,7 @@ public class TemplateExecutionEngine {
         journalTemplateService.recordUsage(template.getId());
 
         return new ExecutionResult(
+                saved.getId(),
                 saved.getJournalEntries().get(0).getJournalNumber(),
                 saved.getJournalEntries()
         );
@@ -74,11 +79,29 @@ public class TemplateExecutionEngine {
             BigDecimal debit = line.getPosition() == JournalPosition.DEBIT ? lineAmount : BigDecimal.ZERO;
             BigDecimal credit = line.getPosition() == JournalPosition.CREDIT ? lineAmount : BigDecimal.ZERO;
 
-            // Handle dynamic accounts (null account with accountHint)
-            String accountCode = line.getAccount() != null ? line.getAccount().getAccountCode() : "?";
-            String accountName = line.getAccount() != null
-                    ? line.getAccount().getAccountName()
-                    : (line.getAccountHint() != null ? line.getAccountHint() : "Pilih saat transaksi");
+            // Handle dynamic accounts - check for account mapping first
+            String accountCode;
+            String accountName;
+            if (line.getAccount() != null) {
+                accountCode = line.getAccount().getAccountCode();
+                accountName = line.getAccount().getAccountName();
+            } else {
+                // Check for mapped account
+                UUID mappedAccountId = context.getAccountIdForLine(line.getLineOrder());
+                if (mappedAccountId != null) {
+                    ChartOfAccount mappedAccount = chartOfAccountRepository.findById(mappedAccountId).orElse(null);
+                    if (mappedAccount != null) {
+                        accountCode = mappedAccount.getAccountCode();
+                        accountName = mappedAccount.getAccountName();
+                    } else {
+                        accountCode = "?";
+                        accountName = line.getAccountHint() != null ? line.getAccountHint() : "Pilih saat transaksi";
+                    }
+                } else {
+                    accountCode = "?";
+                    accountName = line.getAccountHint() != null ? line.getAccountHint() : "Pilih saat transaksi";
+                }
+            }
 
             previewEntries.add(new PreviewEntry(
                     accountCode,
@@ -155,7 +178,22 @@ public class TemplateExecutionEngine {
 
         for (JournalTemplateLine line : template.getLines()) {
             JournalEntry entry = new JournalEntry();
-            entry.setAccount(line.getAccount());
+
+            // Use template's account or mapped account for dynamic selection
+            if (line.getAccount() != null) {
+                entry.setAccount(line.getAccount());
+            } else {
+                UUID mappedAccountId = context.getAccountIdForLine(line.getLineOrder());
+                if (mappedAccountId != null) {
+                    ChartOfAccount mappedAccount = chartOfAccountRepository.findById(mappedAccountId)
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Account not found for line " + line.getLineOrder()));
+                    entry.setAccount(mappedAccount);
+                } else {
+                    throw new IllegalArgumentException(
+                            "Account must be selected for line " + line.getLineOrder());
+                }
+            }
 
             // Evaluate formula to get amount
             BigDecimal lineAmount = evaluateFormula(line.getFormula(), context);
@@ -194,20 +232,39 @@ public class TemplateExecutionEngine {
             BigDecimal amount,
             String description,
             String referenceNumber,
-            Map<String, BigDecimal> variables
+            Map<String, BigDecimal> variables,
+            Map<String, String> accountMappings
     ) {
         // Constructor without referenceNumber and variables for backward compatibility (SIMPLE templates)
         public ExecutionContext(LocalDate transactionDate, BigDecimal amount, String description) {
-            this(transactionDate, amount, description, null, Map.of());
+            this(transactionDate, amount, description, null, Map.of(), Map.of());
         }
 
         // Constructor with referenceNumber but no variables
         public ExecutionContext(LocalDate transactionDate, BigDecimal amount, String description, String referenceNumber) {
-            this(transactionDate, amount, description, referenceNumber, Map.of());
+            this(transactionDate, amount, description, referenceNumber, Map.of(), Map.of());
+        }
+
+        // Constructor with variables but no account mappings (backward compatibility)
+        public ExecutionContext(LocalDate transactionDate, BigDecimal amount, String description, String referenceNumber, Map<String, BigDecimal> variables) {
+            this(transactionDate, amount, description, referenceNumber, variables, Map.of());
+        }
+
+        /**
+         * Get account ID for a specific line order from account mappings.
+         * @param lineOrder the line order number
+         * @return UUID of the selected account, or null if not mapped
+         */
+        public UUID getAccountIdForLine(int lineOrder) {
+            if (accountMappings == null) return null;
+            String accountIdStr = accountMappings.get(String.valueOf(lineOrder));
+            if (accountIdStr == null || accountIdStr.isBlank()) return null;
+            return UUID.fromString(accountIdStr);
         }
     }
 
     public record ExecutionResult(
+            UUID transactionId,
             String journalNumber,
             List<JournalEntry> entries
     ) {}

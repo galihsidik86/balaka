@@ -190,8 +190,30 @@ public class JournalTemplateController {
         model.addAttribute("formulaVariables", formulaVariables);
         model.addAttribute("isDetailedTemplate", !formulaVariables.isEmpty());
 
+        // Collect lines that require dynamic account selection (account is null)
+        java.util.List<DynamicAccountLine> dynamicAccountLines = new java.util.ArrayList<>();
+        for (JournalTemplateLine line : template.getLines()) {
+            if (line.getAccount() == null) {
+                String hint = line.getAccountHint() != null ? line.getAccountHint() : "Pilih akun";
+                dynamicAccountLines.add(new DynamicAccountLine(
+                        line.getLineOrder(),
+                        line.getPosition().name(),
+                        hint
+                ));
+            }
+        }
+        model.addAttribute("dynamicAccountLines", dynamicAccountLines);
+        model.addAttribute("hasDynamicAccounts", !dynamicAccountLines.isEmpty());
+
+        // Pass accounts list for dynamic selection
+        if (!dynamicAccountLines.isEmpty()) {
+            model.addAttribute("accounts", chartOfAccountService.findTransactableAccounts());
+        }
+
         return "templates/execute";
     }
+
+    public record DynamicAccountLine(int lineOrder, String position, String hint) {}
 
     /**
      * Check if formula is a simple variable name (identifier only).
@@ -352,7 +374,8 @@ public class JournalTemplateController {
                 dto.amount() != null ? dto.amount() : java.math.BigDecimal.ZERO,
                 dto.description(),
                 null,
-                dto.safeVariables()
+                dto.safeVariables(),
+                dto.safeAccountMappings()
         );
         return ResponseEntity.ok(templateExecutionEngine.preview(template, context));
     }
@@ -369,7 +392,8 @@ public class JournalTemplateController {
                 dto.amount() != null ? dto.amount() : java.math.BigDecimal.ZERO,
                 dto.description(),
                 null,
-                dto.safeVariables()
+                dto.safeVariables(),
+                dto.safeAccountMappings()
         );
 
         // Record user usage

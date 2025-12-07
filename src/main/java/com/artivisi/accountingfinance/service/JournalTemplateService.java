@@ -95,9 +95,13 @@ public class JournalTemplateService {
 
         existing.getLines().clear();
         for (JournalTemplateLine line : templateData.getLines()) {
-            ChartOfAccount account = chartOfAccountRepository.findById(line.getAccount().getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Account not found"));
-            line.setAccount(account);
+            if (line.getAccount() != null && line.getAccount().getId() != null) {
+                ChartOfAccount account = chartOfAccountRepository.findById(line.getAccount().getId())
+                        .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+                line.setAccount(account);
+            } else {
+                line.setAccount(null);
+            }
             existing.addLine(line);
         }
 
