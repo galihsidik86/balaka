@@ -13,13 +13,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Generate PDF previews of all printable templates for manual review.
- * Output is saved to /tmp/printables/
+ * Generate PDF previews of all printable templates for user manual.
+ * Output is saved to target/user-manual/samples/
  */
 @DisplayName("Generate Printable PDF Previews")
 class PrintablePreviewTest extends PlaywrightTestBase {
 
-    private static final Path OUTPUT_DIR = Paths.get("/tmp/printables");
+    private static final Path OUTPUT_DIR = Paths.get("target", "user-manual", "samples");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @BeforeEach
@@ -31,9 +31,9 @@ class PrintablePreviewTest extends PlaywrightTestBase {
     @Test
     @DisplayName("Generate Invoice Print Preview")
     void generateInvoicePrintPreview() throws Exception {
-        // Use the known invoice ID from V906 test data
-        String invoiceId = "f0600000-0000-0000-0000-000000000001";
-        navigateTo("/invoices/" + invoiceId + "/print");
+        // Use the known invoice number from V906 test data
+        String invoiceNumber = "INV-2024-001";
+        navigateTo("/invoices/" + invoiceNumber + "/print");
         waitForPageLoad();
         page.waitForTimeout(500);
 

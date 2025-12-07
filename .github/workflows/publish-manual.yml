@@ -37,21 +37,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: akunting
-          POSTGRES_PASSWORD: akunting
-          POSTGRES_DB: akunting
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,37 +48,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build application
-        run: ./mvnw clean compile test-compile -DskipTests
-
       - name: Install Playwright browsers
         run: ./mvnw exec:java -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.classpathScope=test -Dexec.args="install --with-deps chromium"
 
-      - name: Start application for screenshots
+      - name: Capture screenshots using SpringBootTest
         if: ${{ github.event.inputs.skip_screenshots != 'true' }}
-        run: |
-          ./mvnw spring-boot:run -Dspring-boot.run.useTestClasspath=true &
-          echo "Waiting for application to start..."
-          timeout 180 bash -c 'until curl -s http://localhost:8080/login > /dev/null; do sleep 2; done'
-          echo "Application started!"
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/akunting
-          SPRING_DATASOURCE_USERNAME: akunting
-          SPRING_DATASOURCE_PASSWORD: akunting
-          SERVER_PORT: 8080
-          SPRING_FLYWAY_LOCATIONS: classpath:db/migration,classpath:db/testmigration
+        run: ./mvnw test -Dtest="ScreenshotCaptureTest#shouldCaptureAllPageScreenshots"
 
-      - name: Capture screenshots
+      - name: Generate printable PDF samples using SpringBootTest
         if: ${{ github.event.inputs.skip_screenshots != 'true' }}
-        run: ./mvnw exec:java -Dexec.mainClass="com.artivisi.accountingfinance.manual.ScreenshotCapture" -Dexec.classpathScope=test
-        env:
-          APP_URL: http://localhost:8080
-
-      - name: Generate printable PDF samples
-        if: ${{ github.event.inputs.skip_screenshots != 'true' }}
-        run: ./mvnw exec:java -Dexec.mainClass="com.artivisi.accountingfinance.manual.PrintableSamplesCapture" -Dexec.classpathScope=test
-        env:
-          APP_URL: http://localhost:8080
+        run: ./mvnw test -Dtest="PrintablePreviewTest"
 
       - name: Generate user manual
         run: ./mvnw exec:java -Dexec.mainClass="com.artivisi.accountingfinance.manual.UserManualGenerator" -Dexec.classpathScope=test

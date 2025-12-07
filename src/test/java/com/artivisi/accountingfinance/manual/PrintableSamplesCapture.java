@@ -19,8 +19,8 @@ public class PrintableSamplesCapture {
     private final Path samplesDir;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    // Test data invoice ID from V906
-    private static final String INVOICE_ID = "f0600000-0000-0000-0000-000000000001";
+    // Test data invoice number from V906
+    private static final String INVOICE_NUMBER = "INV-2024-001";
 
     public PrintableSamplesCapture(String baseUrl, Path samplesDir) {
         this.baseUrl = baseUrl;
@@ -44,7 +44,7 @@ public class PrintableSamplesCapture {
             new PrintableDefinition(
                 "invoice-print",
                 "Contoh Invoice",
-                "/invoices/" + INVOICE_ID + "/print",
+                "/invoices/" + INVOICE_NUMBER + "/print",
                 "Contoh cetakan invoice dengan kop surat perusahaan"
             ),
             new PrintableDefinition(
