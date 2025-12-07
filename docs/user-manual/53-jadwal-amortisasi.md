@@ -64,7 +64,13 @@ Setiap bulan: Beban Sewa: Rp 2.000.000
 **Langkah 2: Buat Jadwal Amortisasi**
 
 1. Klik menu **Amortisasi** di sidebar
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
 2. Klik tombol **Jadwal Baru**
+
+![Form Jadwal Amortisasi](screenshots/amortization-form.png)
+
 3. Pilih **Tipe Jadwal**: `Beban Dibayar Dimuka`
 4. Isi informasi:
    - **Nama**: `Sewa Kantor 2025`
@@ -78,6 +84,9 @@ Setiap bulan: Beban Sewa: Rp 2.000.000
 5. Review perhitungan:
    - **Jumlah per Periode**: Rp 2.000.000
    - **Jumlah Periode**: 12
+
+![Form Jadwal Amortisasi](screenshots/amortization-form.png)
+
 6. Pilih opsi posting:
    - **Auto-Post**: Centang jika ingin otomatis
    - **Tanggal Posting**: 1 (tanggal 1 setiap bulan)
@@ -96,14 +105,22 @@ Kredit : Sewa Dibayar Dimuka   Rp 2.000.000
 **Langkah-langkah**:
 
 1. Catat pembayaran ke akun **Asuransi Dibayar Dimuka**
-2. Buat jadwal amortisasi:
+2. Klik menu **Amortisasi** di sidebar
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
+3. Klik tombol **Jadwal Baru**
+
+![Form Jadwal Amortisasi](screenshots/amortization-form.png)
+
+4. Buat jadwal amortisasi:
    - **Tipe**: Beban Dibayar Dimuka
    - **Nama**: `Asuransi Kantor 2025`
    - **Akun Sumber**: Asuransi Dibayar Dimuka
    - **Akun Tujuan**: Beban Asuransi
    - **Jumlah**: 6.000.000
    - **Periode**: 12 bulan
-3. **Jumlah per Periode**: Rp 500.000
+5. **Jumlah per Periode**: Rp 500.000
 
 ## Skenario 3: Pendapatan Diterima Dimuka (Retainer)
 
@@ -121,7 +138,13 @@ Kredit : Sewa Dibayar Dimuka   Rp 2.000.000
 **Langkah 2: Buat Jadwal Amortisasi**
 
 1. Klik menu **Amortisasi**
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
 2. Klik **Jadwal Baru**
+
+![Form Jadwal Amortisasi](screenshots/amortization-form.png)
+
 3. Pilih **Tipe**: `Pendapatan Diterima Dimuka`
 4. Isi:
    - **Nama**: `Retainer Maintenance PT ABC`
@@ -144,14 +167,22 @@ Kredit : Pendapatan Jasa              Rp 2.000.000
 **Langkah-langkah**:
 
 1. Catat pembuatan website ke akun **Aset Tak Berwujud - Website**
-2. Buat jadwal amortisasi:
+2. Klik menu **Amortisasi**
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
+3. Klik **Jadwal Baru**
+
+![Form Jadwal Amortisasi](screenshots/amortization-form.png)
+
+4. Buat jadwal amortisasi:
    - **Tipe**: Aset Tak Berwujud
    - **Nama**: `Website Perusahaan`
    - **Akun Sumber**: Akumulasi Amortisasi Website
    - **Akun Tujuan**: Beban Amortisasi
    - **Jumlah**: 50.000.000
    - **Periode**: 60 bulan (5 tahun)
-3. **Jumlah per Periode**: Rp 833.333
+5. **Jumlah per Periode**: Rp 833.333
 
 **Jurnal Bulanan**:
 ```
@@ -166,11 +197,16 @@ Kredit : Akumulasi Amortisasi Website        Rp 833.333
 **Langkah-langkah**:
 
 1. Klik menu **Amortisasi** di sidebar
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
 2. Lihat daftar jadwal:
    - **Status**: Active, Completed, Cancelled
    - **Progress**: Bar yang menunjukkan periode terselesaikan
    - **Sisa**: Jumlah yang belum diamortisasi
 3. Filter berdasarkan tipe atau status jika perlu
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
 
 ## Skenario 6: Posting Manual Entri Amortisasi
 
@@ -179,6 +215,9 @@ Kredit : Akumulasi Amortisasi Website        Rp 833.333
 **Langkah-langkah**:
 
 1. Klik menu **Amortisasi**
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
 2. Klik jadwal yang bersangkutan
 3. Di daftar entri, lihat status masing-masing:
    - **Pending**: Belum waktunya
@@ -194,6 +233,9 @@ Kredit : Akumulasi Amortisasi Website        Rp 833.333
 **Langkah-langkah**:
 
 1. Klik menu **Amortisasi**
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
 2. Klik jadwal yang bersangkutan
 3. Scroll ke bagian **Daftar Entri**:
 
@@ -224,10 +266,15 @@ Sisa: 18.000.000
 **Langkah-langkah**:
 
 1. Klik menu **Amortisasi**
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
+
 2. Klik jadwal yang akan dibatalkan
 3. Klik tombol **Batalkan**
 4. Konfirmasi pembatalan
 5. Status berubah menjadi **Cancelled**
+
+![Daftar Jadwal Amortisasi](screenshots/amortization-list.png)
 
 **Catatan**:
 - Entri yang sudah Posted tidak akan di-reverse otomatis

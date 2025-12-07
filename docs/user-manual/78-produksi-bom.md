@@ -26,6 +26,9 @@ Komponen:
 ### Langkah-langkah
 
 1. Klik menu **Inventori** > **Bill of Materials**
+
+![Daftar BOM](../../screenshots/bom-list.png)
+
 2. Klik tombol **Tambah BOM**
 3. Isi informasi BOM:
    - **Kode BOM**: Kode unik (contoh: BOM-KUECOKLAT)
@@ -38,6 +41,9 @@ Komponen:
    - Pilih produk komponen
    - Isi jumlah yang diperlukan
    - Isi catatan (opsional)
+
+![Form BOM](../../screenshots/bom-form.png)
+
 5. Klik **Simpan**
 
 ### Tips Membuat BOM
@@ -52,6 +58,8 @@ Komponen:
 
 1. Gunakan **Search** untuk mencari berdasarkan kode atau nama
 2. Gunakan filter **Status** untuk melihat BOM aktif/nonaktif
+
+![Filter BOM](../../screenshots/bom-list.png)
 
 ### Detail BOM
 
@@ -80,12 +88,18 @@ Status production order:
 ### Membuat Production Order
 
 1. Klik menu **Inventori** > **Production Order**
+
+![Daftar Production Order](../../screenshots/production-list.png)
+
 2. Klik **Buat Order Baru**
 3. Isi form:
    - **BOM**: Pilih BOM yang akan digunakan
    - **Kuantitas**: Jumlah batch yang akan diproduksi
    - **Tanggal Order**: Tanggal perintah produksi
    - **Catatan**: Keterangan tambahan
+
+![Form Production Order](../../screenshots/production-form.png)
+
 4. Klik **Simpan**
 
 Sistem menghasilkan nomor order otomatis (PO-YYYY-NNNN).
@@ -93,6 +107,9 @@ Sistem menghasilkan nomor order otomatis (PO-YYYY-NNNN).
 ### Memulai Produksi
 
 1. Buka halaman detail production order
+
+![Detail Production Order](../../screenshots/production-form.png)
+
 2. Klik tombol **Mulai Produksi**
 3. Konfirmasi
 
@@ -105,6 +122,9 @@ Status berubah menjadi **In Progress**.
 ### Menyelesaikan Produksi
 
 1. Dari halaman detail order yang sedang berjalan
+
+![Production Order In Progress](../../screenshots/production-form.png)
+
 2. Klik tombol **Selesaikan Produksi**
 3. Konfirmasi
 
@@ -146,6 +166,8 @@ Order yang sudah **Completed** tidak dapat dibatalkan.
 ## Daftar Production Order
 
 ### Filter
+
+![Filter Production Order](../../screenshots/production-list.png)
 
 1. Filter berdasarkan **Status**
 2. Filter berdasarkan **BOM**

@@ -18,7 +18,13 @@ Status payroll:
 ## Membuat Payroll Baru
 
 1. Klik menu **Payroll** > **Daftar Payroll**
+
+![Daftar Payroll](../../screenshots/payroll-list.png)
+
 2. Klik tombol **Buat Payroll Baru**
+
+![Form Payroll Baru](../../screenshots/payroll-form.png)
+
 3. Isi form:
    - **Periode**: Format YYYY-MM (contoh: 2025-01)
    - **Gaji Pokok**: Jumlah gaji pokok untuk semua karyawan
@@ -63,6 +69,8 @@ PTKP 2024:
 
 Halaman detail menampilkan:
 
+![Detail Payroll](../../screenshots/payroll-detail.png)
+
 ### Summary
 
 - **Jumlah Karyawan**: Total karyawan yang diproses
@@ -85,6 +93,9 @@ Tabel yang menampilkan:
 Setelah review perhitungan:
 
 1. Buka halaman detail payroll
+
+![Review Detail Payroll](../../screenshots/payroll-detail.png)
+
 2. Verifikasi jumlah dan perhitungan
 3. Klik tombol **Approve**
 
@@ -95,6 +106,9 @@ Setelah di-approve, payroll siap untuk di-posting ke jurnal.
 Posting akan membuat jurnal akuntansi:
 
 1. Dari halaman detail payroll yang sudah di-approve
+
+![Posting Payroll](../../screenshots/payroll-detail.png)
+
 2. Klik tombol **Post ke Jurnal**
 3. Konfirmasi posting
 
@@ -135,6 +149,8 @@ Hanya payroll dengan status **Draft** yang dapat dihapus:
 
 Di halaman daftar payroll:
 
+![Filter Payroll](../../screenshots/payroll-list.png)
+
 1. Gunakan dropdown **Status** untuk filter
 2. Pilih status: All, Draft, Calculated, Approved, Posted, Cancelled
 3. Klik periode untuk melihat detail
@@ -146,6 +162,9 @@ Sistem menyediakan beberapa laporan untuk setiap payroll yang sudah dikalkulasi.
 ### Mengakses Laporan
 
 1. Buka halaman detail payroll
+
+![Akses Laporan Payroll](../../screenshots/payroll-detail.png)
+
 2. Klik tombol **Export** (dropdown)
 3. Pilih jenis laporan dan format (PDF/Excel)
 

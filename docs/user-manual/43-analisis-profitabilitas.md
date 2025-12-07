@@ -43,7 +43,13 @@ Profit Margin:      36%
 **Langkah-langkah**:
 
 1. Klik menu **Proyek** di sidebar
+
+![Daftar Proyek](../../screenshots/projects-list.png)
+
 2. Klik proyek yang ingin dianalisis
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 3. Scroll ke bagian **Ringkasan Finansial**:
 
 ```
@@ -85,6 +91,9 @@ Variance                   Rp 13.500.000 (hemat)
 
 1. Klik menu **Laporan** di sidebar
 2. Pilih **Laporan Profitabilitas**
+
+![Laporan Profitabilitas Proyek](../../screenshots/reports-project-profitability.png)
+
 3. Pilih filter:
    - **Periode**: Tahun 2025
    - **Status**: Completed (atau All)
@@ -119,6 +128,9 @@ TOTAL                               180.000.000    104.500.000    75.500.000    
 
 1. Klik menu **Laporan** di sidebar
 2. Pilih **Profitabilitas per Klien**
+
+![Laporan Profitabilitas Klien](../../screenshots/reports-client-profitability.png)
+
 3. Pilih periode
 4. Klik **Tampilkan**
 
@@ -149,6 +161,9 @@ TOTAL             6         215.000.000   127.500.000    87.500.000    41%
 **Langkah-langkah**:
 
 1. Buka **Laporan Profitabilitas**
+
+![Laporan Profitabilitas Proyek](../../screenshots/reports-project-profitability.png)
+
 2. Urutkan berdasarkan **Margin** (ascending)
 3. Identifikasi proyek dengan margin < 30%
 4. Untuk setiap proyek bermasalah:
@@ -171,6 +186,9 @@ TOTAL             6         215.000.000   127.500.000    87.500.000    41%
 **Langkah-langkah**:
 
 1. Buka detail proyek yang sedang berjalan
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Lihat bagian **Proyeksi Profitabilitas**:
 
 ```
@@ -206,6 +224,9 @@ Rekomendasi: Review dan optimasi biaya sisa proyek
 **Langkah-langkah**:
 
 1. Buka **Laporan Profitabilitas** yang diinginkan
+
+![Laporan Profitabilitas Proyek](../../screenshots/reports-project-profitability.png)
+
 2. Klik tombol **Ekspor Excel**
 3. File Excel akan terunduh dengan data:
    - Summary per proyek
@@ -224,6 +245,9 @@ Rekomendasi: Review dan optimasi biaya sisa proyek
 **Langkah-langkah**:
 
 1. Buka **Laporan Profitabilitas**
+
+![Laporan Profitabilitas Proyek](../../screenshots/reports-project-profitability.png)
+
 2. Filter proyek dengan tipe serupa
 3. Analisis:
    - Average cost untuk proyek sejenis

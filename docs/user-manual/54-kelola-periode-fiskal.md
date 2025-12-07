@@ -35,6 +35,9 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Klik tombol **Generate Tahun**
 3. Pilih tahun yang ingin dibuat (contoh: 2025)
 4. Klik **Generate**
@@ -45,6 +48,8 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 - Setiap periode memiliki tanggal awal dan akhir yang benar
 - Periode siap digunakan untuk pencatatan transaksi
 
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 ## Skenario 2: Buat Periode Tunggal
 
 **Situasi**: Anda hanya perlu membuat satu periode tertentu.
@@ -52,6 +57,9 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Klik tombol **+ Tambah Periode**
 3. Pilih:
    - **Tahun**: 2025
@@ -67,6 +75,9 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Filter berdasarkan tahun jika perlu
 3. Klik periode yang ingin ditutup (contoh: November 2025)
 4. Di halaman detail, periksa:
@@ -81,6 +92,8 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 - Transaksi baru tidak bisa diinput untuk periode ini
 - Tanggal penutupan tercatat di sistem
 
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 ## Skenario 4: Tandai SPT Sudah Dilaporkan
 
 **Situasi**: Anda sudah melaporkan SPT Masa untuk periode tertentu.
@@ -88,6 +101,9 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Klik periode yang sudah ditutup (status: CLOSED)
 3. Klik tombol **Tandai SPT Dilaporkan**
 4. (Opsional) Masukkan catatan:
@@ -100,6 +116,8 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 - Periode terkunci permanen
 - Tidak bisa dibuka kembali
 
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 ## Skenario 5: Buka Kembali Periode
 
 **Situasi**: Ada koreksi yang perlu dilakukan pada periode yang sudah ditutup.
@@ -107,6 +125,9 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Klik periode dengan status CLOSED
 3. Klik tombol **Buka Kembali**
 4. Masukkan alasan pembukaan kembali (wajib)
@@ -117,6 +138,8 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 - Periode TAX_FILED tidak bisa dibuka kembali
 - Alasan pembukaan tercatat untuk audit trail
 
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 ## Skenario 6: Filter dan Cari Periode
 
 **Situasi**: Anda ingin mencari periode tertentu dari daftar yang panjang.
@@ -124,10 +147,15 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Gunakan filter:
    - **Tahun**: Pilih tahun spesifik
    - **Status**: OPEN / CLOSED / TAX_FILED
 3. Daftar periode akan difilter sesuai kriteria
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
 
 ## Skenario 7: Review Detail Periode
 
@@ -136,6 +164,9 @@ Periode bisa dibuka kembali (reopen) dari CLOSED ke OPEN, tapi periode yang suda
 **Langkah-langkah**:
 
 1. Klik menu **Periode Fiskal** di sidebar
+
+![Daftar Periode Fiskal](screenshots/fiscal-periods-list.png)
+
 2. Klik periode yang ingin dilihat
 3. Di halaman detail, Anda dapat melihat:
    - Nama periode (contoh: November 2025)

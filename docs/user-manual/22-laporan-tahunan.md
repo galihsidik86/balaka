@@ -35,14 +35,24 @@ Gunakan panduan ini ketika Anda:
 **Langkah Verifikasi**:
 
 1. Klik menu **Transaksi** > filter **Status: Draft**
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
    - Posting atau hapus semua draft
+
 2. Klik menu **Transaksi** > **Struk Pending**
    - Proses semua struk yang belum dicatat
+
 3. Klik menu **Buku Besar** > pilih akun Kas dan Bank
    - Cocokkan dengan saldo aktual
+
 4. Klik menu **Amortisasi**
    - Pastikan entri Desember sudah posted
+
 5. Klik menu **Laporan** > **Neraca Saldo**
+
+![Laporan Neraca Saldo](../../screenshots/reports-trial-balance.png)
+
    - Verifikasi total debit = total kredit
 
 ## Skenario 2: Cetak Laporan Keuangan Tahunan
@@ -58,6 +68,9 @@ Gunakan panduan ini ketika Anda:
    - **Tanggal Awal**: 1 Januari 2025
    - **Tanggal Akhir**: 31 Desember 2025
 3. Klik **Tampilkan**
+
+![Laporan Laba Rugi Tahunan](../../screenshots/reports-income-statement.png)
+
 4. Klik **Ekspor PDF** untuk dokumentasi
 5. Klik **Ekspor Excel** untuk analisis
 
@@ -66,6 +79,9 @@ Gunakan panduan ini ketika Anda:
 1. Klik menu **Laporan** > **Neraca**
 2. Pilih **Tanggal**: 31 Desember 2025
 3. Klik **Tampilkan**
+
+![Laporan Neraca Tahunan](../../screenshots/reports-balance-sheet.png)
+
 4. Ekspor ke PDF dan Excel
 
 **Neraca Saldo Tahunan**:
@@ -73,6 +89,9 @@ Gunakan panduan ini ketika Anda:
 1. Klik menu **Laporan** > **Neraca Saldo**
 2. Pilih **Tanggal**: 31 Desember 2025
 3. Klik **Tampilkan**
+
+![Laporan Neraca Saldo Tahunan](../../screenshots/reports-trial-balance.png)
+
 4. Ekspor ke PDF dan Excel
 
 ## Skenario 3: Analisis Performa Tahunan

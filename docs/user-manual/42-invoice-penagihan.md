@@ -34,7 +34,13 @@ Gunakan panduan ini ketika Anda:
 **Langkah-langkah**:
 
 1. Klik menu **Proyek** di sidebar
+
+![Daftar Proyek](../../screenshots/projects-list.png)
+
 2. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 3. Scroll ke bagian **Termin Pembayaran**
 4. Pada termin **Progress Payment** (40%), klik **Buat Invoice**
 5. Form invoice akan terisi otomatis:
@@ -58,6 +64,9 @@ Gunakan panduan ini ketika Anda:
 **Langkah-langkah**:
 
 1. Klik menu **Invoice** di sidebar
+
+![Daftar Invoice](../../screenshots/invoices-list.png)
+
 2. Klik tombol **Invoice Baru**
 3. Isi form:
    - **Nomor Invoice**: `INV-2025-002`
@@ -78,6 +87,9 @@ Gunakan panduan ini ketika Anda:
 **Langkah-langkah**:
 
 1. Buka detail invoice
+
+![Daftar Invoice](../../screenshots/invoices-list.png)
+
 2. Review kembali semua informasi
 3. Klik tombol **Cetak PDF** untuk download
 4. Kirim PDF ke klien via email atau media lain
@@ -119,6 +131,9 @@ TOTAL                          Rp 22.200.000
 **Cara 1: Dari Halaman Invoice**
 
 1. Buka detail invoice
+
+![Daftar Invoice](../../screenshots/invoices-list.png)
+
 2. Klik tombol **Catat Pembayaran**
 3. Isi form:
    - **Tanggal Bayar**: Tanggal uang diterima
@@ -131,7 +146,12 @@ TOTAL                          Rp 22.200.000
 **Cara 2: Dari Menu Transaksi**
 
 1. Klik menu **Transaksi**
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Buat transaksi baru dengan template **Terima Pembayaran Invoice**
+
+![Form Transaksi Baru](../../screenshots/transactions-form.png)
 3. Isi jumlah dan referensi nomor invoice
 4. Posting transaksi
 5. Kembali ke invoice dan tandai sebagai Paid
@@ -143,6 +163,9 @@ TOTAL                          Rp 22.200.000
 **Langkah-langkah**:
 
 1. Buka detail invoice
+
+![Daftar Invoice](../../screenshots/invoices-list.png)
+
 2. Klik **Catat Pembayaran**
 3. Masukkan jumlah partial: `10000000`
 4. Klik **Simpan**
@@ -168,6 +191,9 @@ Sisa:              Rp 12.200.000
 **Langkah-langkah**:
 
 1. Klik menu **Invoice** di sidebar
+
+![Daftar Invoice](../../screenshots/invoices-list.png)
+
 2. Di filter **Status**, pilih **Overdue**
 3. Klik **Tampilkan**
 4. Daftar invoice yang lewat jatuh tempo akan muncul
@@ -187,6 +213,9 @@ Sisa:              Rp 12.200.000
 **Langkah-langkah**:
 
 1. Buka detail invoice
+
+![Daftar Invoice](../../screenshots/invoices-list.png)
+
 2. Pastikan invoice belum ada pembayaran
 3. Klik tombol **Batalkan**
 4. Pilih alasan:
@@ -206,9 +235,15 @@ Sisa:              Rp 12.200.000
 **Langkah-langkah**:
 
 1. Buka **Dashboard**
+
+![Dashboard](../../screenshots/dashboard.png)
+
 2. Lihat kartu **Piutang** untuk total outstanding
 3. Untuk detail:
    - Klik menu **Invoice**
+
+   ![Daftar Invoice](../../screenshots/invoices-list.png)
+
    - Filter status: **Sent** + **Partial** + **Overdue**
    - Total yang muncul adalah piutang
 

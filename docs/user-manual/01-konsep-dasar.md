@@ -14,6 +14,10 @@ Akuntansi adalah proses mencatat, mengklasifikasi, dan melaporkan transaksi keua
 - Membuat keputusan bisnis yang tepat
 - Memenuhi kewajiban pelaporan pajak
 
+Berikut tampilan dashboard aplikasi akuntansi yang akan membantu Anda mengelola keuangan bisnis:
+
+![Dashboard](../../screenshots/dashboard.png)
+
 ## Persamaan Dasar Akuntansi
 
 ```
@@ -76,6 +80,10 @@ Bagan akun adalah daftar semua akun yang digunakan untuk mencatat transaksi. Aku
 | 4.x.xx | Pendapatan | Pendapatan Jasa, Pendapatan Lain |
 | 5.x.xx | Beban | Gaji, Sewa, Listrik, Internet |
 
+Berikut tampilan daftar akun di aplikasi:
+
+![Daftar Akun](../../screenshots/accounts-list.png)
+
 ## Transaksi dan Jurnal
 
 Aplikasi ini menggunakan pendekatan **transaction-centric** dimana setiap pencatatan dimulai dari transaksi bisnis, bukan dari jurnal.
@@ -91,6 +99,18 @@ Keuntungan pendekatan ini:
 - Anda tidak perlu memahami debit/kredit untuk mencatat transaksi
 - Sistem otomatis membuat jurnal yang benar berdasarkan template
 - Semua jurnal selalu terkait dengan transaksi yang jelas
+
+Berikut tampilan daftar transaksi di aplikasi:
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
+Dan berikut tampilan form untuk mencatat transaksi baru:
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
+Setelah transaksi diposting, Anda dapat melihat detailnya:
+
+![Detail Transaksi](../../screenshots/transactions-detail.png)
 
 ## Status Transaksi
 

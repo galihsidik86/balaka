@@ -9,6 +9,8 @@ Menu Karyawan digunakan untuk mengelola data karyawan yang akan diproses penggaj
 1. Klik menu **Karyawan** di sidebar
 2. Halaman daftar karyawan akan ditampilkan
 
+![Daftar Karyawan](../../screenshots/employees-list.png)
+
 ## Daftar Karyawan
 
 Halaman daftar menampilkan semua karyawan dengan informasi:
@@ -27,6 +29,9 @@ Halaman daftar menampilkan semua karyawan dengan informasi:
 ## Menambah Karyawan Baru
 
 1. Klik tombol **+ Karyawan Baru**
+
+![Form Karyawan](../../screenshots/employees-form.png)
+
 2. Isi data pada form:
 
 ### Data Pribadi
@@ -96,6 +101,9 @@ Halaman daftar menampilkan semua karyawan dengan informasi:
 
 1. Buka halaman detail karyawan
 2. Klik tombol **Edit**
+
+![Form Edit Karyawan](../../screenshots/employees-form.png)
+
 3. Ubah data yang diperlukan
 4. Klik **Simpan**
 

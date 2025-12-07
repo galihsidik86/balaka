@@ -38,6 +38,9 @@ Gunakan panduan ini ketika Anda:
 **Langkah-langkah**:
 
 1. Klik menu **Kalender Pajak** di sidebar
+
+![Kalender Pajak](../../screenshots/tax-calendar.png)
+
 2. Pilih periode:
    - **Tahun**: 2025
    - **Bulan**: Oktober (masa pajak)
@@ -67,6 +70,9 @@ CHECKLIST PAJAK - Oktober 2025
 **Langkah-langkah**:
 
 1. Buka **Kalender Pajak** untuk masa pajak yang sesuai
+
+![Kalender Pajak](../../screenshots/tax-calendar.png)
+
 2. Cari item "Setor PPh 21"
 3. Klik tombol **Tandai Selesai**
 4. Isi informasi:
@@ -87,6 +93,9 @@ CHECKLIST PAJAK - Oktober 2025
 **Langkah-langkah**:
 
 1. Buka **Kalender Pajak** untuk masa pajak yang sesuai
+
+![Kalender Pajak](../../screenshots/tax-calendar.png)
+
 2. Cari item yang ingin dibatalkan
 3. Klik tombol **Batalkan**
 4. Konfirmasi pembatalan
@@ -102,6 +111,9 @@ CHECKLIST PAJAK - Oktober 2025
 1. Klik menu **Kalender Pajak** di sidebar
 2. Klik tab **Tahunan** atau link **Lihat Tahunan**
 3. Pilih tahun (contoh: 2025)
+
+![Kalender Pajak Tahunan](../../screenshots/tax-calendar-yearly.png)
+
 4. Lihat grid 12 bulan dengan status:
 
 **Tampilan Overview**:
@@ -126,6 +138,9 @@ Keterangan: ✓ Selesai | ○ Mendekati/Terlambat | - Belum
 **Langkah-langkah**:
 
 1. Buka **Dashboard** (halaman utama)
+
+![Dashboard](../../screenshots/dashboard.png)
+
 2. Lihat widget **Kalender Pajak** yang menampilkan:
    - Jumlah deadline yang terlambat (merah)
    - Jumlah deadline yang mendekati (kuning)
@@ -149,6 +164,9 @@ KALENDER PAJAK
 **Langkah-langkah**:
 
 1. Klik menu **Kalender Pajak** di sidebar
+
+![Kalender Pajak](../../screenshots/tax-calendar.png)
+
 2. Klik tab **Mendatang**
 3. Lihat daftar deadline yang diurutkan berdasarkan tanggal:
    - **Terlambat**: Yang sudah melewati deadline

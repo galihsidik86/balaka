@@ -48,6 +48,8 @@ Gunakan filter untuk menyaring akun:
 - **Tipe**: Aset, Kewajiban, Ekuitas, Pendapatan, Beban
 - **Pencarian**: Cari berdasarkan kode atau nama
 
+![Daftar Akun](screenshots/accounts-list.png)
+
 ### Langkah 3: Review Kelengkapan
 
 Review apakah akun-akun sudah sesuai kebutuhan bisnis Anda.
@@ -75,9 +77,15 @@ Lengkapi form dengan data berikut:
 - **Deskripsi**: `Rekening operasional Bank Mandiri`
 - **Saldo Normal**: `Debit`
 
+![Form Akun](screenshots/accounts-form.png)
+
 ### Langkah 3: Simpan
 
 Klik **Simpan** untuk menyimpan akun baru.
+
+Setelah disimpan, Anda akan kembali ke daftar akun dengan akun baru yang sudah ditambahkan.
+
+![Daftar Akun](screenshots/accounts-list.png)
 
 **Catatan**: Kode akun harus unik dan mengikuti struktur:
 - 1.x.xx = Aset
@@ -95,6 +103,9 @@ Klik **Simpan** untuk menyimpan akun baru.
 ### Langkah-langkah
 
 1. Klik menu **Akun** di sidebar
+
+![Daftar Akun](screenshots/accounts-list.png)
+
 2. Klik tombol **Akun Baru**
 3. Isi informasi:
    - **Kode**: `5.2.10`
@@ -103,6 +114,9 @@ Klik **Simpan** untuk menyimpan akun baru.
    - **Sub Tipe**: `Beban Operasional`
    - **Deskripsi**: `Biaya promosi, iklan, dan marketing`
    - **Saldo Normal**: `Debit`
+
+![Form Akun](screenshots/accounts-form.png)
+
 4. Klik **Simpan**
 
 ---
@@ -177,9 +191,15 @@ Kredit : Modal              Rp 90.000.000
 ### Langkah-langkah
 
 1. Klik menu **Akun** di sidebar
+
+![Daftar Akun](screenshots/accounts-list.png)
+
 2. Cari akun yang ingin dinonaktifkan
 3. Klik akun tersebut
 4. Klik **Edit**
+
+![Form Edit Akun](screenshots/accounts-form.png)
+
 5. Nonaktifkan toggle **Status Aktif**
 6. Klik **Simpan**
 

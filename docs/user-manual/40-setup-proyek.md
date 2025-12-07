@@ -42,7 +42,13 @@ Fitur proyek memungkinkan Anda:
 **Langkah-langkah**:
 
 1. Klik menu **Proyek** di sidebar
+
+![Daftar Proyek](../../screenshots/projects-list.png)
+
 2. Klik tombol **Proyek Baru**
+
+![Form Proyek Baru](../../screenshots/projects-form.png)
+
 3. Isi informasi dasar:
    - **Kode**: `PRJ-2025-001` (atau auto-generate)
    - **Nama**: `Website E-commerce PT ABC`
@@ -63,6 +69,9 @@ Fitur proyek memungkinkan Anda:
 **Langkah-langkah**:
 
 1. Buka detail proyek yang baru dibuat
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Scroll ke bagian **Milestone**
 3. Klik **Tambah Milestone**
 4. Untuk milestone pertama:
@@ -88,6 +97,9 @@ Fitur proyek memungkinkan Anda:
 **Langkah-langkah**:
 
 1. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Scroll ke bagian **Termin Pembayaran**
 3. Klik **Tambah Termin**
 
@@ -126,11 +138,22 @@ Fitur proyek memungkinkan Anda:
 
 1. Buat klien terlebih dahulu:
    - Klik menu **Klien** di sidebar
+
+   ![Daftar Klien](../../screenshots/clients-list.png)
+
    - Klik **Klien Baru**
+
+   ![Form Klien Baru](../../screenshots/clients-form.png)
+
    - Isi data klien (nama, alamat, NPWP, dll)
    - Klik **Simpan**
 2. Kembali ke menu **Proyek**
+
+![Daftar Proyek](../../screenshots/projects-list.png)
+
 3. Buat proyek baru dan pilih klien yang baru dibuat
+
+![Form Proyek Baru](../../screenshots/projects-form.png)
 
 Lihat [Kelola Klien](52-kelola-klien.md) untuk detail manajemen klien.
 
@@ -141,6 +164,9 @@ Lihat [Kelola Klien](52-kelola-klien.md) untuk detail manajemen klien.
 **Langkah-langkah**:
 
 1. Buka detail proyek yang ingin dijadikan template
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Klik tombol **Duplikat**
 3. Ubah informasi yang berbeda:
    - Kode proyek baru
@@ -159,7 +185,13 @@ Lihat [Kelola Klien](52-kelola-klien.md) untuk detail manajemen klien.
 **Langkah-langkah**:
 
 1. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Klik tombol **Edit**
+
+![Form Edit Proyek](../../screenshots/projects-form.png)
+
 3. Ubah informasi yang diperlukan:
    - Nilai kontrak (jika ada addendum)
    - Budget (jika estimasi berubah)

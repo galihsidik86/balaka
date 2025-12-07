@@ -1,5 +1,7 @@
 # Glosarium
 
+![Dashboard Aplikasi](../../screenshots/dashboard.png)
+
 ## Istilah Akuntansi
 
 ### A

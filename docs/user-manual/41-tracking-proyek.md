@@ -49,7 +49,13 @@ Progress: 35%
 **Langkah-langkah**:
 
 1. Klik menu **Proyek** di sidebar
+
+![Daftar Proyek](../../screenshots/projects-list.png)
+
 2. Klik proyek yang bersangkutan
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 3. Scroll ke bagian **Milestone**
 4. Klik milestone **Analisis & Desain**
 5. Update informasi:
@@ -67,6 +73,9 @@ Progress: 35%
 **Langkah-langkah**:
 
 1. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Klik milestone **Pengembangan Frontend**
 3. Update informasi:
    - **Status**: `In Progress`
@@ -90,7 +99,13 @@ Total Progress: 35%
 **Langkah-langkah**:
 
 1. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Klik **Transaksi Baru**
+
+![Form Transaksi Baru](../../screenshots/transactions-form.png)
+
 3. Pilih template **Beban Proyek** atau template yang sesuai
 4. Isi form:
    - **Tanggal**: Tanggal pembayaran
@@ -109,7 +124,13 @@ Total Progress: 35%
 **Langkah-langkah**:
 
 1. Klik menu **Proyek** di sidebar
+
+![Daftar Proyek](../../screenshots/projects-list.png)
+
 2. Klik proyek yang bersangkutan
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 3. Lihat bagian **Ringkasan Finansial**:
 
 ```
@@ -142,6 +163,9 @@ Progress               35%
 **Langkah-langkah**:
 
 1. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Lihat warning di bagian atas:
    ```
    ⚠️ RISIKO OVERRUN
@@ -166,7 +190,13 @@ Progress               35%
 **Langkah-langkah**:
 
 1. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Klik **Transaksi Baru**
+
+![Form Transaksi Baru](../../screenshots/transactions-form.png)
+
 3. Pilih template **Terima DP Proyek** atau **Terima Pembayaran Proyek**
 4. Isi form:
    - **Tanggal**: Tanggal terima pembayaran
@@ -185,6 +215,9 @@ Progress               35%
 **Langkah-langkah**:
 
 1. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 2. Scroll ke bagian **Transaksi Terkait**
 3. Lihat tabel transaksi:
 
@@ -206,7 +239,13 @@ Progress               35%
 1. Pastikan semua milestone sudah 100%
 2. Pastikan semua pembayaran sudah diterima
 3. Buka detail proyek
+
+![Detail Proyek](../../screenshots/projects-detail.png)
+
 4. Klik tombol **Edit**
+
+![Form Edit Proyek](../../screenshots/projects-form.png)
+
 5. Ubah **Status** ke `Completed`
 6. Klik **Simpan**
 

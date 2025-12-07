@@ -118,6 +118,9 @@ Setiap event mencatat:
 ### Akses Log Audit
 
 Administrator dapat mengakses log melalui **Pengaturan > Log Audit**:
+
+![Halaman Log Audit](../../screenshots/settings-audit-logs.png)
+
 - Filter berdasarkan tipe event
 - Filter berdasarkan username
 - Filter berdasarkan rentang tanggal

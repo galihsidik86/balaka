@@ -32,6 +32,8 @@ Halaman daftar pengguna menampilkan semua pengguna yang terdaftar dalam sistem. 
 - Mencari pengguna berdasarkan username, nama, atau email
 - Menambah pengguna baru
 
+![Daftar Pengguna](../../screenshots/users-list.png)
+
 ### Filter dan Pencarian
 
 Gunakan kolom pencarian untuk mencari pengguna berdasarkan:
@@ -42,13 +44,17 @@ Gunakan kolom pencarian untuk mencari pengguna berdasarkan:
 ## Menambah Pengguna Baru
 
 1. Klik tombol **Pengguna Baru** di halaman daftar
-2. Isi informasi pengguna:
+2. Anda akan melihat form pengguna baru:
+
+![Form Pengguna Baru](../../screenshots/users-form.png)
+
+3. Isi informasi pengguna:
    - **Username**: Username unik untuk login (wajib)
    - **Password**: Password sesuai kebijakan keamanan (wajib untuk pengguna baru)
    - **Nama Lengkap**: Nama lengkap pengguna (wajib)
    - **Email**: Alamat email (opsional)
-3. Pilih minimal satu role dari daftar yang tersedia
-4. Klik **Simpan** untuk membuat pengguna
+4. Pilih minimal satu role dari daftar yang tersedia
+5. Klik **Simpan** untuk membuat pengguna
 
 ### Persyaratan Password
 
@@ -67,9 +73,13 @@ Contoh password yang valid: `SecurePass123!`
 ## Mengedit Pengguna
 
 1. Klik link **Detail** pada baris pengguna yang ingin diedit
-2. Di halaman detail, klik tombol **Edit**
-3. Ubah informasi yang diperlukan
-4. Klik **Simpan** untuk menyimpan perubahan
+2. Anda akan melihat halaman detail pengguna:
+
+![Detail Pengguna](../../screenshots/users-detail.png)
+
+3. Di halaman detail, klik tombol **Edit**
+4. Ubah informasi yang diperlukan
+5. Klik **Simpan** untuk menyimpan perubahan
 
 **Catatan**: Password tidak ditampilkan saat mengedit. Untuk mengubah password, gunakan fitur Ubah Password.
 

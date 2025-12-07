@@ -7,6 +7,9 @@ Fitur produk memungkinkan pencatatan barang dagangan dan bahan baku untuk invent
 ### Membuat Produk Baru
 
 1. Klik menu **Inventori** > **Produk**
+
+![Daftar Produk](../../screenshots/products-list.png)
+
 2. Klik tombol **Tambah Produk**
 3. Isi form:
    - **Kode**: Kode unik produk (contoh: PRD001)
@@ -16,6 +19,9 @@ Fitur produk memungkinkan pencatatan barang dagangan dan bahan baku untuk invent
    - **Metode Perhitungan Biaya**: FIFO atau Weighted Average
    - **Stok Minimum**: Batas minimum untuk peringatan
    - **Deskripsi**: Keterangan tambahan
+
+![Form Produk](../../screenshots/products-form.png)
+
 4. Klik **Simpan**
 
 ### Metode Perhitungan Biaya
@@ -30,6 +36,9 @@ Fitur produk memungkinkan pencatatan barang dagangan dan bahan baku untuk invent
 1. Di daftar produk, klik nama produk
 2. Klik tombol **Edit**
 3. Ubah data yang diperlukan
+
+![Form Edit Produk](../../screenshots/products-form.png)
+
 4. Klik **Simpan**
 
 **Catatan**: Metode perhitungan biaya tidak dapat diubah jika sudah ada transaksi.
@@ -47,6 +56,9 @@ Produk nonaktif tidak muncul di dropdown transaksi.
 ### Membuat Kategori
 
 1. Klik menu **Inventori** > **Kategori**
+
+![Daftar Kategori Produk](../../screenshots/product-categories-list.png)
+
 2. Klik tombol **Tambah Kategori**
 3. Isi form:
    - **Kode**: Kode unik kategori
@@ -75,6 +87,8 @@ Di halaman daftar produk:
 1. Gunakan **Search** untuk mencari berdasarkan kode atau nama
 2. Gunakan dropdown **Kategori** untuk filter berdasarkan kategori
 3. Klik kolom header untuk sorting
+
+![Filter dan Pencarian Produk](../../screenshots/products-list.png)
 
 ## Lihat Juga
 

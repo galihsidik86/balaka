@@ -1,5 +1,7 @@
 # Referensi Akun
 
+![Daftar Akun (Chart of Accounts)](../../screenshots/accounts-list.png)
+
 Daftar akun standar yang tersedia dalam aplikasi. Akun dikelompokkan berdasarkan tipe dan sub-tipe.
 
 ## Struktur Kode Akun

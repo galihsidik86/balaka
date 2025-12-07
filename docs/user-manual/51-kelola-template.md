@@ -43,11 +43,16 @@ Template jurnal adalah pola pencatatan transaksi yang sudah dikonfigurasi. Manfa
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Template ditampilkan dalam bentuk kartu
 3. Gunakan fitur pencarian dan filter:
    - **Pencarian**: Ketik nama template
    - **Tab Kategori**: Klik tab Pendapatan/Pengeluaran/dll
    - **Tag**: Filter berdasarkan tag (PPN, PPh, dll)
+
+![Daftar Template](screenshots/templates-list.png)
 
 **Fitur Favorit**:
 - Klik ikon bintang untuk menandai template favorit
@@ -60,7 +65,13 @@ Template jurnal adalah pola pencatatan transaksi yang sudah dikonfigurasi. Manfa
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Klik tombol **Template Baru**
+
+![Form Template](screenshots/templates-form.png)
+
 3. Isi informasi dasar:
    - **Nama**: `Beban Parkir`
    - **Kategori**: `Pengeluaran`
@@ -73,12 +84,16 @@ Template jurnal adalah pola pencatatan transaksi yang sudah dikonfigurasi. Manfa
 | Debit | Beban Transportasi | `amount` | - |
 | Kredit | **[ Pilih saat transaksi ]** | `amount` | `Bank/Kas` |
 
+![Form Template](screenshots/templates-form.png)
+
 5. Klik **Simpan Template**
 
-**Hasil**: 
+**Hasil**:
 - Template siap digunakan
 - Saat membuat transaksi, user akan diminta memilih akun sumber (Kas Kecil, Bank BCA, dll)
 - Hint "Bank/Kas" membantu user memahami jenis akun yang harus dipilih
+
+![Daftar Template](screenshots/templates-list.png)
 
 **Catatan**: Akun dengan indikator **?** (tanda tanya biru) berarti akun akan dipilih saat input transaksi.
 
@@ -89,7 +104,13 @@ Template jurnal adalah pola pencatatan transaksi yang sudah dikonfigurasi. Manfa
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Klik tombol **Template Baru**
+
+![Form Template](screenshots/templates-form.png)
+
 3. Isi informasi dasar:
    - **Nama**: `Pembelian Perlengkapan dengan PPN`
    - **Kategori**: `Pengeluaran`
@@ -121,7 +142,13 @@ Template jurnal adalah pola pencatatan transaksi yang sudah dikonfigurasi. Manfa
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Klik tombol **Template Baru**
+
+![Form Template](screenshots/templates-form.png)
+
 3. Isi informasi dasar:
    - **Nama**: `Pembayaran Jasa (PPh 23)`
    - **Kategori**: `Pembayaran`
@@ -296,9 +323,18 @@ Jurnal seimbang
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Cari template yang ingin diduplikat
 3. Klik template untuk buka detail
+
+![Detail Template](screenshots/templates-detail.png)
+
 4. Klik tombol **Duplikat**
+
+![Form Template](screenshots/templates-form.png)
+
 5. Ubah nama: `Beban Jasa Konsultan (PPh 23)` → `Beban Jasa Desain (PPh 23)`
 6. Ubah akun beban jika perlu
 7. Klik **Simpan Template**
@@ -310,9 +346,18 @@ Jurnal seimbang
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Cari template dengan PPN
 3. Klik template untuk buka detail
+
+![Detail Template](screenshots/templates-detail.png)
+
 4. Klik **Edit**
+
+![Form Template](screenshots/templates-form.png)
+
 5. Ubah formula:
    - `amount / 1.11` → `amount / 1.12`
    - `amount * 0.11 / 1.11` → `amount * 0.12 / 1.12`
@@ -327,9 +372,18 @@ Jurnal seimbang
 **Langkah-langkah**:
 
 1. Klik menu **Template** di sidebar
+
+![Daftar Template](screenshots/templates-list.png)
+
 2. Cari template yang ingin dinonaktifkan
 3. Klik template untuk buka detail
+
+![Detail Template](screenshots/templates-detail.png)
+
 4. Klik **Edit**
+
+![Form Template](screenshots/templates-form.png)
+
 5. Nonaktifkan toggle **Status Template**
 6. Klik **Simpan**
 

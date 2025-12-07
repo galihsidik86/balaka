@@ -18,6 +18,9 @@ Fitur transaksi inventori mencatat pergerakan stok masuk dan keluar.
 ### Mencatat Pembelian Baru
 
 1. Klik menu **Inventori** > **Pembelian**
+
+![Form Pembelian](../../screenshots/inventory-purchase.png)
+
 2. Isi form:
    - **Produk**: Pilih produk yang dibeli
    - **Tanggal**: Tanggal pembelian
@@ -37,6 +40,9 @@ Sistem otomatis:
 ### Mencatat Penjualan
 
 1. Klik menu **Inventori** > **Penjualan**
+
+![Form Penjualan](../../screenshots/inventory-sale.png)
+
 2. Isi form:
    - **Produk**: Pilih produk yang dijual
    - **Tanggal**: Tanggal penjualan
@@ -62,6 +68,9 @@ Sistem otomatis:
 ### Mencatat Penyesuaian
 
 1. Klik menu **Inventori** > **Penyesuaian**
+
+![Form Penyesuaian](../../screenshots/inventory-adjustment.png)
+
 2. Isi form:
    - **Produk**: Pilih produk
    - **Tanggal**: Tanggal penyesuaian
@@ -75,6 +84,8 @@ Sistem otomatis:
 ### Filter Transaksi
 
 Di halaman **Inventori** > **Transaksi**:
+
+![Daftar Transaksi Inventori](../../screenshots/inventory-transactions.png)
 
 1. **Produk**: Filter per produk
 2. **Tipe**: Filter per jenis transaksi

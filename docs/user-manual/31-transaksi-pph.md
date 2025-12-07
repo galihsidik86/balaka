@@ -50,8 +50,14 @@ Sebagai pemotong PPh 23, Anda wajib:
 **Langkah-langkah**:
 
 1. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Klik tombol **Transaksi Baru**
 3. Pilih template **Pembayaran Jasa (PPh 23)**
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
 4. Isi form:
    - **Tanggal**: Tanggal pembayaran
    - **Jumlah**: `5000000` (nilai bruto sebelum potong)
@@ -66,6 +72,8 @@ Sebagai pemotong PPh 23, Anda wajib:
    ```
 6. Klik **Simpan & Posting**
 
+![Detail Transaksi](../../screenshots/transactions-detail.png)
+
 **Hasil**:
 - Anda membayar vendor Rp 4.900.000
 - PPh 23 Rp 100.000 masuk ke Hutang PPh 23 (harus disetor ke negara)
@@ -77,8 +85,14 @@ Sebagai pemotong PPh 23, Anda wajib:
 **Langkah-langkah**:
 
 1. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Klik tombol **Transaksi Baru**
 3. Pilih template **Pembayaran Jasa (PPN + PPh 23)**
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
 4. Isi form:
    - **Tanggal**: Tanggal pembayaran
    - **Jumlah**: `5550000` (nilai inklusif PPN)
@@ -92,6 +106,8 @@ Sebagai pemotong PPh 23, Anda wajib:
    Kredit : Hutang PPh 23            Rp   100.000 (2% x DPP)
    ```
 6. Klik **Simpan & Posting**
+
+![Detail Transaksi](../../screenshots/transactions-detail.png)
 
 **Catatan**: PPh 23 dihitung dari DPP (sebelum PPN), bukan dari nilai total.
 
@@ -112,7 +128,11 @@ Kredit : Bank BCA                Rp 1.500.000
 ```
 
 **Langkah-langkah**:
+
 1. Gunakan template yang sudah dikonfigurasi dengan threshold
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
 2. Masukkan jumlah
 3. Sistem akan otomatis menghitung apakah PPh dipotong atau tidak
 
@@ -128,6 +148,9 @@ Kredit : Bank BCA                Rp 1.500.000
    - **Tanggal Awal**: 1 November 2025
    - **Tanggal Akhir**: 30 November 2025
 4. Klik **Tampilkan**
+
+![Pemotongan PPh 23](../../screenshots/reports-pph23-withholding.png)
+
 5. Review hasil:
 
 ```
@@ -152,8 +175,14 @@ Batas Lapor: 20 Desember 2025
 2. Bayar melalui bank atau ATM
 3. Setelah mendapat NTPN:
 4. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 5. Klik tombol **Transaksi Baru**
 6. Pilih template **Setor PPh 23**
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
 7. Isi form:
    - **Tanggal**: Tanggal setoran
    - **Jumlah**: `200000` (sesuai saldo hutang)
@@ -167,6 +196,8 @@ Batas Lapor: 20 Desember 2025
    ```
 9. Klik **Simpan & Posting**
 
+![Detail Transaksi](../../screenshots/transactions-detail.png)
+
 **Hasil**: Saldo Hutang PPh 23 berkurang.
 
 ## Skenario 6: Bayar Sewa Gedung (PPh 4 ayat 2)
@@ -176,8 +207,14 @@ Batas Lapor: 20 Desember 2025
 **Langkah-langkah**:
 
 1. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Klik tombol **Transaksi Baru**
 3. Pilih template **Bayar Sewa Gedung (PPh 4(2))**
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
 4. Isi form:
    - **Tanggal**: Tanggal pembayaran
    - **Jumlah**: `24000000`
@@ -191,6 +228,8 @@ Batas Lapor: 20 Desember 2025
    ```
 6. Klik **Simpan & Posting**
 
+![Detail Transaksi](../../screenshots/transactions-detail.png)
+
 ## Skenario 7: Bayar Gaji dengan PPh 21
 
 **Situasi**: Membayar gaji karyawan Rp 10.000.000, PPh 21 terutang Rp 500.000.
@@ -200,8 +239,14 @@ Batas Lapor: 20 Desember 2025
 **Langkah-langkah**:
 
 1. Klik menu **Transaksi** di sidebar
+
+![Daftar Transaksi](../../screenshots/transactions-list.png)
+
 2. Klik tombol **Transaksi Baru**
 3. Pilih template **Bayar Gaji (PPh 21)**
+
+![Form Transaksi](../../screenshots/transactions-form.png)
+
 4. Isi form sesuai hasil perhitungan PPh 21
 5. Atau buat template kustom dengan nilai PPh yang sudah dihitung
 

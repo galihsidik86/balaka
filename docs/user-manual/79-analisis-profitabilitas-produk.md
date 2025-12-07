@@ -5,9 +5,14 @@ Laporan profitabilitas produk membantu menganalisis margin dan keuntungan per pr
 ## Mengakses Laporan
 
 1. Klik menu **Inventori** > **Laporan** > **Profitabilitas Produk**
+
+![Menu Laporan Inventori](../../screenshots/inventory-reports.png)
+
 2. Atau dari halaman **Laporan Persediaan**, klik card **Profitabilitas Produk**
 
 ## Filter Laporan
+
+![Laporan Profitabilitas Produk](../../screenshots/inventory-reports-profitability.png)
 
 ### Periode
 
@@ -25,6 +30,8 @@ Laporan profitabilitas produk membantu menganalisis margin dan keuntungan per pr
 - Pilih "Semua Produk" untuk perbandingan antar produk
 
 ## Informasi Laporan
+
+![Detail Laporan Profitabilitas](../../screenshots/inventory-reports-profitability.png)
 
 ### Summary
 

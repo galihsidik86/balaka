@@ -37,7 +37,13 @@ Data klien digunakan untuk:
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Klik tombol **Klien Baru**
+
+![Form Klien](screenshots/clients-form.png)
+
 3. Isi informasi:
    - **Nama**: `PT ABC Indonesia`
    - **Alias**: `PT ABC`
@@ -48,9 +54,14 @@ Data klien digunakan untuk:
    - **Telepon**: `021-12345678`
    - **PIC**: `Budi Santoso`
    - **Jabatan PIC**: `Finance Manager`
+
+![Form Klien](screenshots/clients-form.png)
+
 4. Klik **Simpan**
 
 **Hasil**: Klien siap digunakan untuk proyek dan invoice.
+
+![Daftar Klien](screenshots/clients-list.png)
 
 ## Skenario 2: Tambah Klien Individu
 
@@ -59,7 +70,13 @@ Data klien digunakan untuk:
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Klik tombol **Klien Baru**
+
+![Form Klien](screenshots/clients-form.png)
+
 3. Isi informasi:
    - **Nama**: `Andi Wijaya`
    - **Tipe**: `Individu`
@@ -76,9 +93,15 @@ Data klien digunakan untuk:
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Cari klien yang ingin diedit
 3. Klik nama klien untuk buka detail
 4. Klik tombol **Edit**
+
+![Form Klien](screenshots/clients-form.png)
+
 5. Ubah informasi yang diperlukan
 6. Klik **Simpan Perubahan**
 
@@ -91,6 +114,9 @@ Data klien digunakan untuk:
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Klik nama klien
 3. Di halaman detail, lihat:
 
@@ -136,6 +162,9 @@ Tanggal      Keterangan              Pendapatan    Biaya
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Gunakan kolom **Pencarian**
 3. Ketik:
    - Nama klien
@@ -144,6 +173,8 @@ Tanggal      Keterangan              Pendapatan    Biaya
    - Nama PIC
 4. Hasil pencarian akan ditampilkan
 
+![Daftar Klien](screenshots/clients-list.png)
+
 ## Skenario 6: Filter Klien berdasarkan Tipe
 
 **Situasi**: Anda ingin melihat hanya klien perusahaan.
@@ -151,11 +182,16 @@ Tanggal      Keterangan              Pendapatan    Biaya
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Di filter **Tipe**, pilih:
    - **Semua** - Tampilkan semua klien
    - **Perusahaan** - Hanya klien perusahaan
    - **Individu** - Hanya klien perorangan
 3. Daftar akan terfilter sesuai pilihan
+
+![Daftar Klien](screenshots/clients-list.png)
 
 ## Skenario 7: Nonaktifkan Klien
 
@@ -164,8 +200,14 @@ Tanggal      Keterangan              Pendapatan    Biaya
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Cari dan klik klien
 3. Klik **Edit**
+
+![Form Klien](screenshots/clients-form.png)
+
 4. Nonaktifkan toggle **Status Aktif**
 5. Klik **Simpan**
 
@@ -181,6 +223,9 @@ Tanggal      Keterangan              Pendapatan    Biaya
 **Langkah-langkah**:
 
 1. Klik menu **Klien** di sidebar
+
+![Daftar Klien](screenshots/clients-list.png)
+
 2. Klik tombol **Export**
 3. Pilih format:
    - **Excel** - Untuk analisis atau mail merge
