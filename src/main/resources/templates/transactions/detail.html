@@ -218,8 +218,7 @@
                 <div class="overflow-hidden">
                     <!-- Journal Header -->
                     <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        <div class="col-span-1">Kode</div>
-                        <div class="col-span-5">Nama Akun</div>
+                        <div class="col-span-6">Akun</div>
                         <div class="col-span-3 text-right">Debit</div>
                         <div class="col-span-3 text-right">Kredit</div>
                     </div>
@@ -251,11 +250,14 @@
                         <div th:each="entry : ${transaction.journalEntries}"
                              th:classappend="${transaction.status.name() == 'VOID'} ? 'opacity-50'"
                              class="grid grid-cols-12 gap-4 px-6 py-4 items-center">
-                            <div class="col-span-1 text-sm text-gray-600 font-mono" th:text="${entry.account?.accountCode}">1.1.01</div>
-                            <div class="col-span-5">
-                                <p th:classappend="${transaction.status.name() == 'VOID'} ? 'line-through'"
-                                   class="text-sm text-gray-900" th:text="${entry.account?.accountName}">Account Name</p>
-                                <p class="text-xs text-gray-500" th:text="${entry.account?.accountType?.indonesianName}">Account Type</p>
+                            <div class="col-span-6">
+                                <p>
+                                    <span class="text-sm text-gray-500" th:text="${entry.account?.accountCode}">1.1.01</span>
+                                    <span class="text-sm text-gray-500 mx-2">-</span>
+                                    <span th:classappend="${transaction.status.name() == 'VOID'} ? 'line-through'"
+                                          class="text-sm text-gray-900" th:text="${entry.account?.accountName}">Account Name</span>
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1" th:text="${entry.account?.accountType?.indonesianName}">Account Type</p>
                             </div>
                             <div class="col-span-3 text-right text-sm font-mono"
                                  th:classappend="${entry.debitAmount != null and entry.debitAmount > 0} ? 'text-gray-900' : 'text-gray-400'">
