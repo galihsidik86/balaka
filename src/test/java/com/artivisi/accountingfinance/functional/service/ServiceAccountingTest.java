@@ -61,8 +61,8 @@ public class ServiceAccountingTest extends PlaywrightTestBase {
         waitForPageLoad();
         takeManualScreenshot("users-list");
 
-        // Capture user form page (edit admin user)
-        page.click("[data-testid='edit-user-admin']");
+        // Capture user form page (navigate to new user form)
+        navigateTo("/users/new");
         waitForPageLoad();
         takeManualScreenshot("users-form");
     }
