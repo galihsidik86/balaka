@@ -142,7 +142,7 @@ public class ServiceTransactionExecutionTest extends PlaywrightTestBase {
             .verifyRevenueSectionVisible();
 
         // Take screenshot for user manual (after transactions are executed)
-        takeManualScreenshot("service/reports-income-statement");
+        takeManualScreenshot("service/report-income-statement");
     }
 
     /**
@@ -162,7 +162,7 @@ public class ServiceTransactionExecutionTest extends PlaywrightTestBase {
             .verifyEquitySectionVisible();
 
         // Take screenshot for user manual (after transactions are executed)
-        takeManualScreenshot("service/reports-balance-sheet");
+        takeManualScreenshot("service/report-balance-sheet");
     }
 
     /**
@@ -246,7 +246,7 @@ public class ServiceTransactionExecutionTest extends PlaywrightTestBase {
         page.navigate("http://localhost:" + port + "/reports/trial-balance?startDate=2024-01-01&endDate=2024-03-31");
         page.waitForLoadState();
         page.waitForTimeout(2000); // Wait for report to render
-        takeManualScreenshot("service/reports-trial-balance");
+        takeManualScreenshot("service/report-trial-balance");
     }
 
     /**
