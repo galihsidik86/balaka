@@ -189,7 +189,7 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script>
+        <script th:attr="nonce=${cspNonce}">
             function copyToClipboard(button) {
                 const value = button.getAttribute('data-value');
                 navigator.clipboard.writeText(value).then(() => {

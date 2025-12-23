@@ -91,7 +91,7 @@
                 </div>
 
                 <form id="void-form" class="p-6"
-                      x-data="{ voidReason: '', confirmVoid: false }">
+                      x-data="voidForm">
                     <div class="space-y-6">
                         <!-- Void Reason Selection -->
                         <div>
@@ -172,7 +172,7 @@
 
     <!-- Script for void action -->
     <th:block layout:fragment="scripts">
-        <script th:inline="javascript">
+        <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const transactionId = /*[[${transaction.id}]]*/ '';
 

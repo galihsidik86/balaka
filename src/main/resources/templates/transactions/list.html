@@ -85,7 +85,7 @@
 
             <!-- Template Search Autocomplete -->
             <div sec:authorize="hasAuthority('TRANSACTION_CREATE')"
-                 x-data="{ open: false, hasQuery: false }"
+                 x-data="searchFilterState"
                  @click.outside="open = false"
                  class="relative w-full lg:w-80">
                 <div class="relative">
@@ -121,7 +121,7 @@
 
     <!-- Page Scripts -->
     <th:block layout:fragment="scripts">
-        <script>
+        <script th:attr="nonce=${cspNonce}">
             // Auto-reload transaction list when transactions are updated (e.g., from Quick Transaction)
             document.addEventListener('transactionsUpdated', function() {
                 // Trigger HTMX request to reload the transaction table

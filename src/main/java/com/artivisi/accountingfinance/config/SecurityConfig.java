@@ -1,5 +1,6 @@
 package com.artivisi.accountingfinance.config;
 
+import com.artivisi.accountingfinance.security.CspNonceHeaderWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -50,20 +51,9 @@ public class SecurityConfig {
             )
             // Security headers configuration
             .headers(headers -> headers
-                // Content Security Policy - controls allowed sources for scripts, styles, etc.
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives(
-                        "default-src 'self'; " +
-                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; " +
-                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
-                        "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; " +
-                        "img-src 'self' data: blob:; " +
-                        "connect-src 'self'; " +
-                        "frame-ancestors 'none'; " +
-                        "form-action 'self'; " +
-                        "base-uri 'self'"
-                    )
-                )
+                // Content Security Policy with dynamic nonce (replaces unsafe-inline/unsafe-eval)
+                // Custom implementation required because Spring Security doesn't support dynamic nonces
+                .addHeaderWriter(new CspNonceHeaderWriter())
                 // Prevent clickjacking - deny embedding in frames
                 .frameOptions(frame -> frame.deny())
                 // Prevent MIME type sniffing

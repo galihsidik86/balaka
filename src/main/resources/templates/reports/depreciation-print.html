@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Laporan Penyusutan - <span th:text="${year}">2024</span></title>
-    <style>
+    <style th:attr="nonce=${cspNonce}">
         @page {
             size: A4 landscape;
             margin: 15mm;
@@ -131,7 +131,7 @@
         </div>
     </div>
 
-    <script>
+    <script th:attr="nonce=${cspNonce}">
         window.onload = function() {
             window.print();
         }

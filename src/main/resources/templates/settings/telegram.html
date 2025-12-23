@@ -201,7 +201,7 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script th:if="${verificationCode}">
+        <script th:if="${verificationCode}" th:attr="nonce=${cspNonce}">
             function copyCode() {
                 navigator.clipboard.writeText('[[${verificationCode}]]');
                 alert('Kode berhasil disalin!');

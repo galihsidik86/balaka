@@ -15,14 +15,19 @@ import org.testcontainers.utility.DockerImageName;
 import org.zaproxy.clientapi.core.*;
 import org.zaproxy.clientapi.gen.Alert;
 import org.zaproxy.clientapi.gen.Pscan;
-import org.zaproxy.clientapi.gen.Reports;
 import org.zaproxy.clientapi.gen.Spider;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -34,7 +39,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * ZAP runs as a Testcontainer and scans the running application.
  *
  * CI-only by default. To run locally:
- *   ./mvnw test -Dtest=ZapDastTest -Dgroups=dast -DexcludedGroups= -Ddast.enabled=true
+ *   ./mvnw test -Dtest=ZapDastTest -DexcludedGroups="" -Ddast.enabled=true
  *
  * The test will:
  * 1. Start the Spring Boot app on a random port
@@ -93,8 +98,7 @@ class ZapDastTest {
                         "-config", "api.addrs.addr.name=.*",
                         "-config", "api.addrs.addr.regex=true",
                         "-config", "api.disablekey=true")
-                .waitingFor(Wait.forHttp("/JSON/core/view/version/")
-                        .forPort(ZAP_PORT)
+                .waitingFor(Wait.forLogMessage(".*ZAP is now listening.*\\n", 1)
                         .withStartupTimeout(Duration.ofMinutes(2)));
 
         zapContainer.start();
@@ -212,41 +216,125 @@ class ZapDastTest {
 
         log.info("Starting ZAP authenticated scan against {}", targetUrl);
 
-        // First, access login page
+        // Perform actual login to get authenticated session
+        // 1. Get CSRF token from login page
+        // 2. Submit login form with credentials
+        // 3. ZAP will capture the session cookie
+        // 4. Spider authenticated pages using that session
+
+        // Step 1: Access login page (ZAP will capture this in history)
         zapClient.core.accessUrl(targetUrl + "/login", "true");
         Thread.sleep(1000);
 
-        // Perform form-based authentication
-        // Note: ZAP will capture the session from successful login
-        ApiResponse authResponse = zapClient.authentication.setAuthenticationMethod(
-                "Default Context",
-                "formBasedAuthentication",
-                "loginUrl=" + targetUrl + "/login" +
-                        "&loginRequestData=username%3D{%username%}%26password%3D{%password%}"
-        );
+        // Step 2: Perform login via HTTP Client to establish session
+        // ZAP proxy will intercept and record the authenticated session
+        performLogin(targetUrl);
 
-        // Set login credentials
-        zapClient.users.newUser("Default Context", "admin");
-        zapClient.users.setAuthenticationCredentials(
-                "Default Context", "0",
-                "username=admin&password=admin"
-        );
-        zapClient.users.setUserEnabled("Default Context", "0", "true");
+        // Step 3: Verify we're logged in by accessing dashboard
+        zapClient.core.accessUrl(targetUrl + "/dashboard", "true");
+        Thread.sleep(1000);
 
-        // Spider authenticated pages
-        spiderAsUser(targetUrl, "Default Context", "0");
+        // Step 4: Spider authenticated pages
+        // ZAP will use the captured session from the login
+        log.info("Spidering authenticated pages...");
+        spiderTarget(targetUrl + "/dashboard");
 
         // Wait for passive scan
         waitForPassiveScan();
 
-        // Get alerts for authenticated scan using Alert API
+        // Get alerts for authenticated scan
         Alert alertApi = new Alert(zapClient);
         ApiResponseList alerts = (ApiResponseList) alertApi.alerts(targetUrl, "-1", "-1", null);
 
         log.info("Authenticated scan found {} total alerts", alerts.getItems().size());
 
-        // Save authenticated scan report using Reports API
+        // Count by severity
+        int highCount = 0;
+        int mediumCount = 0;
+
+        for (ApiResponse alert : alerts.getItems()) {
+            ApiResponseSet alertSet = (ApiResponseSet) alert;
+            String risk = alertSet.getStringValue("risk");
+            if ("High".equals(risk)) {
+                highCount++;
+            } else if ("Medium".equals(risk)) {
+                mediumCount++;
+            }
+        }
+
+        log.info("Authenticated scan: High={}, Medium={}", highCount, mediumCount);
+
+        // Save authenticated scan report
         generateHtmlReport("zap-authenticated-report.html", targetUrl);
+
+        // Assert thresholds (same as baseline)
+        assertTrue(highCount <= MAX_HIGH_ALERTS,
+                "Found " + highCount + " HIGH severity vulnerabilities (max allowed: " + MAX_HIGH_ALERTS + ")");
+        assertTrue(mediumCount <= MAX_MEDIUM_ALERTS,
+                "Found " + mediumCount + " MEDIUM severity vulnerabilities (max allowed: " + MAX_MEDIUM_ALERTS + ")");
+    }
+
+    private void performLogin(String targetUrl) throws Exception {
+        // Perform login using HttpClient with ZAP as proxy
+        // This ensures ZAP captures the authenticated session
+        log.info("Performing login with admin credentials via HttpClient through ZAP proxy...");
+
+        String zapHost = zapContainer.getHost();
+        int zapPort = zapContainer.getMappedPort(ZAP_PORT);
+
+        // Create HttpClient with ZAP as proxy
+        HttpClient client = HttpClient.newBuilder()
+                .proxy(java.net.ProxySelector.of(new java.net.InetSocketAddress(zapHost, zapPort)))
+                .cookieHandler(new java.net.CookieManager())
+                .build();
+
+        String loginUrl = targetUrl + "/login";
+
+        // Step 1: GET login page to extract CSRF token
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(URI.create(loginUrl))
+                .GET()
+                .build();
+
+        HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
+        String loginPage = getResponse.body();
+
+        // Extract CSRF token
+        Pattern csrfPattern = Pattern.compile("name=\"_csrf\"\\s+value=\"([^\"]+)\"");
+        Matcher matcher = csrfPattern.matcher(loginPage);
+        String csrfToken = "";
+        if (matcher.find()) {
+            csrfToken = matcher.group(1);
+            log.info("CSRF token extracted: {}...", csrfToken.substring(0, Math.min(8, csrfToken.length())));
+        } else {
+            throw new RuntimeException("CSRF token not found in login page");
+        }
+
+        Thread.sleep(500);
+
+        // Step 2: POST login form with admin credentials
+        String formData = "username=admin&password=admin&_csrf=" + csrfToken;
+
+        HttpRequest postRequest = HttpRequest.newBuilder()
+                .uri(URI.create(loginUrl))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(formData))
+                .build();
+
+        HttpResponse<String> postResponse = client.send(postRequest, HttpResponse.BodyHandlers.ofString());
+
+        // Check for successful redirect to dashboard
+        if (postResponse.statusCode() == 302 || postResponse.statusCode() == 303) {
+            String location = postResponse.headers().firstValue("Location").orElse("");
+            log.info("Login successful - redirected to: {}", location);
+        } else if (postResponse.statusCode() == 200 && postResponse.body().contains("dashboard")) {
+            log.info("Login successful - dashboard page loaded");
+        } else {
+            log.warn("Login response status: {}, may not be authenticated", postResponse.statusCode());
+        }
+
+        // Give ZAP time to process the session
+        Thread.sleep(1000);
     }
 
     private void waitForZapReady() throws Exception {
@@ -321,31 +409,14 @@ class ZapDastTest {
     }
 
     private void generateHtmlReport(String filename, String targetUrl) throws Exception {
-        Reports reports = new Reports(zapClient);
-        String reportDir = REPORTS_DIR.toAbsolutePath().toString();
-        String reportFilename = filename.replace(".html", "");
-
-        // Generate report using Reports API
-        // Parameters: title, template, theme, description, contexts, sites, sections,
-        //             includedconfidences, includedrisks, reportfilename, reportfilenamepattern,
-        //             reportdir, display
-        reports.generate(
-                "ZAP Security Scan Report",  // title
-                "traditional-html",           // template
-                null,                          // theme
-                "Security scan results",       // description
-                null,                          // contexts
-                targetUrl,                     // sites
-                null,                          // sections
-                null,                          // includedconfidences
-                null,                          // includedrisks
-                reportFilename,                // reportfilename
-                null,                          // reportfilenamepattern
-                reportDir,                     // reportdir
-                null                           // display
-        );
-
         Path reportPath = REPORTS_DIR.resolve(filename);
+
+        // Use core.htmlreport API to get HTML report as bytes
+        byte[] htmlReportBytes = zapClient.core.htmlreport();
+
+        // Write report to file
+        Files.write(reportPath, htmlReportBytes);
+
         log.info("HTML report saved to {}", reportPath);
     }
 }

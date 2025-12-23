@@ -159,7 +159,7 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script>
+        <script th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const tbody = document.getElementById('component-lines');
                 const template = document.getElementById('component-row-template');

@@ -3,7 +3,7 @@
 <body>
     <!-- Account Row Fragment (recursive for tree structure) -->
     <th:block th:fragment="accountRow(account, level)">
-        <div x-data="{ expanded: false }"
+        <div x-data="expandableState"
              th:id="'account-container-' + ${#strings.replace(account.accountCode, '.', '-')}"
              th:classappend="${!account.active} ? 'opacity-50' : ''">
             <!-- Account Row -->

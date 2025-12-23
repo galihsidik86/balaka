@@ -378,7 +378,7 @@
             </div>
 
             <!-- Help Section -->
-            <div x-data="{ open: false }" class="mt-6 mb-8" th:if="${selectedTemplate != null or isEdit}">
+            <div x-data="toggleState" class="mt-6 mb-8" th:if="${selectedTemplate != null or isEdit}">
                 <button @click="open = !open"
                         class="flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -413,7 +413,7 @@
 
     <!-- Script for form submission -->
     <th:block layout:fragment="scripts">
-        <script th:inline="javascript">
+        <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('form-transaksi');
                 if (!form) return;

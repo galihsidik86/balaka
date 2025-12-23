@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${reportTitle}">Report</title>
-    <style>
+    <style th:attr="nonce=${cspNonce}">
         @page {
             size: A4;
             margin: 15mm;

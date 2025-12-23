@@ -440,7 +440,7 @@
 
     <!-- Script for post/delete actions -->
     <th:block layout:fragment="scripts">
-        <script th:inline="javascript">
+        <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 // Post button handler
                 document.getElementById('btn-post')?.addEventListener('click', async function() {

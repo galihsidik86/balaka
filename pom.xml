@@ -30,6 +30,8 @@
 		<java.version>25</java.version>
 		<node.version>v22.12.0</node.version>
 		<npm.version>10.9.0</npm.version>
+		<!-- Exclude slow DAST tests by default, override with -DexcludedGroups="" in CI -->
+		<excludedGroups>dast</excludedGroups>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -229,7 +231,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<excludedGroups>dast</excludedGroups>
+					<excludedGroups>${excludedGroups}</excludedGroups>
 				</configuration>
 			</plugin>
 			<plugin>

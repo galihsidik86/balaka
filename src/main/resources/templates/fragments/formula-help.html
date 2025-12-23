@@ -294,7 +294,7 @@
         </div>
     </div>
 
-    <script th:fragment="formula-help-script">
+    <script th:fragment="formula-help-script" th:attr="nonce=${cspNonce}">
         function formulaHelp() {
             return {
                 open: false,

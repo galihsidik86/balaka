@@ -113,7 +113,7 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script th:inline="javascript">
+        <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const bookValue = /*[[${asset.bookValue}]]*/ 0;
                 const proceedsInput = document.getElementById('proceeds');
