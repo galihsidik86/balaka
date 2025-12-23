@@ -1778,6 +1778,10 @@ public class DataImportService {
         int count = 0;
         Path rootLocation = documentStorageService.getRootLocation();
 
+        if (rootLocation == null) {
+            throw new IllegalStateException("Document storage not initialized");
+        }
+
         for (Map.Entry<String, byte[]> entry : documentFiles.entrySet()) {
             String key = entry.getKey();
             byte[] content = entry.getValue();

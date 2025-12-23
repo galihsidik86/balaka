@@ -127,7 +127,11 @@ public class DocumentStorageService {
             return new ByteArrayResource(decryptedContent) {
                 @Override
                 public String getFilename() {
-                    return filePath.getFileName().toString();
+                    Path fileName = filePath.getFileName();
+                    if (fileName == null) {
+                        throw new IllegalStateException("Cannot get filename from path: " + filePath);
+                    }
+                    return fileName.toString();
                 }
             };
         } catch (IOException e) {

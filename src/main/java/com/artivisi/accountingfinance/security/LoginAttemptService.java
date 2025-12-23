@@ -42,7 +42,6 @@ public class LoginAttemptService {
         }
 
         info.attempts++;
-        info.lastAttempt = LocalDateTime.now();
 
         if (info.attempts >= MAX_ATTEMPTS) {
             info.lockedUntil = LocalDateTime.now().plusMinutes(LOCK_TIME_MINUTES);
@@ -145,7 +144,6 @@ public class LoginAttemptService {
      */
     private static class FailedLoginInfo {
         int attempts = 0;
-        LocalDateTime lastAttempt;
         LocalDateTime lockedUntil;
     }
 }
