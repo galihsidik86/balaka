@@ -67,6 +67,11 @@
 
         /* Current Year Earnings highlight */
         .earnings-row { background: #ecfdf5; border-left: 3px solid #10b981; }
+
+        /* Helpers */
+        .text-gray-400 { color: #9ca3af; }
+        .text-emerald-600 { color: #059669; }
+        .font-medium { font-weight: 500; }
     </style>
 </head>
 <body>
@@ -112,7 +117,7 @@
                         </div>
                     </th:block>
                     <div th:if="${report == null or report.assetItems.isEmpty()}" class="item-row">
-                        <span class="item-name" style="color: #9ca3af;">Tidak ada data aset</span>
+                        <span class="item-name text-gray-400">Tidak ada data aset</span>
                         <span class="item-value">-</span>
                     </div>
                 </div>
@@ -136,7 +141,7 @@
                         </div>
                     </th:block>
                     <div th:if="${report == null or report.liabilityItems.isEmpty()}" class="item-row">
-                        <span class="item-name" style="color: #9ca3af;">Tidak ada liabilitas</span>
+                        <span class="item-name text-gray-400">Tidak ada liabilitas</span>
                         <span class="item-value">-</span>
                     </div>
                     <div th:if="${report != null}" class="subtotal-row">
@@ -156,11 +161,11 @@
                     </th:block>
                     <div th:if="${report != null and report.currentYearEarnings.compareTo(T(java.math.BigDecimal).ZERO) != 0}"
                          class="item-row earnings-row">
-                        <span class="item-name" style="color: #059669; font-weight: 500;">Laba Bersih Periode Berjalan</span>
-                        <span class="item-value" style="color: #059669;" th:text="${#numbers.formatDecimal(report.currentYearEarnings, 1, 'POINT', 0, 'COMMA')}">0</span>
+                        <span class="item-name text-emerald-600 font-medium">Laba Bersih Periode Berjalan</span>
+                        <span class="item-value text-emerald-600" th:text="${#numbers.formatDecimal(report.currentYearEarnings, 1, 'POINT', 0, 'COMMA')}">0</span>
                     </div>
                     <div th:if="${report == null or report.equityItems.isEmpty()}" class="item-row">
-                        <span class="item-name" style="color: #9ca3af;">Tidak ada ekuitas</span>
+                        <span class="item-name text-gray-400">Tidak ada ekuitas</span>
                         <span class="item-value">-</span>
                     </div>
                     <div th:if="${report != null}" class="subtotal-row">

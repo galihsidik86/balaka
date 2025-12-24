@@ -168,8 +168,13 @@ public class TransactionFormPage {
      * Returns TransactionDetailPage after redirect.
      */
     public TransactionDetailPage saveAndPost() {
-        page.locator(BTN_SAVE_POST).click();
-        page.waitForURL("**/transactions/*");
+        // Wait for Alpine.js to initialize and button to be enabled
+        page.waitForTimeout(500);
+        var btn = page.locator(BTN_SAVE_POST);
+        btn.waitFor();
+        btn.click();
+        // Wait for redirect to detail page (UUID pattern, not /new)
+        page.waitForURL(java.util.regex.Pattern.compile(".*/transactions/[0-9a-f]{8}-[0-9a-f]{4}-.*"));
         page.waitForLoadState();
         return new TransactionDetailPage(page, baseUrl);
     }
@@ -180,7 +185,8 @@ public class TransactionFormPage {
      */
     public TransactionDetailPage saveAsDraft() {
         page.locator(BTN_SAVE_DRAFT).click();
-        page.waitForURL("**/transactions/*");
+        // Wait for redirect to detail page (UUID pattern, not /new)
+        page.waitForURL(java.util.regex.Pattern.compile(".*/transactions/[0-9a-f]{8}-[0-9a-f]{4}-.*"));
         page.waitForLoadState();
         return new TransactionDetailPage(page, baseUrl);
     }

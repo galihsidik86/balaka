@@ -40,7 +40,8 @@
                 <p class="text-sm text-gray-500">Progress</p>
                 <div class="flex items-center gap-2 mt-1">
                     <div class="flex-1 bg-gray-200 rounded-full h-2">
-                        <div class="bg-primary-600 h-2 rounded-full" th:style="'width: ' + ${schedule.progressPercentage} + '%'"></div>
+                        <style th:inline="text" th:attr="nonce=${cspNonce}">#progress-bar-[[${schedule.id}]] { width: [[${schedule.progressPercentage}]]%; }</style>
+                        <div th:id="'progress-bar-' + ${schedule.id}" class="bg-primary-600 h-2 rounded-full"></div>
                     </div>
                     <span class="text-sm font-medium text-gray-700" th:text="${schedule.completedPeriods} + '/' + ${schedule.totalPeriods}">6/12</span>
                 </div>

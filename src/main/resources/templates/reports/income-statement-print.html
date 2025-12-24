@@ -50,6 +50,11 @@
         .summary-row { display: flex; justify-content: space-between; padding: 2mm 3mm; border-bottom: 1px solid #e5e7eb; }
         .summary-row:last-child { border-bottom: none; }
         .summary-row.header { background: #f9fafb; font-weight: 600; font-size: 8pt; text-transform: uppercase; color: #6b7280; }
+        .summary-row.total { background: #f9fafb; font-weight: 600; }
+
+        /* Helpers */
+        .text-gray-400 { color: #9ca3af; }
+        .font-mono { font-family: 'Consolas', monospace; }
 
         /* Footer */
         .footer { margin-top: 6mm; padding-top: 3mm; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 7pt; color: #9ca3af; }
@@ -108,7 +113,7 @@
                     </div>
                 </th:block>
                 <div th:if="${report == null or report.revenueItems.isEmpty()}" class="item-row">
-                    <span class="item-name" style="color: #9ca3af;">Tidak ada pendapatan</span>
+                    <span class="item-name text-gray-400">Tidak ada pendapatan</span>
                     <span class="item-value">-</span>
                 </div>
             </div>
@@ -127,7 +132,7 @@
                     </div>
                 </th:block>
                 <div th:if="${report == null or report.expenseItems.isEmpty()}" class="item-row">
-                    <span class="item-name" style="color: #9ca3af;">Tidak ada beban</span>
+                    <span class="item-name text-gray-400">Tidak ada beban</span>
                     <span class="item-value">-</span>
                 </div>
             </div>
@@ -152,15 +157,15 @@
                 </div>
                 <div class="summary-row">
                     <span>Total Pendapatan</span>
-                    <span style="font-family: monospace;" th:text="${#numbers.formatDecimal(report.totalRevenue, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(report.totalRevenue, 1, 'POINT', 0, 'COMMA')}">0</span>
                 </div>
                 <div class="summary-row">
                     <span>Total Beban</span>
-                    <span style="font-family: monospace;" th:text="'(' + ${#numbers.formatDecimal(report.totalExpense, 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
+                    <span class="font-mono" th:text="'(' + ${#numbers.formatDecimal(report.totalExpense, 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
                 </div>
-                <div class="summary-row" style="background: #f9fafb; font-weight: 600;">
+                <div class="summary-row total">
                     <span th:text="${report.netIncome.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'Laba Bersih' : 'Rugi Bersih'">Laba/Rugi</span>
-                    <span style="font-family: monospace;" th:text="${#numbers.formatDecimal(report.netIncome, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(report.netIncome, 1, 'POINT', 0, 'COMMA')}">0</span>
                 </div>
             </div>
         </div>

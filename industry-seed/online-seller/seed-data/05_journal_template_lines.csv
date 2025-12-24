@@ -58,6 +58,12 @@ Penyesuaian Persediaan Masuk,1,1.1.20,,DEBIT,amount,Persediaan bertambah
 Penyesuaian Persediaan Masuk,2,4.2.02,,CREDIT,amount,Pendapatan lain-lain
 Penyesuaian Persediaan Keluar,1,5.1.02,,DEBIT,amount,Beban penyesuaian persediaan
 Penyesuaian Persediaan Keluar,2,1.1.20,,CREDIT,amount,Persediaan berkurang
+Pembelian Persediaan,1,,PERSEDIAAN,DEBIT,amount,Persediaan masuk
+Pembelian Persediaan,2,,BANK,CREDIT,amount,Pembayaran dari bank
+Penjualan Persediaan,1,,BANK,DEBIT,revenueAmount,Penerimaan penjualan
+Penjualan Persediaan,2,,HPP,DEBIT,cogsAmount,Harga pokok penjualan
+Penjualan Persediaan,3,,PENJUALAN,CREDIT,revenueAmount,Pendapatan penjualan
+Penjualan Persediaan,4,,PERSEDIAAN,CREDIT,cogsAmount,Persediaan keluar
 Transfer Antar Bank,1,,BANK,DEBIT,amount,Bank tujuan
 Transfer Antar Bank,2,,BANK,CREDIT,amount,Bank asal
 Setoran Modal,1,,BANK,DEBIT,amount,Penerimaan kas/bank

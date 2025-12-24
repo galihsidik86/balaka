@@ -9,31 +9,84 @@
  *   NEW: <div x-data="toggleState">
  */
 
-document.addEventListener('alpine:init', () => {
+// Reinitialize Alpine.js components after HTMX settles
+// See: https://github.com/alpinejs/alpine/discussions/4478
+document.addEventListener('htmx:afterSettle', (event) => {
+    console.log('htmx:afterSettle triggered', event.detail.target)
+    // Destroy and reinitialize Alpine components in the swapped content
+    if (window.Alpine && event.detail.target) {
+        console.log('Reinitializing Alpine for:', event.detail.target.id || event.detail.target.tagName)
+        // Check if there are Alpine components in the content
+        const alpineElements = event.detail.target.querySelectorAll('[x-data]')
+        console.log('Found x-data elements:', alpineElements.length)
+        alpineElements.forEach(el => console.log('  x-data:', el.getAttribute('x-data')))
+
+        Alpine.destroyTree(event.detail.target)
+        Alpine.initTree(event.detail.target)
+
+        // Verify initialization
+        alpineElements.forEach(el => {
+            console.log('  Initialized?', el._x_dataStack ? 'yes' : 'no')
+        })
+    }
+});
+
+// Register Alpine components
+// Must register before Alpine processes the DOM
+function registerAlpineComponents() {
+    if (window._alpineComponentsRegistered) return
+    window._alpineComponentsRegistered = true
     // Simple toggle state (open/closed)
     Alpine.data('toggleState', () => ({
-        open: false
+        open: false,
+        toggle() {
+            this.open = !this.open
+        },
+        close() {
+            this.open = false
+        }
     }))
 
     // Toggle state with hasQuery flag (for search filters)
     Alpine.data('searchFilterState', () => ({
         open: false,
-        hasQuery: false
+        hasQuery: false,
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Sidebar state
     Alpine.data('sidebarState', () => ({
-        sidebarOpen: false
+        sidebarOpen: false,
+        toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen
+        },
+        openSidebar() {
+            this.sidebarOpen = true
+        },
+        closeSidebar() {
+            this.sidebarOpen = false
+        }
     }))
 
     // Expandable section
     Alpine.data('expandableState', () => ({
-        expanded: false
+        expanded: false,
+        toggleExpanded() {
+            this.expanded = !this.expanded
+        }
     }))
 
     // Show/hide state
     Alpine.data('showState', () => ({
-        show: false
+        show: false,
+        toggleShow() {
+            this.show = !this.show
+        },
+        closeShow() {
+            this.show = false
+        }
     }))
 
     // ID type selector
@@ -54,42 +107,66 @@ document.addEventListener('alpine:init', () => {
 
     // Persistent navigation state for accounting section
     Alpine.data('navAkuntansi', () => ({
-        open: Alpine.$persist(true).as('nav-akuntansi')
+        open: Alpine.$persist(true).as('nav-akuntansi'),
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Persistent navigation state for reports section
     Alpine.data('navLaporan', () => ({
-        open: Alpine.$persist(false).as('nav-laporan')
+        open: Alpine.$persist(false).as('nav-laporan'),
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Persistent navigation state for projects section
     Alpine.data('navProyek', () => ({
-        open: Alpine.$persist(false).as('nav-proyek')
+        open: Alpine.$persist(false).as('nav-proyek'),
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Persistent navigation state for inventory section
     Alpine.data('navInventori', () => ({
-        open: Alpine.$persist(false).as('nav-inventori')
+        open: Alpine.$persist(false).as('nav-inventori'),
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Persistent navigation state for payroll section
     Alpine.data('navPayroll', () => ({
-        open: Alpine.$persist(false).as('nav-payroll')
+        open: Alpine.$persist(false).as('nav-payroll'),
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Persistent navigation state for master data section
     Alpine.data('navMaster', () => ({
-        open: Alpine.$persist(false).as('nav-master')
+        open: Alpine.$persist(false).as('nav-master'),
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Open by default navigation section
     Alpine.data('navOpenDefault', () => ({
-        open: true
+        open: true,
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Closed by default navigation section
     Alpine.data('navClosedDefault', () => ({
-        open: false
+        open: false,
+        toggle() {
+            this.open = !this.open
+        }
     }))
 
     // Transaction form state
@@ -111,6 +188,11 @@ document.addEventListener('alpine:init', () => {
         amount: 0,
         description: '',
         submitting: false,
+
+        // CSP-compatible getters (operators not supported in CSP build)
+        get notSubmitting() {
+            return !this.submitting
+        },
 
         // Getter - accessed as property in :value="formattedAmount"
         get formattedAmount() {
@@ -184,11 +266,13 @@ document.addEventListener('alpine:init', () => {
 
         // Method - submit the quick transaction form
         async submitForm(e) {
-            e.preventDefault()
+            console.log('submitForm called', e)
+            if (e && e.preventDefault) e.preventDefault()
             if (this.submitting) return
 
             this.submitting = true
-            const form = this.$el
+            const form = document.getElementById('quick-transaction-form')
+            console.log('form found:', form)
 
             try {
                 const formData = new FormData(form)
@@ -225,20 +309,31 @@ document.addEventListener('alpine:init', () => {
                     data.variables = variables
                 }
 
+                // Get CSRF token from meta tags
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content
+
+                const headers = { 'Content-Type': 'application/json' }
+                if (csrfToken && csrfHeader) {
+                    headers[csrfHeader] = csrfToken
+                }
+
                 const response = await fetch('/transactions/api', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(data)
                 })
 
+                console.log('Response status:', response.status)
                 if (response.ok) {
                     const result = await response.json()
+                    console.log('Transaction created:', result)
                     const dialog = document.getElementById('quick-transaction-modal')
                     if (dialog) dialog.close()
                     window.location.href = '/transactions/' + result.id
                 } else {
                     const errorText = await response.text()
-                    console.error('Quick transaction error:', errorText)
+                    console.error('Quick transaction error:', response.status, errorText)
                     alert('Gagal menyimpan: ' + errorText)
                 }
             } catch (err) {
@@ -254,4 +349,12 @@ document.addEventListener('alpine:init', () => {
             this.$dispatch('account-changed')
         }
     }))
-})
+}
+
+// Hybrid approach: register immediately if Alpine exists,
+// and also listen for alpine:init for deferred script loading
+if (window.Alpine) {
+    registerAlpineComponents()
+} else {
+    document.addEventListener('alpine:init', registerAlpineComponents)
+}

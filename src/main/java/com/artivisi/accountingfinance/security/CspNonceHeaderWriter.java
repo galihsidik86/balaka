@@ -24,13 +24,22 @@ public class CspNonceHeaderWriter implements HeaderWriter {
             nonce = "missing-nonce";
         }
 
-        // CSP with nonce-based inline scripts/styles - no unsafe-inline or unsafe-eval
+        // CSP with nonce-based scripts and styles - strict protection
         // Alpine CSP build + Alpine.data() components eliminate need for Function() constructor
         // See: https://alpinejs.dev/advanced/csp
+        //
+        // Both script-src and style-src use nonce-based protection:
+        // - Dynamic styles use nonce'd <style> elements instead of style="" attributes
+        // - All inline scripts require matching nonce
+        // - No unsafe-inline or unsafe-eval allowed
+        //
+        // Style hashes for Alpine's internal inline styles:
+        // - sha256-bsV5JivYxvGywDAZ22EZJKBFip65Ng9xoJVLbBg7bdo= = "display: none;" (x-cloak, x-show)
+        // - sha256-ou12T4Lu3K6jhM7FOB2jdcFVyGsRVXgY4K7kE4tesk0= = "overflow: hidden;" (x-collapse)
         String cspPolicy = String.format(
             "default-src 'self'; " +
             "script-src 'self' 'nonce-%s' https://cdn.jsdelivr.net https://unpkg.com; " +
-            "style-src 'self' 'nonce-%s' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
+            "style-src 'self' 'nonce-%s' 'sha256-bsV5JivYxvGywDAZ22EZJKBFip65Ng9xoJVLbBg7bdo=' 'sha256-ou12T4Lu3K6jhM7FOB2jdcFVyGsRVXgY4K7kE4tesk0=' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
             "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; " +
             "img-src 'self' data: blob:; " +
             "connect-src 'self'; " +

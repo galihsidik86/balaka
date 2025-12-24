@@ -17,3 +17,13 @@ Bayar Sewa,1,6.2.01,,DEBIT,amount,Beban sewa
 Bayar Sewa,2,1.1.01,,CREDIT,amount,Pembayaran kas
 Bayar Listrik,1,6.2.02,,DEBIT,amount,Beban listrik
 Bayar Listrik,2,1.1.01,,CREDIT,amount,Pembayaran kas
+Pembelian Persediaan,1,,PERSEDIAAN,DEBIT,amount,Persediaan masuk
+Pembelian Persediaan,2,,BANK,CREDIT,amount,Pembayaran dari bank
+Penjualan Persediaan,1,,BANK,DEBIT,revenueAmount,Penerimaan penjualan
+Penjualan Persediaan,2,,HPP,DEBIT,cogsAmount,Harga pokok penjualan
+Penjualan Persediaan,3,,PENJUALAN,CREDIT,revenueAmount,Pendapatan penjualan
+Penjualan Persediaan,4,,PERSEDIAAN,CREDIT,cogsAmount,Persediaan keluar
+Penyesuaian Persediaan Masuk,1,,PERSEDIAAN,DEBIT,amount,Persediaan bertambah
+Penyesuaian Persediaan Masuk,2,7.1,,CREDIT,amount,Pendapatan lain-lain
+Penyesuaian Persediaan Keluar,1,8.1,,DEBIT,amount,Beban penyesuaian persediaan
+Penyesuaian Persediaan Keluar,2,,PERSEDIAAN,CREDIT,amount,Persediaan berkurang

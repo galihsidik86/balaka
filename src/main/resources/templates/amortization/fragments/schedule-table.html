@@ -37,7 +37,8 @@
                         <td class="px-4 py-3 whitespace-nowrap text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <div class="w-16 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-primary-600 h-2 rounded-full" th:style="'width: ' + ${schedule.progressPercentage} + '%'"></div>
+                                    <style th:inline="text" th:attr="nonce=${cspNonce}">#schedule-progress-[[${schedule.id}]] { width: [[${schedule.progressPercentage}]]%; }</style>
+                                    <div th:id="'schedule-progress-' + ${schedule.id}" class="bg-primary-600 h-2 rounded-full"></div>
                                 </div>
                                 <span class="text-xs text-gray-500" th:text="${schedule.completedPeriods} + '/' + ${schedule.totalPeriods}">6/12</span>
                             </div>

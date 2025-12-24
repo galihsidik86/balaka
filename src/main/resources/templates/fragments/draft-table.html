@@ -48,8 +48,9 @@
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-center">
                         <div th:if="${draft.overallConfidence != null}" class="flex items-center justify-center">
                             <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                <div th:classappend="${draft.overallConfidence.doubleValue() >= 0.8} ? 'bg-green-500' : (${draft.overallConfidence.doubleValue() >= 0.5} ? 'bg-yellow-500' : 'bg-red-500')"
-                                     th:style="'width: ' + ${draft.overallConfidence.multiply(100).intValue()} + '%'"
+                                <style th:inline="text" th:attr="nonce=${cspNonce}">#draft-confidence-[[${draft.id}]] { width: [[${draft.overallConfidence.multiply(100).intValue()}]]%; }</style>
+                                <div th:id="'draft-confidence-' + ${draft.id}"
+                                     th:classappend="${draft.overallConfidence.doubleValue() >= 0.8} ? 'bg-green-500' : (${draft.overallConfidence.doubleValue() >= 0.5} ? 'bg-yellow-500' : 'bg-red-500')"
                                      class="h-2 rounded-full"></div>
                             </div>
                             <span th:text="${draft.confidencePercentage}" class="text-xs text-gray-600">80%</span>

@@ -7,3 +7,7 @@ Penjualan Tunai + COGS,INCOME,OPERATING,DETAILED,Penjualan tunai dengan perhitun
 Bayar Gaji,EXPENSE,OPERATING,SIMPLE,Pembayaran gaji karyawan bulanan,false,true,1,0,
 Bayar Sewa,EXPENSE,OPERATING,SIMPLE,Pembayaran sewa tempat usaha,false,true,1,0,
 Bayar Listrik,EXPENSE,OPERATING,SIMPLE,Pembayaran listrik bulanan,false,true,1,0,
+Pembelian Persediaan,EXPENSE,OPERATING,SIMPLE,Template untuk mencatat pembelian persediaan/barang. Variabel: amount (total pembelian),true,true,1,0,
+Penjualan Persediaan,INCOME,OPERATING,DETAILED,Template untuk mencatat penjualan persediaan dengan HPP. Variabel: cogsAmount revenueAmount,true,true,1,0,
+Penyesuaian Persediaan Masuk,EXPENSE,OPERATING,SIMPLE,Stock opname lebih - persediaan bertambah,true,true,1,0,
+Penyesuaian Persediaan Keluar,EXPENSE,OPERATING,SIMPLE,Stock opname kurang - persediaan berkurang (rusak/hilang),true,true,1,0,

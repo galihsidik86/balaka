@@ -80,9 +80,10 @@
                       th:text="${summary.completionPercentage + '%'}">62%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="h-2.5 rounded-full"
-                     th:classappend="${summary.allCompleted ? 'bg-green-600' : 'bg-primary-600'}"
-                     th:style="'width: ' + ${summary.completionPercentage} + '%'"></div>
+                <style th:inline="text" th:attr="nonce=${cspNonce}">#tax-progress-bar { width: [[${summary.completionPercentage}]]%; }</style>
+                <div id="tax-progress-bar"
+                     class="h-2.5 rounded-full"
+                     th:classappend="${summary.allCompleted ? 'bg-green-600' : 'bg-primary-600'}"></div>
             </div>
         </div>
 

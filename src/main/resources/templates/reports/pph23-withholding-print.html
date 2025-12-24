@@ -29,6 +29,8 @@
         .box-label { font-size: 10pt; font-weight: 600; }
         .box-sublabel { font-size: 8pt; color: #6b7280; margin-top: 1mm; }
         .box-value { font-size: 14pt; font-weight: 700; font-family: 'Consolas', monospace; }
+        .text-orange-700 { color: #c2410c; }
+        .text-green-700 { color: #15803d; }
 
         /* Result Box */
         .result-box { margin-top: 5mm; padding: 5mm; border-radius: 6px; text-align: center; }
@@ -94,10 +96,10 @@
             <div class="content-box orange">
                 <div class="box-row">
                     <div>
-                        <div class="box-label" style="color: #c2410c;">Total PPh 23 Dipotong</div>
+                        <div class="box-label text-orange-700">Total PPh 23 Dipotong</div>
                         <div class="box-sublabel">PPh 23 yang dipotong dari pembayaran ke vendor</div>
                     </div>
-                    <div class="box-value" style="color: #c2410c;" th:text="${report != null} ? ${#numbers.formatDecimal(report.totalWithheld, 1, 'POINT', 0, 'COMMA')} : '0'">0</div>
+                    <div class="box-value text-orange-700" th:text="${report != null} ? ${#numbers.formatDecimal(report.totalWithheld, 1, 'POINT', 0, 'COMMA')} : '0'">0</div>
                 </div>
             </div>
 
@@ -105,10 +107,10 @@
             <div class="content-box green">
                 <div class="box-row">
                     <div>
-                        <div class="box-label" style="color: #15803d;">Total PPh 23 Disetor</div>
+                        <div class="box-label text-green-700">Total PPh 23 Disetor</div>
                         <div class="box-sublabel">PPh 23 yang sudah disetor ke negara</div>
                     </div>
-                    <div class="box-value" style="color: #15803d;" th:text="${report != null} ? '(' + ${#numbers.formatDecimal(report.totalDeposited, 1, 'POINT', 0, 'COMMA')} + ')' : '(0)'">0</div>
+                    <div class="box-value text-green-700" th:text="${report != null} ? '(' + ${#numbers.formatDecimal(report.totalDeposited, 1, 'POINT', 0, 'COMMA')} + ')' : '(0)'">0</div>
                 </div>
             </div>
 

@@ -71,6 +71,10 @@
             .print-controls { display: none; }
             body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         }
+
+        /* Helpers */
+        .text-gray-400 { color: #9ca3af; }
+        .font-mono { font-family: 'Consolas', monospace; }
     </style>
 </head>
 <body>
@@ -117,7 +121,7 @@
                     </div>
                 </th:block>
                 <div th:if="${report == null or report.operatingItems.isEmpty()}" class="item-row">
-                    <span class="item-name" style="color: #9ca3af;">Tidak ada transaksi</span>
+                    <span class="item-name text-gray-400">Tidak ada transaksi</span>
                     <span class="item-value">-</span>
                 </div>
             </div>
@@ -138,7 +142,7 @@
                     </div>
                 </th:block>
                 <div th:if="${report == null or report.investingItems.isEmpty()}" class="item-row">
-                    <span class="item-name" style="color: #9ca3af;">Tidak ada transaksi</span>
+                    <span class="item-name text-gray-400">Tidak ada transaksi</span>
                     <span class="item-value">-</span>
                 </div>
             </div>
@@ -159,7 +163,7 @@
                     </div>
                 </th:block>
                 <div th:if="${report == null or report.financingItems.isEmpty()}" class="item-row">
-                    <span class="item-name" style="color: #9ca3af;">Tidak ada transaksi</span>
+                    <span class="item-name text-gray-400">Tidak ada transaksi</span>
                     <span class="item-value">-</span>
                 </div>
             </div>
@@ -183,27 +187,27 @@
                 </div>
                 <div class="summary-row">
                     <span>Arus Kas dari Operasi</span>
-                    <span style="font-family: monospace;" th:text="${report.operatingTotal >= 0} ? ${#numbers.formatDecimal(report.operatingTotal, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.operatingTotal.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
+                    <span class="font-mono" th:text="${report.operatingTotal >= 0} ? ${#numbers.formatDecimal(report.operatingTotal, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.operatingTotal.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
                 </div>
                 <div class="summary-row">
                     <span>Arus Kas dari Investasi</span>
-                    <span style="font-family: monospace;" th:text="${report.investingTotal >= 0} ? ${#numbers.formatDecimal(report.investingTotal, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.investingTotal.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
+                    <span class="font-mono" th:text="${report.investingTotal >= 0} ? ${#numbers.formatDecimal(report.investingTotal, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.investingTotal.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
                 </div>
                 <div class="summary-row">
                     <span>Arus Kas dari Pendanaan</span>
-                    <span style="font-family: monospace;" th:text="${report.financingTotal >= 0} ? ${#numbers.formatDecimal(report.financingTotal, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.financingTotal.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
+                    <span class="font-mono" th:text="${report.financingTotal >= 0} ? ${#numbers.formatDecimal(report.financingTotal, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.financingTotal.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
                 </div>
                 <div class="summary-row highlight">
                     <span>Kenaikan/(Penurunan) Bersih Kas</span>
-                    <span style="font-family: monospace;" th:text="${report.netCashChange >= 0} ? ${#numbers.formatDecimal(report.netCashChange, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.netCashChange.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
+                    <span class="font-mono" th:text="${report.netCashChange >= 0} ? ${#numbers.formatDecimal(report.netCashChange, 1, 'POINT', 0, 'COMMA')} : '(' + ${#numbers.formatDecimal(report.netCashChange.abs(), 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
                 </div>
                 <div class="summary-row">
                     <span>Saldo Kas Awal</span>
-                    <span style="font-family: monospace;" th:text="${#numbers.formatDecimal(report.beginningCashBalance, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(report.beginningCashBalance, 1, 'POINT', 0, 'COMMA')}">0</span>
                 </div>
                 <div class="summary-row highlight">
                     <span>Saldo Kas Akhir</span>
-                    <span style="font-family: monospace;" th:text="${#numbers.formatDecimal(report.endingCashBalance, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(report.endingCashBalance, 1, 'POINT', 0, 'COMMA')}">0</span>
                 </div>
             </div>
 

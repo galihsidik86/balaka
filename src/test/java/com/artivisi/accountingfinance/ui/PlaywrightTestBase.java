@@ -74,6 +74,13 @@ public abstract class PlaywrightTestBase {
         page = context.newPage();
         page.setDefaultTimeout(5000);
 
+        // Capture browser console errors for debugging test failures
+        page.onConsoleMessage(msg -> {
+            if (msg.type().equals("error")) {
+                System.err.println("BROWSER ERROR: " + msg.text());
+            }
+        });
+
         // Disable CSS animations and transitions for stable tests
         // This prevents Alpine.js x-collapse animation from causing flaky tests
         page.addInitScript("() => {\n" +

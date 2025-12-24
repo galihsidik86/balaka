@@ -57,6 +57,14 @@
 
         /* Alternate row colors for better readability */
         tbody tr:nth-child(even) { background: #fafafa; }
+
+        /* Column widths */
+        .w-15 { width: 15%; }
+        .w-20 { width: 20%; }
+        .w-45 { width: 45%; }
+
+        /* Empty state */
+        .empty-state { text-align: center; color: #9ca3af; padding: 4mm; }
     </style>
 </head>
 <body>
@@ -93,10 +101,10 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 15%;">Kode</th>
-                    <th style="width: 45%;">Nama Akun</th>
-                    <th class="text-right" style="width: 20%;">Debit</th>
-                    <th class="text-right" style="width: 20%;">Kredit</th>
+                    <th class="w-15">Kode</th>
+                    <th class="w-45">Nama Akun</th>
+                    <th class="text-right w-20">Debit</th>
+                    <th class="text-right w-20">Kredit</th>
                 </tr>
             </thead>
             <tbody>
@@ -109,7 +117,7 @@
                     </tr>
                 </th:block>
                 <tr th:if="${report == null or report.items.isEmpty()}">
-                    <td colspan="4" style="text-align: center; color: #9ca3af; padding: 4mm;">Tidak ada data</td>
+                    <td colspan="4" class="empty-state">Tidak ada data</td>
                 </tr>
             </tbody>
             <tfoot th:if="${report != null}">

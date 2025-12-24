@@ -8,9 +8,8 @@
              th:classappend="${!account.active} ? 'opacity-50' : ''">
             <!-- Account Row -->
             <div th:id="'account-row-' + ${#strings.replace(account.accountCode, '.', '-')}"
-                 class="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-gray-50 transition-colors items-center"
-                 th:style="'padding-left: ' + (1 + ${level} * 1.5) + 'rem'"
-                 th:classappend="${account.isHeader} ? 'bg-gray-50 font-medium' : ''">
+                 class="grid grid-cols-12 gap-4 py-3 hover:bg-gray-50 transition-colors items-center"
+                 th:classappend="(${account.isHeader} ? 'bg-gray-50 font-medium ' : '') + (${level == 0} ? 'pl-4' : (${level == 1} ? 'pl-10' : (${level == 2} ? 'pl-16' : (${level == 3} ? 'pl-24' : (${level == 4} ? 'pl-32' : 'pl-40')))))">
 
                 <!-- Code -->
                 <div th:id="'account-code-' + ${#strings.replace(account.accountCode, '.', '-')}"
@@ -24,7 +23,7 @@
                     <!-- Expand/Collapse toggle for accounts with children -->
                     <button th:if="${!#lists.isEmpty(account.children)}"
                             th:id="'btn-expand-' + ${#strings.replace(account.accountCode, '.', '-')}"
-                            @click="expanded = !expanded"
+                            @click="toggleExpanded"
                             type="button"
                             class="mr-2 p-0.5 text-gray-400 hover:text-gray-600 rounded">
                         <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-90': expanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +119,7 @@
             </div>
 
             <!-- Children (recursive) -->
-            <div x-show="expanded" x-cloak th:if="${!#lists.isEmpty(account.children)}">
+            <div :class="{ 'hidden': !expanded }" x-cloak th:if="${!#lists.isEmpty(account.children)}">
                 <th:block th:each="child : ${account.children}">
                     <div th:replace="~{accounts/fragments :: accountRow(account=${child}, level=${level + 1})}"></div>
                 </th:block>

@@ -45,11 +45,11 @@ public class InventoryService {
     private final JournalTemplateRepository journalTemplateRepository;
     private final TransactionService transactionService;
 
-    // Template IDs from V004 seed data (Phase 5 inventory templates)
-    private static final UUID PURCHASE_TEMPLATE_ID = UUID.fromString("f5000000-0000-0000-0000-000000000001");
-    private static final UUID SALE_TEMPLATE_ID = UUID.fromString("f5000000-0000-0000-0000-000000000002");
-    private static final UUID ADJUSTMENT_IN_TEMPLATE_ID = UUID.fromString("f5000000-0000-0000-0000-000000000003");
-    private static final UUID ADJUSTMENT_OUT_TEMPLATE_ID = UUID.fromString("f5000000-0000-0000-0000-000000000004");
+    // Template names for inventory journal entries (lookup by name, not hardcoded UUID)
+    private static final String PURCHASE_TEMPLATE_NAME = "Pembelian Persediaan";
+    private static final String SALE_TEMPLATE_NAME = "Penjualan Persediaan";
+    private static final String ADJUSTMENT_IN_TEMPLATE_NAME = "Penyesuaian Persediaan Masuk";
+    private static final String ADJUSTMENT_OUT_TEMPLATE_NAME = "Penyesuaian Persediaan Keluar";
 
     /**
      * Record an inventory purchase.
@@ -445,15 +445,15 @@ public class InventoryService {
      * Uses the appropriate template based on transaction type.
      */
     private Transaction createJournalEntry(InventoryTransaction invTransaction, Product product) {
-        UUID templateId = getTemplateIdForType(invTransaction.getTransactionType());
-        if (templateId == null) {
+        String templateName = getTemplateNameForType(invTransaction.getTransactionType());
+        if (templateName == null) {
             log.debug("No journal template for transaction type: {}", invTransaction.getTransactionType());
             return null;
         }
 
-        Optional<JournalTemplate> templateOpt = journalTemplateRepository.findByIdWithLines(templateId);
+        Optional<JournalTemplate> templateOpt = journalTemplateRepository.findByTemplateNameWithLines(templateName);
         if (templateOpt.isEmpty()) {
-            log.warn("Journal template not found: {}", templateId);
+            log.warn("Journal template not found: {}", templateName);
             return null;
         }
 
@@ -514,12 +514,12 @@ public class InventoryService {
         };
     }
 
-    private UUID getTemplateIdForType(InventoryTransactionType type) {
+    private String getTemplateNameForType(InventoryTransactionType type) {
         return switch (type) {
-            case PURCHASE -> PURCHASE_TEMPLATE_ID;
-            case SALE -> SALE_TEMPLATE_ID;
-            case ADJUSTMENT_IN -> ADJUSTMENT_IN_TEMPLATE_ID;
-            case ADJUSTMENT_OUT -> ADJUSTMENT_OUT_TEMPLATE_ID;
+            case PURCHASE -> PURCHASE_TEMPLATE_NAME;
+            case SALE -> SALE_TEMPLATE_NAME;
+            case ADJUSTMENT_IN -> ADJUSTMENT_IN_TEMPLATE_NAME;
+            case ADJUSTMENT_OUT -> ADJUSTMENT_OUT_TEMPLATE_NAME;
             // Production and transfer don't auto-generate journals yet
             default -> null;
         };

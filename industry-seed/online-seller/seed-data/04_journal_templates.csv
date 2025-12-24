@@ -25,6 +25,8 @@ Bayar Beban Listrik,EXPENSE,OPERATING,SIMPLE,Pembayaran listrik gudang/kantor,fa
 Bayar Beban Operasional,EXPENSE,OPERATING,SIMPLE,Pembayaran beban operasional umum,false,true,1,0,
 Penyesuaian Persediaan Masuk,EXPENSE,OPERATING,SIMPLE,Stock opname lebih - persediaan bertambah,false,true,1,0,
 Penyesuaian Persediaan Keluar,EXPENSE,OPERATING,SIMPLE,Stock opname kurang - persediaan berkurang (rusak/hilang),false,true,1,0,
+Pembelian Persediaan,EXPENSE,OPERATING,SIMPLE,Template untuk mencatat pembelian persediaan/barang. Variabel: amount (total pembelian),true,true,1,0,
+Penjualan Persediaan,INCOME,OPERATING,DETAILED,Template untuk mencatat penjualan persediaan dengan HPP. Variabel: cogsAmount revenueAmount,true,true,1,0,
 Transfer Antar Bank,TRANSFER,OPERATING,SIMPLE,Transfer dana antar rekening bank,false,true,1,0,
 Setoran Modal,RECEIPT,FINANCING,SIMPLE,Setoran modal dari pemilik,false,true,1,0,
 Prive / Pengambilan Pribadi,PAYMENT,FINANCING,SIMPLE,Pengambilan dana oleh pemilik,false,true,1,0,

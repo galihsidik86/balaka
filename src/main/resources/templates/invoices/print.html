@@ -381,6 +381,10 @@
         .status-paid { background: #dcfce7; color: #166534; }
         .status-overdue { background: #fee2e2; color: #dc2626; }
         .status-cancelled { background: #f3f4f6; color: #6b7280; }
+
+        /* Helpers */
+        .mt-3mm { margin-top: 3mm; }
+        .col-span-2 { grid-column: span 2; }
     </style>
 </head>
 <body>
@@ -412,7 +416,7 @@
             <div class="invoice-title-section">
                 <div class="invoice-title">INVOICE</div>
                 <div class="invoice-number" th:text="${invoice.invoiceNumber}">INV-202501-0001</div>
-                <div style="margin-top: 3mm;">
+                <div class="mt-3mm">
                     <span th:if="${invoice.status.name() == 'DRAFT'}" class="status-badge status-draft">Draf</span>
                     <span th:if="${invoice.status.name() == 'SENT'}" class="status-badge status-sent">Terkirim</span>
                     <span th:if="${invoice.status.name() == 'PAID'}" class="status-badge status-paid">Lunas</span>
@@ -489,7 +493,7 @@
                     <span class="bank-label">Nomor Rekening</span>
                     <span class="bank-value mono" th:text="${bankAccount.accountNumber}">1234567890</span>
                 </div>
-                <div class="bank-item" style="grid-column: span 2;">
+                <div class="bank-item col-span-2">
                     <span class="bank-label">Atas Nama</span>
                     <span class="bank-value" th:text="${bankAccount.accountName}">PT Nama Perusahaan</span>
                 </div>

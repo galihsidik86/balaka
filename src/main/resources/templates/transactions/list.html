@@ -107,7 +107,7 @@
                 </div>
 
                 <!-- Results dropdown (populated by HTMX) -->
-                <div x-show="open" x-transition>
+                <div :class="{ 'hidden': !open }">
                     <div id="template-search-results">
                         <!-- HTMX will populate this -->
                     </div>

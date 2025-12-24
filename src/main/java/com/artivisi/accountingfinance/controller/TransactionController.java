@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -533,6 +534,49 @@ public class TransactionController {
         addDetailedTemplateAttributes(template, model);
 
         return "fragments/quick-transaction-form :: form";
+    }
+
+    /**
+     * Handle quick transaction form submission.
+     * Creates a transaction from the simplified quick form.
+     */
+    @PostMapping("/quick")
+    @PreAuthorize("hasAuthority('" + Permission.TRANSACTION_CREATE + "')")
+    public String quickCreate(
+            @RequestParam UUID templateId,
+            @RequestParam BigDecimal amount,
+            @RequestParam String description,
+            @RequestParam(required = false) LocalDate transactionDate,
+            @RequestParam(required = false) String referenceNumber,
+            @RequestParam(required = false) String notes,
+            @RequestParam(required = false) Map<String, String> accountMapping,
+            RedirectAttributes redirectAttributes) {
+
+        // Create transaction from template
+        Transaction transaction = new Transaction();
+        JournalTemplate template = journalTemplateService.findByIdWithLines(templateId);
+        transaction.setJournalTemplate(template);
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transaction.setTransactionDate(transactionDate != null ? transactionDate : LocalDate.now());
+        transaction.setReferenceNumber(referenceNumber);
+        transaction.setNotes(notes);
+
+        // Convert account mappings to UUID map
+        Map<UUID, UUID> accountMappings = null;
+        if (accountMapping != null && !accountMapping.isEmpty()) {
+            accountMappings = new java.util.HashMap<>();
+            for (var entry : accountMapping.entrySet()) {
+                if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                    accountMappings.put(UUID.fromString(entry.getKey()), UUID.fromString(entry.getValue()));
+                }
+            }
+        }
+
+        Transaction saved = transactionService.create(transaction, accountMappings, null, null);
+
+        redirectAttributes.addFlashAttribute("successMessage", "Transaksi berhasil dibuat");
+        return "redirect:/transactions/" + saved.getId();
     }
 
     /**

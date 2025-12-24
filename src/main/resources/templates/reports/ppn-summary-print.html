@@ -29,6 +29,9 @@
         .box-label { font-size: 10pt; font-weight: 600; }
         .box-sublabel { font-size: 8pt; color: #6b7280; margin-top: 1mm; }
         .box-value { font-size: 14pt; font-weight: 700; font-family: 'Consolas', monospace; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-green-700 { color: #15803d; }
+        .font-mono { font-family: 'Consolas', monospace; }
 
         /* Result Box */
         .result-box { margin-top: 5mm; padding: 5mm; border-radius: 6px; text-align: center; }
@@ -96,10 +99,10 @@
             <div class="content-box blue">
                 <div class="box-row">
                     <div>
-                        <div class="box-label" style="color: #1d4ed8;">PPN Keluaran (Output VAT)</div>
+                        <div class="box-label text-blue-700">PPN Keluaran (Output VAT)</div>
                         <div class="box-sublabel">PPN yang dipungut dari penjualan</div>
                     </div>
-                    <div class="box-value" style="color: #1d4ed8;" th:text="${report != null} ? ${#numbers.formatDecimal(report.ppnKeluaran, 1, 'POINT', 0, 'COMMA')} : '0'">0</div>
+                    <div class="box-value text-blue-700" th:text="${report != null} ? ${#numbers.formatDecimal(report.ppnKeluaran, 1, 'POINT', 0, 'COMMA')} : '0'">0</div>
                 </div>
             </div>
 
@@ -107,10 +110,10 @@
             <div class="content-box green">
                 <div class="box-row">
                     <div>
-                        <div class="box-label" style="color: #15803d;">PPN Masukan (Input VAT)</div>
+                        <div class="box-label text-green-700">PPN Masukan (Input VAT)</div>
                         <div class="box-sublabel">PPN yang dapat dikreditkan dari pembelian</div>
                     </div>
-                    <div class="box-value" style="color: #15803d;" th:text="${report != null} ? '(' + ${#numbers.formatDecimal(report.ppnMasukan, 1, 'POINT', 0, 'COMMA')} + ')' : '(0)'">0</div>
+                    <div class="box-value text-green-700" th:text="${report != null} ? '(' + ${#numbers.formatDecimal(report.ppnMasukan, 1, 'POINT', 0, 'COMMA')} + ')' : '(0)'">0</div>
                 </div>
             </div>
 
@@ -130,15 +133,15 @@
                 </div>
                 <div class="summary-row">
                     <span>PPN Keluaran (dari penjualan)</span>
-                    <span style="font-family: monospace;" th:text="${#numbers.formatDecimal(report.ppnKeluaran, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(report.ppnKeluaran, 1, 'POINT', 0, 'COMMA')}">0</span>
                 </div>
                 <div class="summary-row">
                     <span>PPN Masukan (dari pembelian)</span>
-                    <span style="font-family: monospace;" th:text="'(' + ${#numbers.formatDecimal(report.ppnMasukan, 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
+                    <span class="font-mono" th:text="'(' + ${#numbers.formatDecimal(report.ppnMasukan, 1, 'POINT', 0, 'COMMA')} + ')'">0</span>
                 </div>
                 <div class="summary-row total">
                     <span>PPN Terutang</span>
-                    <span style="font-family: monospace;" th:text="${#numbers.formatDecimal(report.netPPN, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <span class="font-mono" th:text="${#numbers.formatDecimal(report.netPPN, 1, 'POINT', 0, 'COMMA')}">0</span>
                 </div>
             </div>
         </div>

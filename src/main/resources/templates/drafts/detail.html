@@ -180,8 +180,9 @@
                             <div class="flex items-center">
                                 <span class="w-24 text-sm text-gray-600">Overall</span>
                                 <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
-                                    <div th:classappend="${draft.overallConfidence.doubleValue() >= 0.8} ? 'bg-green-500' : (${draft.overallConfidence.doubleValue() >= 0.5} ? 'bg-yellow-500' : 'bg-red-500')"
-                                         th:style="'width: ' + ${draft.overallConfidence.multiply(100).intValue()} + '%'"
+                                    <style th:inline="text" th:attr="nonce=${cspNonce}">#conf-overall-[[${draft.id}]] { width: [[${draft.overallConfidence.multiply(100).intValue()}]]%; }</style>
+                                    <div th:id="'conf-overall-' + ${draft.id}"
+                                         th:classappend="${draft.overallConfidence.doubleValue() >= 0.8} ? 'bg-green-500' : (${draft.overallConfidence.doubleValue() >= 0.5} ? 'bg-yellow-500' : 'bg-red-500')"
                                          class="h-2 rounded-full"></div>
                                 </div>
                                 <span class="text-sm font-medium" th:text="${draft.confidencePercentage}">80%</span>
@@ -189,24 +190,24 @@
                             <div th:if="${draft.merchantConfidence != null}" class="flex items-center">
                                 <span class="w-24 text-sm text-gray-600">Merchant</span>
                                 <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
-                                    <div th:style="'width: ' + ${draft.merchantConfidence.multiply(100).intValue()} + '%'"
-                                         class="h-2 rounded-full bg-blue-500"></div>
+                                    <style th:inline="text" th:attr="nonce=${cspNonce}">#conf-merchant-[[${draft.id}]] { width: [[${draft.merchantConfidence.multiply(100).intValue()}]]%; }</style>
+                                    <div th:id="'conf-merchant-' + ${draft.id}" class="h-2 rounded-full bg-blue-500"></div>
                                 </div>
                                 <span class="text-sm" th:text="${#numbers.formatPercent(draft.merchantConfidence.doubleValue(), 1, 0)}">80%</span>
                             </div>
                             <div th:if="${draft.amountConfidence != null}" class="flex items-center">
                                 <span class="w-24 text-sm text-gray-600">Jumlah</span>
                                 <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
-                                    <div th:style="'width: ' + ${draft.amountConfidence.multiply(100).intValue()} + '%'"
-                                         class="h-2 rounded-full bg-blue-500"></div>
+                                    <style th:inline="text" th:attr="nonce=${cspNonce}">#conf-amount-[[${draft.id}]] { width: [[${draft.amountConfidence.multiply(100).intValue()}]]%; }</style>
+                                    <div th:id="'conf-amount-' + ${draft.id}" class="h-2 rounded-full bg-blue-500"></div>
                                 </div>
                                 <span class="text-sm" th:text="${#numbers.formatPercent(draft.amountConfidence.doubleValue(), 1, 0)}">80%</span>
                             </div>
                             <div th:if="${draft.dateConfidence != null}" class="flex items-center">
                                 <span class="w-24 text-sm text-gray-600">Tanggal</span>
                                 <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
-                                    <div th:style="'width: ' + ${draft.dateConfidence.multiply(100).intValue()} + '%'"
-                                         class="h-2 rounded-full bg-blue-500"></div>
+                                    <style th:inline="text" th:attr="nonce=${cspNonce}">#conf-date-[[${draft.id}]] { width: [[${draft.dateConfidence.multiply(100).intValue()}]]%; }</style>
+                                    <div th:id="'conf-date-' + ${draft.id}" class="h-2 rounded-full bg-blue-500"></div>
                                 </div>
                                 <span class="text-sm" th:text="${#numbers.formatPercent(draft.dateConfidence.doubleValue(), 1, 0)}">80%</span>
                             </div>

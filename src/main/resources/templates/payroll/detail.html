@@ -69,14 +69,14 @@
                 <!-- Export Dropdown -->
                 <div th:if="${payrollRun.isCalculated() or payrollRun.isApproved() or payrollRun.isPosted()}"
                      class="relative" x-data="toggleState">
-                    <button @click="open = !open" type="button" id="btn-export"
+                    <button @click="toggle" type="button" id="btn-export"
                             class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center">
                         <span>Export</span>
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
-                    <div x-show="open" @click.away="open = false"
+                    <div :class="{ 'hidden': !open }" @click.outside="close"
                          class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                         <div class="py-1">
                             <p class="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Rekap Gaji</p>

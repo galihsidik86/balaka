@@ -26,11 +26,27 @@ jobs:
       - name: Build JAR and SBOM
         run: ./mvnw package -DskipTests
 
-      - name: Verify SBOM generation
+      - name: Verify and prepare SBOM files
         run: |
           echo "Checking for SBOM files..."
-          ls -lh target/sbom.*
-          echo "SBOM files generated successfully"
+          # CycloneDX plugin outputs to target/
+          if ls target/sbom.* 2>/dev/null; then
+            echo "Found SBOM in target/"
+            ls -lh target/sbom.*
+          fi
+          # Spring Boot 4 outputs to META-INF/sbom/
+          if ls target/classes/META-INF/sbom/*.json 2>/dev/null; then
+            echo "Found Spring Boot SBOM in META-INF/sbom/"
+            ls -lh target/classes/META-INF/sbom/
+            # Copy to target/ for release artifacts
+            cp target/classes/META-INF/sbom/application.cdx.json target/sbom.json 2>/dev/null || true
+          fi
+          # Verify at least one SBOM exists
+          if [ ! -f target/sbom.json ]; then
+            echo "ERROR: No SBOM file found!"
+            exit 1
+          fi
+          echo "SBOM files prepared successfully"
 
       - name: Get release notes
         id: release_notes
@@ -57,4 +73,3 @@ jobs:
           files: |
             target/*.jar
             target/sbom.json
-            target/sbom.xml
