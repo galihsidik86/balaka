@@ -168,7 +168,7 @@
 		<dependency>
 			<groupId>org.zaproxy</groupId>
 			<artifactId>zap-clientapi</artifactId>
-			<version>1.16.0</version>
+			<version>1.17.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
