@@ -30,7 +30,7 @@
 
 ### 0.1 Development Environment
 - [x] Spring Boot 4.0 project structure
-- [x] PostgreSQL 17 local setup (Testcontainers for tests)
+- [x] PostgreSQL 18 local setup (Testcontainers for tests)
 - [x] Flyway migration setup
 - [x] CI/CD pipeline with test execution and coverage (GitHub Actions)
 

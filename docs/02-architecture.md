@@ -11,7 +11,7 @@ Indonesian accounting application for small businesses built with Spring Boot 4.
 | Architecture | Monolith | Single codebase, simpler deployment |
 | Frontend | Server-rendered + HTMX | No SPA complexity, works without JS |
 | Backend | Java 25 + Spring Boot 4.0 | BigDecimal precision, type safety |
-| Database | PostgreSQL 17 | ACID, JSON support, mature |
+| Database | PostgreSQL 18 | ACID, JSON support, mature |
 | Multi-tenancy | Single-tenant (per instance) | Complete data isolation |
 
 ### Stack Summary
@@ -31,7 +31,7 @@ Application
 └── Flyway migrations
 
 Data Storage
-├── PostgreSQL 17
+├── PostgreSQL 18
 └── MinIO / Local filesystem (documents)
 
 External Services
@@ -296,7 +296,7 @@ services:
       - SPRING_PROFILES_ACTIVE=production
 
   db:
-    image: postgres:17
+    image: postgres:18
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

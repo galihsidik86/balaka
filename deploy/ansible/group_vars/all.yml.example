@@ -4,15 +4,53 @@ app_user: accounting
 app_port: 10000
 
 # Domain
-app_domain: akunting.artivisi.id
+app_domain: akunting.example.com
 
 # Database Configuration
+postgresql_version: "18"
 db_name: accountingdb
 db_user: accounting
 db_password: "CHANGE_THIS_DB_PASSWORD"
 # SSL mode: require (encrypted), verify-ca, verify-full (strictest)
 # For localhost PostgreSQL, 'require' is sufficient
 db_ssl_mode: require
+
+# PostgreSQL Performance Tuning
+# VPS spec: s-1vcpu-2gb (1 vCPU, 2GB RAM)
+# Memory budget: JVM 768MB, PostgreSQL 256MB, OS 512MB
+pg_server_ram_gb: 2
+
+# Connection settings (match HikariCP pool size)
+pg_max_connections: 20
+
+# Memory settings - conservative for shared 2GB server
+pg_shared_buffers: "128MB"
+pg_effective_cache_size: "384MB"
+pg_work_mem: "4MB"
+pg_maintenance_work_mem: "64MB"
+
+# Storage type affects query planner (DigitalOcean uses SSD)
+pg_storage_type: "ssd"
+
+# WAL settings
+pg_wal_buffers: "16MB"
+pg_checkpoint_completion_target: 0.9
+pg_min_wal_size: "256MB"
+pg_max_wal_size: "1GB"
+
+# Autovacuum tuning for OLTP
+pg_autovacuum_max_workers: 2
+pg_autovacuum_naptime: "1min"
+pg_autovacuum_vacuum_scale_factor: 0.05
+pg_autovacuum_analyze_scale_factor: 0.025
+
+# Logging for diagnostics
+pg_log_min_duration_statement: 1000
+pg_log_checkpoints: "on"
+pg_log_connections: "on"
+pg_log_disconnections: "on"
+pg_log_lock_waits: "on"
+pg_log_temp_files: 0
 
 # Admin User Configuration
 # SECURITY: Do NOT use common usernames like 'admin', 'administrator', 'root'
@@ -23,13 +61,69 @@ admin_full_name: "System Administrator"
 admin_email: "admin@example.com"
 
 # Java Configuration
+# VPS: s-1vcpu-2gb - JVM gets ~1GB budget
 java_version: "25"
-java_heap_min: "512m"
-java_heap_max: "1024m"
+
+# Heap sizing - Min = Max to avoid resize overhead
+java_heap_min: "768m"
+java_heap_max: "768m"
+
+# GC selection: G1GC for small heaps (<2GB), ZGC for larger
+java_gc: "G1GC"
+
+# G1GC tuning (ignored if using ZGC)
+java_g1_heap_region_size: "4m"
+java_g1_reserve_percent: "15"
+java_g1_max_gc_pause_millis: "200"
+
+# ZGC tuning (ignored if using G1GC)
+java_zgc_soft_max_heap: "700m"
+
+# Metaspace (class metadata)
+java_metaspace_size: "128m"
+java_max_metaspace_size: "192m"
+
+# Direct memory for NIO buffers
+java_max_direct_memory: "128m"
+
+# GC logging
+java_gc_log_enabled: true
+
+# Thread stack size
+java_thread_stack_size: "512k"
+
+# JIT compiler tuning
+java_tiered_stop_level: "4"
 
 # SSL Configuration
 ssl_enabled: true
-ssl_email: "admin@artivisi.com"
+ssl_email: "admin@example.com"
+
+# Nginx Performance Tuning
+nginx_worker_processes: "auto"
+nginx_worker_connections: 1024
+
+# Keepalive connections
+nginx_keepalive_timeout: 65
+nginx_keepalive_requests: 1000
+
+# Proxy buffer tuning
+nginx_proxy_buffer_size: "16k"
+nginx_proxy_buffers: "4 32k"
+nginx_proxy_busy_buffers_size: "64k"
+
+# Client body size (for file uploads)
+nginx_client_max_body_size: "20M"
+nginx_client_body_buffer_size: "128k"
+
+# Rate limiting (requests per second per IP)
+nginx_rate_limit: "10r/s"
+nginx_rate_limit_burst: 20
+
+# Gzip compression
+nginx_gzip_enabled: true
+nginx_gzip_comp_level: 5
+nginx_gzip_min_length: 1024
 
 # Document Storage Configuration (optional)
 # document_max_file_size: 10485760  # 10MB

@@ -19,7 +19,7 @@ services:
       "
 
   db-belajar:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     depends_on:
       db-ssl-init:
         condition: service_completed_successfully

@@ -1002,7 +1002,7 @@ If Spent % > Progress % + threshold:
 ---
 
 ### 9. Technology Stack: Spring Boot Monolith ✓
-**Decision:** Java 25 + Spring Boot 4.0 + Thymeleaf + HTMX + Alpine.js + PostgreSQL 17
+**Decision:** Java 25 + Spring Boot 4.0 + Thymeleaf + HTMX + Alpine.js + PostgreSQL 18
 
 **Date:** 2025-11-19
 

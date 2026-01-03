@@ -41,7 +41,7 @@ Building an accounting application for Indonesian small businesses (IT services,
 - More containers/processes to manage
 
 ### 1.3 Technology Stack
-**Decision:** Java 25 + Spring Boot 4.0 + Thymeleaf + HTMX + Alpine.js + PostgreSQL 17
+**Decision:** Java 25 + Spring Boot 4.0 + Thymeleaf + HTMX + Alpine.js + PostgreSQL 18
 
 **Rationale:**
 - BigDecimal for precise financial calculations
