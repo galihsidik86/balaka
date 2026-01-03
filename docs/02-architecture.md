@@ -352,17 +352,48 @@ services:
 
 ### Database Optimization
 
-- HikariCP connection pooling
+- HikariCP connection pooling (10 max, 2 idle)
 - Optimal indexes for common queries
 - JOIN FETCH to prevent N+1
 - Materialized views for reports
 
+PostgreSQL tuning for 2GB VPS:
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| shared_buffers | 128 MB | 6% of RAM |
+| effective_cache_size | 384 MB | OS cache |
+| work_mem | 4 MB | Sort/hash ops |
+| random_page_cost | 1.1 | SSD storage |
+| autovacuum_vacuum_scale_factor | 0.05 | Aggressive for OLTP |
+
 ### Application Performance
 
 - Virtual threads (Java 25)
+- G1GC garbage collector (optimal for <4GB heaps)
+- Fixed heap sizing (768m min=max)
 - Async processing for heavy reports
 - Spring Cache for frequent data
 - Lazy loading for JPA relationships
+
+JVM tuning for 2GB VPS:
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Heap | 768 MB fixed | -Xms768m -Xmx768m |
+| Metaspace | 128-192 MB | Class metadata |
+| GC | G1GC | Low pause times |
+| Thread Stack | 512 KB | -Xss512k |
+
+Startup time: ~50-55 seconds on 1 vCPU
+
+### Nginx Performance
+
+- Gzip compression (level 5)
+- Keepalive connections (65s timeout)
+- Rate limiting (10 req/s per IP)
+- Static asset caching (30 days)
+- Upstream connection pooling (keepalive 32)
 
 ## Monitoring
 

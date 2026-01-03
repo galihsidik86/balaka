@@ -29,6 +29,63 @@ ansible-playbook -i inventory.ini deploy.yml
 | RAM | 2 GB | 4 GB |
 | Disk | 20 GB SSD | 40 GB SSD |
 
+### Capacity Planning (2GB VPS)
+
+Memory budget allocation for minimum 2GB VPS:
+
+| Component | Allocation | Notes |
+|-----------|------------|-------|
+| JVM Heap | 768 MB | Fixed min=max to avoid resize |
+| JVM Metaspace | 128-192 MB | Class metadata |
+| PostgreSQL | ~256 MB | shared_buffers + connections |
+| OS/Buffers | ~512 MB | Page cache, kernel |
+
+#### JVM Configuration
+
+Ansible configures the JVM with G1GC (optimal for heaps <4GB):
+
+```bash
+-XX:+UseG1GC
+-XX:G1HeapRegionSize=4m
+-XX:G1ReservePercent=15
+-XX:MaxGCPauseMillis=200
+-XX:+UseStringDeduplication
+-Xms768m -Xmx768m              # Fixed heap
+-XX:MetaspaceSize=128m
+-XX:MaxMetaspaceSize=192m
+-XX:MaxDirectMemorySize=128m
+-Xss512k                        # Thread stack
+```
+
+GC logging is enabled at `/var/log/<app>/gc.log` for diagnostics.
+
+#### PostgreSQL Configuration
+
+Optimized for OLTP workload on small server:
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| shared_buffers | 128 MB | ~6% RAM for shared server |
+| effective_cache_size | 384 MB | OS cache estimate |
+| work_mem | 4 MB | Per-operation sort memory |
+| maintenance_work_mem | 64 MB | VACUUM, CREATE INDEX |
+| max_connections | 20 | Match HikariCP pool |
+| random_page_cost | 1.1 | SSD storage |
+
+Autovacuum is tuned aggressively (5% scale factor) for OLTP.
+
+#### Nginx Configuration
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| worker_processes | auto | Matches CPU cores |
+| worker_connections | 1024 | Per worker |
+| keepalive_timeout | 65s | Connection reuse |
+| rate_limit | 10r/s | Per IP, burst 20 |
+| gzip | on | Level 5 compression |
+
+Security headers (HSTS, X-Frame-Options, CSP) are configured in the SSL site template.
+
 ### Required Credentials
 
 | Credential | Source | Notes |
@@ -47,11 +104,11 @@ ansible-playbook -i inventory.ini deploy.yml
 ### Step 1: Server Setup
 
 Run `site.yml` to install and configure:
-- Java 25
-- PostgreSQL 16
-- Nginx with SSL
+- Java 25 (Azul Zulu)
+- PostgreSQL 18 (from PGDG repository)
+- Nginx with SSL (Let's Encrypt)
 - Application directories
-- Systemd service
+- Systemd service with optimized JVM settings
 - Backup scripts and cron
 
 ```bash
@@ -442,6 +499,71 @@ sudo -u postgres psql -c "CREATE DATABASE accountingdb OWNER accounting;"
 
 # Restart application (Flyway will recreate schema and seed data)
 sudo systemctl start accounting-finance
+```
+
+## PostgreSQL Major Version Upgrade
+
+Use the `upgrade-postgresql.yml` playbook for major version upgrades (e.g., 17 → 18).
+
+### Prerequisites
+
+1. Schedule maintenance window (5-30 min downtime depending on database size)
+2. Verify backup is current
+3. Ensure PGDG repository is configured
+
+### Upgrade Procedure
+
+```bash
+# Run upgrade playbook
+ansible-playbook -i inventory.ini upgrade-postgresql.yml \
+  -e "pg_old_version=17 pg_new_version=18"
+```
+
+The playbook will:
+1. Stop the application
+2. Create full database backup using `pg_dump`
+3. Install new PostgreSQL version from PGDG
+4. Configure new cluster on port 5432
+5. Restore database to new cluster
+6. Start the application
+7. Verify connectivity
+
+### Post-Upgrade Verification
+
+```bash
+# Check PostgreSQL version
+sudo -u postgres psql -c "SELECT version();"
+
+# Verify optimized settings applied
+sudo -u postgres psql -c "SHOW shared_buffers; SHOW work_mem;"
+
+# Check application health
+curl -s http://localhost:10000/actuator/health
+```
+
+### Rollback (if needed)
+
+Old cluster remains available on port 5433:
+
+```bash
+# Stop new cluster
+sudo pg_ctlcluster 18 main stop
+
+# Configure old cluster back to port 5432
+sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/17/main/postgresql.conf
+
+# Start old cluster
+sudo pg_ctlcluster 17 main start
+
+# Restart application
+sudo systemctl restart accounting-finance
+```
+
+After verification, remove old cluster:
+
+```bash
+sudo pg_dropcluster 17 main
+sudo apt remove postgresql-17
 ```
 
 ## Rollback Procedure

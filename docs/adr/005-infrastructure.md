@@ -113,6 +113,51 @@ Infrastructure decisions for deployment, storage, and operations of the accounti
 | Performance Testing | K6 |
 | Security Scanning | SonarQube, OWASP tools, Trivy |
 
+### 5.7 Capacity Planning
+**Decision:** Optimized configuration for 2GB VPS (s-1vcpu-2gb tier).
+
+**Memory Budget Allocation:**
+
+| Component | Allocation | Configuration |
+|-----------|------------|---------------|
+| JVM Heap | 768 MB | Fixed -Xms768m -Xmx768m |
+| JVM Metaspace | 128-192 MB | Class metadata |
+| PostgreSQL | ~256 MB | shared_buffers + connections |
+| OS/Buffers | ~512 MB | Page cache, kernel |
+
+**JVM Configuration:**
+- GC: G1GC (optimal for heaps <4GB, lower pause than ZGC)
+- Heap regions: 4 MB
+- GC pause target: 200 ms
+- String deduplication enabled
+- GC logging to `/var/log/<app>/gc.log`
+
+**PostgreSQL Configuration:**
+- Version: 18 (from PGDG repository)
+- shared_buffers: 128 MB (6% of RAM for shared server)
+- effective_cache_size: 384 MB
+- work_mem: 4 MB
+- random_page_cost: 1.1 (SSD)
+- Aggressive autovacuum (5% scale factor)
+
+**Nginx Configuration:**
+- Rate limiting: 10 req/s per IP, burst 20
+- Gzip compression: level 5
+- Keepalive: 65s timeout, 1000 requests
+- SSL: TLS 1.2/1.3, HSTS enabled
+- Security headers: X-Frame-Options, CSP, X-Content-Type-Options
+
+**Rationale:**
+- G1GC chosen over ZGC for better memory efficiency on small heaps
+- Fixed heap sizing prevents resize pauses
+- PostgreSQL tuned for OLTP rather than analytics
+- Rate limiting prevents abuse without affecting normal usage
+
+**Scaling Path:**
+- 2GB: Single user, light usage (current config)
+- 4GB: Increase heap to 1.5GB, shared_buffers to 256MB
+- 8GB+: Consider ZGC, larger connection pools
+
 ## Consequences
 - Deployments are simple and cost-effective
 - Storage can scale from local dev to production without code changes
