@@ -237,6 +237,13 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<excludedGroups>${excludedGroups}</excludedGroups>
+					<!-- ByteBuddy/Mockito needs these for Java 17+ module access -->
+					<argLine>
+						@{argLine}
+						--add-opens java.base/java.lang=ALL-UNNAMED
+						--add-opens java.base/java.lang.reflect=ALL-UNNAMED
+						--add-opens java.base/java.util=ALL-UNNAMED
+					</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
