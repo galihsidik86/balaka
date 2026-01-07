@@ -2,7 +2,6 @@ package com.artivisi.accountingfinance.repository;
 
 import com.artivisi.accountingfinance.entity.InventoryTransaction;
 import com.artivisi.accountingfinance.entity.InventoryTransactionType;
-import com.artivisi.accountingfinance.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

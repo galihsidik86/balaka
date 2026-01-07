@@ -307,7 +307,7 @@ public class TransactionController {
                 String value = params.getFirst(key);
                 if (value != null && !value.isEmpty()) {
                     // Parse formatted number (remove dots as thousand separators)
-                    String cleanValue = value.replaceAll("[^0-9]", "");
+                    String cleanValue = value.replaceAll("\\D", "");
                     if (!cleanValue.isEmpty()) {
                         variables.put(varName, new BigDecimal(cleanValue));
                     }

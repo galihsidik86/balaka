@@ -13,7 +13,7 @@
 // See: https://github.com/alpinejs/alpine/discussions/4478
 document.addEventListener('htmx:afterSettle', (event) => {
     // Destroy and reinitialize Alpine components in the swapped content
-    if (window.Alpine && event.detail.target) {
+    if (globalThis.Alpine && event.detail.target) {
         Alpine.destroyTree(event.detail.target)
         Alpine.initTree(event.detail.target)
     }
@@ -22,8 +22,8 @@ document.addEventListener('htmx:afterSettle', (event) => {
 // Register Alpine components
 // Must register before Alpine processes the DOM
 function registerAlpineComponents() {
-    if (window._alpineComponentsRegistered) return
-    window._alpineComponentsRegistered = true
+    if (globalThis._alpineComponentsRegistered) return
+    globalThis._alpineComponentsRegistered = true
     // Simple toggle state (open/closed)
     Alpine.data('toggleState', () => ({
         open: false,
@@ -186,7 +186,7 @@ function registerAlpineComponents() {
     // Transaction form state
     Alpine.data('transactionForm', () => ({
         init() {
-            this.amount = parseInt(this.$el.dataset.amount) || 0
+            this.amount = Number.parseInt(this.$el.dataset.amount) || 0
             this.description = this.$el.dataset.description || ''
             // Initialize the display input with formatted value
             const displayInput = this.$el.querySelector('#amount')
@@ -230,7 +230,7 @@ function registerAlpineComponents() {
         // Method - called as event handler @input="updateAmount"
         updateAmount(e) {
             // Parse the raw numeric value
-            this.amount = parseInt(e.target.value.replace(/\D/g, '')) || 0
+            this.amount = Number.parseInt(e.target.value.replaceAll(/\D/g, '')) || 0
             // Re-format the display
             e.target.value = this.amount > 0 ? new Intl.NumberFormat('id-ID').format(this.amount) : ''
             // Sync hidden input immediately (before HTMX reads it)
@@ -279,19 +279,19 @@ function registerAlpineComponents() {
 
         // Method - called as event handler @input="updateAmount"
         updateAmount(e) {
-            this.amount = parseInt(e.target.value.replace(/[^\d]/g, '')) || 0
+            this.amount = Number.parseInt(e.target.value.replaceAll(/\D/g, '')) || 0
             e.target.value = this.amount ? idNumberFormat.format(this.amount) : ''
         },
 
         // Method - for variable inputs in DETAILED templates
         updateVariable(e) {
             const input = e.target
-            const rawValue = input.value.replace(/[^\d]/g, '')
+            const rawValue = input.value.replaceAll(/\D/g, '')
             const hiddenInput = input.nextElementSibling
             if (hiddenInput && hiddenInput.classList.contains('var-value')) {
                 hiddenInput.value = rawValue
             }
-            input.value = rawValue ? idNumberFormat.format(parseInt(rawValue)) : ''
+            input.value = rawValue ? idNumberFormat.format(Number.parseInt(rawValue)) : ''
         },
 
         // Method - close the modal dialog
@@ -317,9 +317,9 @@ function registerAlpineComponents() {
             const variables = {}
             for (const [key, value] of formData.entries()) {
                 if (key.startsWith('var_') && value) {
-                    const cleanValue = value.replace(/[^0-9]/g, '')
+                    const cleanValue = value.replaceAll(/\D/g, '')
                     if (cleanValue) {
-                        variables[key.substring(4)] = parseInt(cleanValue)
+                        variables[key.substring(4)] = Number.parseInt(cleanValue)
                     }
                 }
             }
@@ -350,7 +350,7 @@ function registerAlpineComponents() {
                 const variables = this.collectVariables(formData)
                 const data = {
                     templateId: formData.get('templateId'),
-                    amount: parseInt(formData.get('amount')) || 0,
+                    amount: Number.parseInt(formData.get('amount')) || 0,
                     description: formData.get('description'),
                     transactionDate: formData.get('transactionDate'),
                     referenceNumber: formData.get('referenceNumber') || '',
@@ -406,7 +406,7 @@ function registerAlpineComponents() {
 
 // Hybrid approach: register immediately if Alpine exists,
 // and also listen for alpine:init for deferred script loading
-if (window.Alpine) {
+if (globalThis.Alpine) {
     registerAlpineComponents()
 } else {
     document.addEventListener('alpine:init', registerAlpineComponents)

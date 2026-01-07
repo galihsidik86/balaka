@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-
 /**
  * Page Object for Transaction Form (/transactions/new).
  * Handles creating new journal transactions via UI.

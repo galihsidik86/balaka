@@ -451,16 +451,16 @@
                         const varName = input.dataset.varName;
                         if (varName && input.value) {
                             // Parse formatted number (remove dots as thousand separators)
-                            const cleanValue = input.value.replace(/[^0-9]/g, '');
+                            const cleanValue = input.value.replaceAll(/\D/g, '');
                             if (cleanValue) {
-                                variables[varName] = parseInt(cleanValue);
+                                variables[varName] = Number.parseInt(cleanValue);
                             }
                         }
                     });
 
                     // Parse amount from display input (handles formatted numbers like "1.000.000")
                     const amountDisplay = document.getElementById('amount');
-                    const rawAmount = amountDisplay ? parseInt(amountDisplay.value.replace(/[^\d]/g, '')) || 0 : 0;
+                    const rawAmount = amountDisplay ? Number.parseInt(amountDisplay.value.replaceAll(/\D/g, '')) || 0 : 0;
 
                     const data = {
                         templateId: templateId,
