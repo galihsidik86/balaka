@@ -61,7 +61,7 @@ public class OptimisticLockingTest {
         Transaction saved = transactionRepository.saveAndFlush(tx1);
         Long originalVersion = saved.getRowVersion();
 
-        assertThat(originalVersion).isEqualTo(0L); // First save should be version 0
+        assertThat(originalVersion).isZero(); // First save should be version 0
 
         // And when: We try to update it
         saved.setAmount(BigDecimal.valueOf(2000000));
@@ -108,7 +108,7 @@ public class OptimisticLockingTest {
 
         assertThat(user1Transaction.getRowVersion())
                 .isEqualTo(user2Transaction.getRowVersion())
-                .isEqualTo(0L); // Both start with version 0
+                .isZero(); // Both start with version 0
 
         // And when: User 1 updates and saves first
         user1Transaction.setAmount(BigDecimal.valueOf(9000000));
@@ -145,7 +145,7 @@ public class OptimisticLockingTest {
         tx.setStatus(TransactionStatus.DRAFT);
 
         Transaction saved = transactionRepository.saveAndFlush(tx);
-        assertThat(saved.getRowVersion()).isEqualTo(0L);
+        assertThat(saved.getRowVersion()).isZero();
 
         // When: Multiple sequential updates
         for (int i = 1; i <= 5; i++) {

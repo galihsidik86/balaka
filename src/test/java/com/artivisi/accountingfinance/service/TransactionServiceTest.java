@@ -83,8 +83,8 @@ class TransactionServiceTest {
         void findAllShouldReturnAllTransactions() {
             List<Transaction> transactions = transactionService.findAll();
 
-            assertThat(transactions).isNotEmpty();
-            assertThat(transactions.size()).isGreaterThanOrEqualTo(3); // At least 3 from test data
+            assertThat(transactions).isNotEmpty()
+                    .hasSizeGreaterThanOrEqualTo(3); // At least 3 from test data
         }
 
         @Test

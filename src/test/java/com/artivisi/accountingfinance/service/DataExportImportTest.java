@@ -123,7 +123,7 @@ public class DataExportImportTest {
 
         // Then: Header should have tax profile fields at the end
         String[] lines = companyConfigCsv.split("\n");
-        assertThat(lines.length).isGreaterThanOrEqualTo(2);
+        assertThat(lines).hasSizeGreaterThanOrEqualTo(2);
 
         String header = lines[0];
         assertThat(header)

@@ -188,7 +188,7 @@
     <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             // CSP-compatible: Register Alpine component
-            if (window.Alpine) {
+            if (globalThis.Alpine) {
                 Alpine.data('taxProfileForm', () => ({
                     isPkp: /*[[${config.isPkp == true ? 'true' : 'false'}]]*/ 'false'
                 }));

@@ -121,7 +121,7 @@ class FileEncryptionServiceTest {
             byte[] encrypted = service.encrypt(original);
 
             // Overhead: MAGIC(4) + VERSION(1) + IV(12) + AUTH_TAG(16) = 33 bytes
-            assertThat(encrypted.length).isGreaterThan(original.length + 30);
+            assertThat(encrypted).hasSizeGreaterThan(original.length + 30);
         }
 
         @Test

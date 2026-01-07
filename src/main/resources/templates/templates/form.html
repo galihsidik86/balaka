@@ -505,10 +505,10 @@
                     return this.isLastLine(index) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700';
                 },
                 removeBtnClass() {
-                    return !this.canRemoveLine ? 'text-gray-300 cursor-not-allowed' : 'text-red-500 hover:text-red-700';
+                    return this.canRemoveLine ? 'text-red-500 hover:text-red-700' : 'text-gray-300 cursor-not-allowed';
                 },
                 previewBtnClass() {
-                    return !this.isValidForPreview() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50';
+                    return this.isValidForPreview() ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed';
                 },
 
                 // CSP-safe methods for complex expressions

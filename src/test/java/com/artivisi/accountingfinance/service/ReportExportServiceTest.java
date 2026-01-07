@@ -71,8 +71,8 @@ class ReportExportServiceTest {
 
             byte[] pdfBytes = exportService.exportTrialBalanceToPdf(report);
 
-            assertThat(pdfBytes).isNotNull();
-            assertThat(pdfBytes.length).isGreaterThan(0);
+            assertThat(pdfBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             // PDF files start with %PDF
             assertThat(new String(pdfBytes, 0, 4)).isEqualTo("%PDF");
         }
@@ -94,8 +94,8 @@ class ReportExportServiceTest {
 
             byte[] excelBytes = exportService.exportTrialBalanceToExcel(report);
 
-            assertThat(excelBytes).isNotNull();
-            assertThat(excelBytes.length).isGreaterThan(0);
+            assertThat(excelBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             // XLSX files start with PK (zip format)
             assertThat(new String(excelBytes, 0, 2)).isEqualTo("PK");
         }
@@ -132,8 +132,8 @@ class ReportExportServiceTest {
 
             byte[] pdfBytes = exportService.exportBalanceSheetToPdf(report);
 
-            assertThat(pdfBytes).isNotNull();
-            assertThat(pdfBytes.length).isGreaterThan(0);
+            assertThat(pdfBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             assertThat(new String(pdfBytes, 0, 4)).isEqualTo("%PDF");
         }
 
@@ -158,8 +158,8 @@ class ReportExportServiceTest {
 
             byte[] excelBytes = exportService.exportBalanceSheetToExcel(report);
 
-            assertThat(excelBytes).isNotNull();
-            assertThat(excelBytes.length).isGreaterThan(0);
+            assertThat(excelBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             assertThat(new String(excelBytes, 0, 2)).isEqualTo("PK");
         }
     }
@@ -191,8 +191,8 @@ class ReportExportServiceTest {
 
             byte[] pdfBytes = exportService.exportIncomeStatementToPdf(report);
 
-            assertThat(pdfBytes).isNotNull();
-            assertThat(pdfBytes.length).isGreaterThan(0);
+            assertThat(pdfBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             assertThat(new String(pdfBytes, 0, 4)).isEqualTo("%PDF");
         }
 
@@ -216,8 +216,8 @@ class ReportExportServiceTest {
 
             byte[] excelBytes = exportService.exportIncomeStatementToExcel(report);
 
-            assertThat(excelBytes).isNotNull();
-            assertThat(excelBytes.length).isGreaterThan(0);
+            assertThat(excelBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             assertThat(new String(excelBytes, 0, 2)).isEqualTo("PK");
         }
 
@@ -241,8 +241,8 @@ class ReportExportServiceTest {
 
             byte[] pdfBytes = exportService.exportIncomeStatementToPdf(report);
 
-            assertThat(pdfBytes).isNotNull();
-            assertThat(pdfBytes.length).isGreaterThan(0);
+            assertThat(pdfBytes).isNotNull()
+                    .hasSizeGreaterThan(0);
             assertThat(new String(pdfBytes, 0, 4)).isEqualTo("%PDF");
         }
     }
