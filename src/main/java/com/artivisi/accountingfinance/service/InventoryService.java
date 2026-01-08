@@ -127,8 +127,8 @@ public class InventoryService {
 
     /**
      * Get or create inventory balance for a product.
+     * Note: Always called from @Transactional methods, no separate transaction needed.
      */
-    @Transactional
     public InventoryBalance getOrCreateBalance(Product product) {
         return balanceRepository.findByProduct(product)
                 .orElseGet(() -> {

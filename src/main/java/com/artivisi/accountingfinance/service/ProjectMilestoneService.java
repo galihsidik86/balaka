@@ -108,7 +108,10 @@ public class ProjectMilestoneService {
 
     @Transactional
     public void startMilestone(UUID id) {
-        updateStatus(id, MilestoneStatus.IN_PROGRESS);
+        ProjectMilestone milestone = findById(id);
+        milestone.setStatus(MilestoneStatus.IN_PROGRESS);
+        milestone.setActualDate(null);
+        milestoneRepository.save(milestone);
     }
 
     @Transactional
@@ -163,7 +166,10 @@ public class ProjectMilestoneService {
 
     @Transactional
     public void resetMilestone(UUID id) {
-        updateStatus(id, MilestoneStatus.PENDING);
+        ProjectMilestone milestone = findById(id);
+        milestone.setStatus(MilestoneStatus.PENDING);
+        milestone.setActualDate(null);
+        milestoneRepository.save(milestone);
     }
 
     public long countByProjectIdAndStatus(UUID projectId, MilestoneStatus status) {

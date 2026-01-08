@@ -32,7 +32,9 @@ public class TelegramMessage {
     @JsonProperty("document")
     private TelegramDocument document;
 
+    /** Default constructor required for Jackson JSON deserialization. */
     public TelegramMessage() {
+        // Empty constructor for Jackson
     }
 
     public Long getMessageId() {

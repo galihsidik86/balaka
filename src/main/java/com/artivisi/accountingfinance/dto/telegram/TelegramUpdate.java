@@ -16,7 +16,9 @@ public class TelegramUpdate {
     @JsonProperty("message")
     private TelegramMessage message;
 
+    /** Default constructor required for Jackson JSON deserialization. */
     public TelegramUpdate() {
+        // Empty constructor for Jackson
     }
 
     public Long getUpdateId() {

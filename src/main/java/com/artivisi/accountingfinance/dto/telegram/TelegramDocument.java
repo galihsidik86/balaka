@@ -21,7 +21,9 @@ public class TelegramDocument {
     @JsonProperty("file_size")
     private Long fileSize;
 
+    /** Default constructor required for Jackson JSON deserialization. */
     public TelegramDocument() {
+        // Empty constructor for Jackson
     }
 
     public String getFileId() {

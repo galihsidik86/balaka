@@ -108,17 +108,26 @@ public class ProjectService {
 
     @Transactional
     public void archive(UUID id) {
-        updateStatus(id, ProjectStatus.ARCHIVED);
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+        project.setStatus(ProjectStatus.ARCHIVED);
+        projectRepository.save(project);
     }
 
     @Transactional
     public void complete(UUID id) {
-        updateStatus(id, ProjectStatus.COMPLETED);
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+        project.setStatus(ProjectStatus.COMPLETED);
+        projectRepository.save(project);
     }
 
     @Transactional
     public void reactivate(UUID id) {
-        updateStatus(id, ProjectStatus.ACTIVE);
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+        project.setStatus(ProjectStatus.ACTIVE);
+        projectRepository.save(project);
     }
 
     public long countByStatus(ProjectStatus status) {

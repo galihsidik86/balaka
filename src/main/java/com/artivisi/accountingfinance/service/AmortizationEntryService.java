@@ -51,7 +51,13 @@ public class AmortizationEntryService {
     @Transactional
     public AmortizationEntry postEntry(UUID entryId) {
         AmortizationEntry entry = findById(entryId);
+        return doPostEntry(entry);
+    }
 
+    /**
+     * Internal method to post an entry. Used by both postEntry and postAllPending.
+     */
+    private AmortizationEntry doPostEntry(AmortizationEntry entry) {
         if (!entry.isPending()) {
             throw new IllegalStateException("Cannot post entry with status: " + entry.getStatus());
         }
@@ -110,7 +116,7 @@ public class AmortizationEntryService {
         List<AmortizationEntry> pendingEntries = findPendingByScheduleId(scheduleId);
 
         for (AmortizationEntry entry : pendingEntries) {
-            postEntry(entry.getId());
+            doPostEntry(entry);
         }
 
         return findByScheduleId(scheduleId);

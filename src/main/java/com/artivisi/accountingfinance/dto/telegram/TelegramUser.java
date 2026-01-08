@@ -21,7 +21,9 @@ public class TelegramUser {
     @JsonProperty("username")
     private String username;
 
+    /** Default constructor required for Jackson JSON deserialization. */
     public TelegramUser() {
+        // Empty constructor for Jackson
     }
 
     public Long getId() {

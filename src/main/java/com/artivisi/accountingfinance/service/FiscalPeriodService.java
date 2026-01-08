@@ -74,7 +74,13 @@ public class FiscalPeriodService {
     @Transactional
     public FiscalPeriod getOrCreate(Integer year, Integer month) {
         return fiscalPeriodRepository.findByYearAndMonth(year, month)
-                .orElseGet(() -> create(year, month));
+                .orElseGet(() -> {
+                    FiscalPeriod period = new FiscalPeriod();
+                    period.setYear(year);
+                    period.setMonth(month);
+                    period.setStatus(FiscalPeriodStatus.OPEN);
+                    return fiscalPeriodRepository.save(period);
+                });
     }
 
     @Transactional
