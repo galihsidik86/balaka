@@ -49,6 +49,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.artivisi.accountingfinance.controller.ViewConstants.*;
+
 @Controller
 @RequestMapping("/settings")
 @RequiredArgsConstructor
@@ -58,7 +60,6 @@ public class SettingsController {
 
     private static final String ATTR_SUCCESS_MESSAGE = "successMessage";
     private static final String ATTR_ERROR_MESSAGE = "errorMessage";
-    private static final String ATTR_CURRENT_PAGE = "currentPage";
     private static final Set<String> ALLOWED_LOGO_TYPES = Set.of(
             "image/png", "image/jpeg", "image/gif", "image/webp"
     );
@@ -82,7 +83,7 @@ public class SettingsController {
 
         model.addAttribute("config", config);
         model.addAttribute("bankAccounts", bankAccounts);
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
 
         return "settings/company";
     }
@@ -98,7 +99,7 @@ public class SettingsController {
         if (bindingResult.hasErrors()) {
             List<CompanyBankAccount> bankAccounts = bankAccountService.findAll();
             model.addAttribute("bankAccounts", bankAccounts);
-            model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+            model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return "settings/company";
         }
 
@@ -238,7 +239,7 @@ public class SettingsController {
 
         List<CompanyBankAccount> bankAccounts = bankAccountService.findAll();
         model.addAttribute("bankAccounts", bankAccounts);
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
 
         if ("true".equals(hxRequest)) {
             return "settings/fragments/bank-table :: table";
@@ -250,7 +251,7 @@ public class SettingsController {
     @GetMapping("/bank-accounts/new")
     public String newBankAccountForm(Model model) {
         model.addAttribute("bankAccount", new CompanyBankAccount());
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
         return "settings/bank-form";
     }
 
@@ -263,7 +264,7 @@ public class SettingsController {
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+            model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return "settings/bank-form";
         }
 
@@ -275,7 +276,7 @@ public class SettingsController {
             return "redirect:/settings";
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountNumber", "duplicate", e.getMessage());
-            model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+            model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return "settings/bank-form";
         }
     }
@@ -284,7 +285,7 @@ public class SettingsController {
     public String editBankAccountForm(@PathVariable UUID id, Model model) {
         CompanyBankAccount bankAccount = bankAccountService.findById(id);
         model.addAttribute("bankAccount", bankAccount);
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
         return "settings/bank-form";
     }
 
@@ -299,7 +300,7 @@ public class SettingsController {
 
         if (bindingResult.hasErrors()) {
             bankAccount.setId(id);
-            model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+            model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return "settings/bank-form";
         }
 
@@ -312,7 +313,7 @@ public class SettingsController {
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountNumber", "duplicate", e.getMessage());
             bankAccount.setId(id);
-            model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+            model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return "settings/bank-form";
         }
     }
@@ -387,7 +388,7 @@ public class SettingsController {
         model.addAttribute("telegramLink", telegramLink.orElse(null));
         model.addAttribute("telegramEnabled", telegramBotService.isEnabled());
         model.addAttribute("botUsername", telegramBotService.getBotUsername());
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
 
         return "settings/telegram";
     }
@@ -446,7 +447,7 @@ public class SettingsController {
         model.addAttribute("gitTag", versionInfoService.getGitTag());
         model.addAttribute("gitBranch", versionInfoService.getGitBranch());
         model.addAttribute("gitCommitDate", versionInfoService.getGitCommitDate());
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
         return "settings/about";
     }
 
@@ -454,7 +455,7 @@ public class SettingsController {
 
     @GetMapping("/privacy")
     public String privacy(Model model) {
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
         return "privacy";
     }
 
@@ -486,7 +487,7 @@ public class SettingsController {
         model.addAttribute("selectedUsername", username);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
-        model.addAttribute(ATTR_CURRENT_PAGE, "settings");
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
 
         if ("true".equals(hxRequest)) {
             return "settings/fragments/audit-log-table :: table";

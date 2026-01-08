@@ -48,6 +48,7 @@ public class ReportExportService {
     private static final String COMPANY_NAME = "PT ArtiVisi Intermedia";
     private static final String PDF_GENERATION_ERROR = "Failed to generate PDF: ";
     private static final String EXCEL_GENERATION_ERROR = "Failed to generate Excel: ";
+    private static final String TOTAL_LABEL = "TOTAL";
     private static final DecimalFormat NUMBER_FORMAT;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.of("id", "ID"));
 
@@ -104,7 +105,7 @@ public class ReportExportService {
                 addTableCell(table, formatNumber(item.creditBalance()), Element.ALIGN_RIGHT);
             }
 
-            addTotalRow(table, "TOTAL", formatNumber(report.totalDebit()), formatNumber(report.totalCredit()));
+            addTotalRow(table, TOTAL_LABEL, formatNumber(report.totalDebit()), formatNumber(report.totalCredit()));
 
             document.add(table);
             document.close();
@@ -147,7 +148,7 @@ public class ReportExportService {
             Row totalRow = sheet.createRow(rowNum);
             CellStyle totalStyle = createTotalStyle(workbook);
             createCell(totalRow, 0, "", totalStyle);
-            createCell(totalRow, 1, "TOTAL", totalStyle);
+            createCell(totalRow, 1, TOTAL_LABEL, totalStyle);
             createNumericCell(totalRow, 2, report.totalDebit(), totalStyle);
             createNumericCell(totalRow, 3, report.totalCredit(), totalStyle);
 
@@ -556,7 +557,7 @@ public class ReportExportService {
             }
 
             // Total row
-            PdfPCell totalLabelCell = new PdfPCell(new Phrase("TOTAL", getBoldFont()));
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase(TOTAL_LABEL, getBoldFont()));
             totalLabelCell.setColspan(4);
             totalLabelCell.setPadding(6);
             totalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -658,7 +659,7 @@ public class ReportExportService {
             createCell(totalRow, 0, "", totalStyle);
             createCell(totalRow, 1, "", totalStyle);
             createCell(totalRow, 2, "", totalStyle);
-            createCell(totalRow, 3, "TOTAL", totalStyle);
+            createCell(totalRow, 3, TOTAL_LABEL, totalStyle);
             createNumericCell(totalRow, 4, report.totalPurchaseCost(), totalStyle);
             createCell(totalRow, 5, "", totalStyle);
             createCell(totalRow, 6, "", totalStyle);
@@ -706,7 +707,7 @@ public class ReportExportService {
             }
 
             // Total row
-            PdfPCell totalLabelCell = new PdfPCell(new Phrase("TOTAL", getBoldFont()));
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase(TOTAL_LABEL, getBoldFont()));
             totalLabelCell.setColspan(5);
             totalLabelCell.setPadding(6);
             totalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -787,7 +788,7 @@ public class ReportExportService {
             createCell(totalRow, 1, "", totalStyle);
             createCell(totalRow, 2, "", totalStyle);
             createCell(totalRow, 3, "", totalStyle);
-            createCell(totalRow, 4, "TOTAL", totalStyle);
+            createCell(totalRow, 4, TOTAL_LABEL, totalStyle);
             createNumericCell(totalRow, 5, report.totalQuantity(), totalStyle);
             createCell(totalRow, 6, "", totalStyle);
             createNumericCell(totalRow, 7, report.totalValue(), totalStyle);
@@ -968,7 +969,7 @@ public class ReportExportService {
             }
 
             // Total row
-            PdfPCell totalLabelCell = new PdfPCell(new Phrase("TOTAL", getBoldFont()));
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase(TOTAL_LABEL, getBoldFont()));
             totalLabelCell.setColspan(7);
             totalLabelCell.setPadding(6);
             totalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -1038,7 +1039,7 @@ public class ReportExportService {
             createCell(totalRow, 3, "", totalStyle);
             createCell(totalRow, 4, "", totalStyle);
             createCell(totalRow, 5, "", totalStyle);
-            createCell(totalRow, 6, "TOTAL", totalStyle);
+            createCell(totalRow, 6, TOTAL_LABEL, totalStyle);
             createNumericCell(totalRow, 7, report.totalValue(), totalStyle);
 
             autoSizeColumns(sheet, 8);
@@ -1082,7 +1083,7 @@ public class ReportExportService {
             }
 
             // Total row
-            PdfPCell totalLabelCell = new PdfPCell(new Phrase("TOTAL", getBoldFont()));
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase(TOTAL_LABEL, getBoldFont()));
             totalLabelCell.setColspan(4);
             totalLabelCell.setPadding(6);
             totalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -1180,7 +1181,7 @@ public class ReportExportService {
             createCell(totalRow, 0, "", totalStyle);
             createCell(totalRow, 1, "", totalStyle);
             createCell(totalRow, 2, "", totalStyle);
-            createCell(totalRow, 3, "TOTAL", totalStyle);
+            createCell(totalRow, 3, TOTAL_LABEL, totalStyle);
             createNumericCell(totalRow, 4, report.totalQuantitySold(), totalStyle);
             createNumericCell(totalRow, 5, report.totalRevenue(), totalStyle);
             createNumericCell(totalRow, 6, report.totalCogs(), totalStyle);

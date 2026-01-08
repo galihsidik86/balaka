@@ -69,6 +69,7 @@ public class DataExportService {
 
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final String SORT_BY_CREATED_AT = "createdAt";
 
     /**
      * Export all company data to a ZIP archive.
@@ -617,7 +618,7 @@ public class DataExportService {
         csv.append("transaction_id,transaction_number,transaction_date,template_name,project_code,amount,description,");
         csv.append("reference_number,notes,status,void_reason,void_notes,voided_at,voided_by,posted_at,posted_by,created_at\n");
 
-        List<Transaction> transactions = transactionRepository.findAll(Sort.by("createdAt"));
+        List<Transaction> transactions = transactionRepository.findAll(Sort.by(SORT_BY_CREATED_AT));
         for (Transaction t : transactions) {
             csv.append(t.getId()).append(",");
             csv.append(escapeCsv(t.getTransactionNumber())).append(",");
@@ -648,7 +649,7 @@ public class DataExportService {
         // Use transaction_id (UUID) as primary key for linking (handles null transaction_number)
         csv.append("transaction_id,transaction_number,template_name,line_order,account_code,amount\n");
 
-        List<Transaction> transactions = transactionRepository.findAll(Sort.by("createdAt"));
+        List<Transaction> transactions = transactionRepository.findAll(Sort.by(SORT_BY_CREATED_AT));
         for (Transaction t : transactions) {
             for (TransactionAccountMapping tam : t.getAccountMappings()) {
                 csv.append(t.getId()).append(",");
@@ -669,7 +670,7 @@ public class DataExportService {
         StringBuilder csv = new StringBuilder();
         csv.append("transaction_id,transaction_number,variable_name,variable_value\n");
 
-        List<Transaction> transactions = transactionRepository.findAll(Sort.by("createdAt"));
+        List<Transaction> transactions = transactionRepository.findAll(Sort.by(SORT_BY_CREATED_AT));
         for (Transaction t : transactions) {
             for (TransactionVariable tv : t.getVariables()) {
                 csv.append(t.getId()).append(",");
@@ -977,7 +978,7 @@ public class DataExportService {
         StringBuilder csv = new StringBuilder();
         csv.append("timestamp,username,action,entity_type,entity_id,ip_address\n");
 
-        List<AuditLog> logs = auditLogRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<AuditLog> logs = auditLogRepository.findAll(Sort.by(Sort.Direction.DESC, SORT_BY_CREATED_AT));
         for (AuditLog log : logs) {
             csv.append(log.getCreatedAt() != null ? log.getCreatedAt().format(DATETIME_FORMATTER) : "").append(",");
             csv.append(log.getUser() != null ? escapeCsv(log.getUser().getUsername()) : "").append(",");
