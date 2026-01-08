@@ -127,48 +127,57 @@ public class TemplateExecutionEngine {
             return errors;
         }
 
-        if (!template.getActive()) {
-            errors.add("Template is not active");
-        }
-
-        if (template.getLines() == null || template.getLines().size() < 2) {
-            errors.add("Template must have at least 2 lines");
-        }
+        validateTemplate(template, errors);
 
         if (context == null) {
             errors.add("Execution context is required");
             return errors;
         }
 
+        validateContext(context, template.getTemplateType() == TemplateType.DETAILED, errors);
+        return errors;
+    }
+
+    private void validateTemplate(JournalTemplate template, List<String> errors) {
+        if (!template.getActive()) {
+            errors.add("Template is not active");
+        }
+        if (template.getLines() == null || template.getLines().size() < 2) {
+            errors.add("Template must have at least 2 lines");
+        }
+    }
+
+    private void validateContext(ExecutionContext context, boolean isDetailedTemplate, List<String> errors) {
         if (context.transactionDate() == null) {
             errors.add("Transaction date is required");
         }
 
-        // For DETAILED templates, check variables; for SIMPLE templates, check amount
-        boolean isDetailedTemplate = template.getTemplateType() == TemplateType.DETAILED;
-
         if (isDetailedTemplate) {
-            // For DETAILED templates, at least one variable must have a positive value
-            boolean hasValidVariable = context.variables() != null &&
-                    context.variables().values().stream()
-                            .anyMatch(v -> v != null && v.compareTo(BigDecimal.ZERO) > 0);
-            if (!hasValidVariable) {
-                errors.add("At least one variable must have a positive value");
-            }
+            validateDetailedTemplateVariables(context, errors);
         } else {
-            // For SIMPLE templates, amount is required
-            if (context.amount() == null) {
-                errors.add("Amount is required");
-            } else if (context.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                errors.add("Amount must be positive");
-            }
+            validateSimpleTemplateAmount(context, errors);
         }
 
         if (context.description() == null || context.description().isBlank()) {
             errors.add("Description is required");
         }
+    }
 
-        return errors;
+    private void validateDetailedTemplateVariables(ExecutionContext context, List<String> errors) {
+        boolean hasValidVariable = context.variables() != null &&
+                context.variables().values().stream()
+                        .anyMatch(v -> v != null && v.compareTo(BigDecimal.ZERO) > 0);
+        if (!hasValidVariable) {
+            errors.add("At least one variable must have a positive value");
+        }
+    }
+
+    private void validateSimpleTemplateAmount(ExecutionContext context, List<String> errors) {
+        if (context.amount() == null) {
+            errors.add("Amount is required");
+        } else if (context.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            errors.add("Amount must be positive");
+        }
     }
 
     private List<JournalEntry> buildJournalEntries(JournalTemplate template, ExecutionContext context) {
