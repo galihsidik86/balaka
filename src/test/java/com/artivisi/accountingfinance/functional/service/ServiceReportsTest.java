@@ -51,7 +51,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 @DisplayName("Service Industry - Financial Reports")
 @Import(ServiceTestDataInitializer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ServiceReportsTest extends PlaywrightTestBase {
+class ServiceReportsTest extends PlaywrightTestBase {
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -82,7 +82,7 @@ public class ServiceReportsTest extends PlaywrightTestBase {
     }
 
     @BeforeAll
-    public void setupTestTransactions() {
+    void setupTestTransactions() {
         // Clear any existing transactions (in case ServiceTransactionExecutionTest ran first)
         journalEntryRepository.deleteAll();
         transactionRepository.deleteAll();

@@ -14,7 +14,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Manufacturing - Production Orders")
 @Import(CoffeeTestDataInitializer.class)
-public class MfgProductionTest extends PlaywrightTestBase {
+class MfgProductionTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should display production order list")

@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @DisplayName("Manufacturing - CSV-Driven Tests")
 @Import(CoffeeTestDataInitializer.class)
-public class MfgCsvDrivenTest extends PlaywrightTestBase {
+class MfgCsvDrivenTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should load production orders CSV")

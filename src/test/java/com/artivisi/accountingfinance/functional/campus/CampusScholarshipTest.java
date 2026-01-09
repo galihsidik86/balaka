@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Campus Industry - Scholarships")
 @Import(CampusTestDataInitializer.class)
-public class CampusScholarshipTest extends PlaywrightTestBase {
+class CampusScholarshipTest extends PlaywrightTestBase {
 
     // Page Objects
     private JournalTemplateListPage templateListPage;

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @DisplayName("Service Industry - CSV-Driven Tests")
 @Import(ServiceTestDataInitializer.class)
-public class ServiceCsvDrivenTest extends PlaywrightTestBase {
+class ServiceCsvDrivenTest extends PlaywrightTestBase {
 
     // Page Objects
     private TransactionListPage transactionListPage;

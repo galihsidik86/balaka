@@ -14,7 +14,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Manufacturing - Costing & Valuation")
 @Import(CoffeeTestDataInitializer.class)
-public class MfgCostingTest extends PlaywrightTestBase {
+class MfgCostingTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should display inventory transactions page")

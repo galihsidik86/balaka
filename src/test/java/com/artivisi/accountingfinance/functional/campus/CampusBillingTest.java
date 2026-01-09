@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Import;
  */
 @DisplayName("Campus Industry - Student Billing")
 @Import(CampusTestDataInitializer.class)
-public class CampusBillingTest extends PlaywrightTestBase {
+class CampusBillingTest extends PlaywrightTestBase {
 
     // Page Objects
     private ChartOfAccountsPage chartOfAccountsPage;

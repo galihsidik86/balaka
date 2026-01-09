@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Import;
  */
 @DisplayName("Online Seller - Sales")
 @Import(SellerTestDataInitializer.class)
-public class SellerSalesTest extends PlaywrightTestBase {
+class SellerSalesTest extends PlaywrightTestBase {
 
     // Page Objects
     private InventoryTransactionListPage transactionListPage;

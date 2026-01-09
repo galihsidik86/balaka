@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Alpine.js Interactivity Tests")
 @Import(ServiceTestDataInitializer.class)
-public class AlpineInteractivityTest extends PlaywrightTestBase {
+class AlpineInteractivityTest extends PlaywrightTestBase {
 
     private List<String> consoleErrors;
 

@@ -16,7 +16,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Service Industry - Payroll")
 @Import(ServiceTestDataInitializer.class)
-public class ServicePayrollTest extends PlaywrightTestBase {
+class ServicePayrollTest extends PlaywrightTestBase {
 
     // Page Objects
     private EmployeeListPage employeeListPage;

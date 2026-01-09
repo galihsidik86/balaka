@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests the tax profile page for viewing and editing company tax classification info.
  */
 @DisplayName("Tax Profile")
-public class TaxProfileTest extends PlaywrightTestBase {
+class TaxProfileTest extends PlaywrightTestBase {
 
     @BeforeEach
     void setupAndLogin() {

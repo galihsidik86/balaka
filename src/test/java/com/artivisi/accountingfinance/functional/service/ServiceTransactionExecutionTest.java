@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 @DisplayName("Service Industry - Transaction Execution")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Import(ServiceTestDataInitializer.class)
-public class ServiceTransactionExecutionTest extends PlaywrightTestBase {
+class ServiceTransactionExecutionTest extends PlaywrightTestBase {
 
     @Autowired
     private JournalTemplateRepository templateRepository;

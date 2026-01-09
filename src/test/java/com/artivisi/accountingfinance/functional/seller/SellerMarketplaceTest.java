@@ -21,7 +21,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Online Seller - Marketplace")
 @Import(SellerTestDataInitializer.class)
-public class SellerMarketplaceTest extends PlaywrightTestBase {
+class SellerMarketplaceTest extends PlaywrightTestBase {
 
     // Page Objects
     private ClientListPage clientListPage;

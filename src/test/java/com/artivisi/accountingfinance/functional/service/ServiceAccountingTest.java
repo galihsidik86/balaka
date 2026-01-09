@@ -20,7 +20,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Service Industry - Accounting")
 @Import(ServiceTestDataInitializer.class)
-public class ServiceAccountingTest extends PlaywrightTestBase {
+class ServiceAccountingTest extends PlaywrightTestBase {
 
     // Page Objects
     private ChartOfAccountsPage chartOfAccountsPage;

@@ -14,7 +14,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Manufacturing - Bill of Materials")
 @Import(CoffeeTestDataInitializer.class)
-public class MfgBomTest extends PlaywrightTestBase {
+class MfgBomTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should display BOM list")

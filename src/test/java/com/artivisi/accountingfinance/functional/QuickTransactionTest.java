@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Quick Transaction Flow")
 @Import(ServiceTestDataInitializer.class)
-public class QuickTransactionTest extends PlaywrightTestBase {
+class QuickTransactionTest extends PlaywrightTestBase {
 
     @Autowired
     private JournalTemplateRepository templateRepository;

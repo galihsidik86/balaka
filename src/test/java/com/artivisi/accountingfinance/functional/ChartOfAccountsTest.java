@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Chart of Accounts")
 @Import(ServiceTestDataInitializer.class)
-public class ChartOfAccountsTest extends PlaywrightTestBase {
+class ChartOfAccountsTest extends PlaywrightTestBase {
 
     @BeforeEach
     void setupAndLogin() {

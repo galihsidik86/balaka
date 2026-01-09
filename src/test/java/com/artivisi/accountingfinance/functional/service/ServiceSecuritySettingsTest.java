@@ -13,7 +13,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Service Industry - Security Settings")
 @Import(ServiceTestDataInitializer.class)
-public class ServiceSecuritySettingsTest extends PlaywrightTestBase {
+class ServiceSecuritySettingsTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should display audit logs page")

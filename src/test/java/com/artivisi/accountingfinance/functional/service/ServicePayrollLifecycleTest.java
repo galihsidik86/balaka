@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @DisplayName("Service Industry - Payroll Lifecycle")
 @Import(ServiceTestDataInitializer.class)
-public class ServicePayrollLifecycleTest extends PlaywrightTestBase {
+class ServicePayrollLifecycleTest extends PlaywrightTestBase {
 
     @Autowired
     private PayrollRunRepository payrollRunRepository;

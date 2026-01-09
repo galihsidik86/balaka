@@ -14,7 +14,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Manufacturing - Raw Materials")
 @Import(CoffeeTestDataInitializer.class)
-public class MfgMaterialsTest extends PlaywrightTestBase {
+class MfgMaterialsTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should display coffee shop raw materials")

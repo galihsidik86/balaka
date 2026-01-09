@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DisplayName("Manufacturing - Production Execution")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Import(CoffeeTestDataInitializer.class)
-public class MfgTransactionExecutionTest extends PlaywrightTestBase {
+class MfgTransactionExecutionTest extends PlaywrightTestBase {
 
     @Test
     @Order(1)

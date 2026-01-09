@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Import(SellerTestDataInitializer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = "test.context.key=seller-transaction-execution")
-public class SellerTransactionExecutionTest extends PlaywrightTestBase {
+class SellerTransactionExecutionTest extends PlaywrightTestBase {
 
     @Autowired
     private ProductCategoryRepository categoryRepository;
@@ -60,7 +60,7 @@ public class SellerTransactionExecutionTest extends PlaywrightTestBase {
     private JournalTemplateRepository templateRepository;
 
     @BeforeAll
-    public void setupProductsAndCategories() {
+    void setupProductsAndCategories() {
         // Create categories (check if exists first to avoid duplicates)
         ProductCategory smartphone = categoryRepository.findByCode("PHONE")
             .orElseGet(() -> {

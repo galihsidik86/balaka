@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DisplayName("Online Seller - CSV-Driven Tests")
 @Import(SellerTestDataInitializer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SellerCsvDrivenTest extends PlaywrightTestBase {
+class SellerCsvDrivenTest extends PlaywrightTestBase {
 
     @Autowired
     private ProductCategoryRepository categoryRepository;
@@ -68,7 +68,7 @@ public class SellerCsvDrivenTest extends PlaywrightTestBase {
     }
 
     @BeforeAll
-    public void setupProductsAndCategories() {
+    void setupProductsAndCategories() {
         // Create categories (check if exists first to avoid duplicates)
         ProductCategory smartphone = categoryRepository.findByCode("PHONE")
             .orElseGet(() -> {

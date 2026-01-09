@@ -40,7 +40,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 @DisplayName("Online Seller - Reports")
 @Import(SellerTestDataInitializer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SellerReportsTest extends PlaywrightTestBase {
+class SellerReportsTest extends PlaywrightTestBase {
 
     @Autowired
     private InventoryService inventoryService;

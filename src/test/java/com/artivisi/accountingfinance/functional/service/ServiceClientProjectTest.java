@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Import;
  */
 @DisplayName("Service Industry - Clients & Projects")
 @Import(ServiceTestDataInitializer.class)
-public class ServiceClientProjectTest extends PlaywrightTestBase {
+class ServiceClientProjectTest extends PlaywrightTestBase {
 
     // Page Objects
     private ClientListPage clientListPage;

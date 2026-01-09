@@ -26,7 +26,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 @DisplayName("Online Seller - Inventory")
 @Import(SellerTestDataInitializer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SellerInventoryTest extends PlaywrightTestBase {
+class SellerInventoryTest extends PlaywrightTestBase {
 
     @Autowired
     private SellerTestDataHelper testDataHelper;
@@ -46,7 +46,7 @@ public class SellerInventoryTest extends PlaywrightTestBase {
     }
 
     @BeforeAll
-    public void setupProductsAndCategories() {
+    void setupProductsAndCategories() {
         // Use shared helper to create products and categories
         testDataHelper.setupProductsAndCategories();
     }

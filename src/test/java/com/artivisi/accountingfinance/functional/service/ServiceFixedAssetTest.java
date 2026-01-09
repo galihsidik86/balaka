@@ -13,7 +13,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Service Industry - Fixed Assets")
 @Import(ServiceTestDataInitializer.class)
-public class ServiceFixedAssetTest extends PlaywrightTestBase {
+class ServiceFixedAssetTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Should display asset categories list")

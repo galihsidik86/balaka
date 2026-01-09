@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("CSP Alpine.js Compatibility")
 @Import(ServiceTestDataInitializer.class)
-public class CspAlpineTest extends PlaywrightTestBase {
+class CspAlpineTest extends PlaywrightTestBase {
 
     private List<String> consoleErrors;
     private List<String> consoleWarnings;

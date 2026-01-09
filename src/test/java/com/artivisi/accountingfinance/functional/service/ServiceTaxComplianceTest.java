@@ -15,7 +15,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Service Industry - Tax Compliance")
 @Import(ServiceTestDataInitializer.class)
-public class ServiceTaxComplianceTest extends PlaywrightTestBase {
+class ServiceTaxComplianceTest extends PlaywrightTestBase {
 
     // Page Objects
     private TaxCalendarPage taxCalendarPage;
