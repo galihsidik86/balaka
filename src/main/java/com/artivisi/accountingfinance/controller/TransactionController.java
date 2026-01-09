@@ -59,9 +59,7 @@ public class TransactionController {
 
     private static final String ATTR_SELECTED_TEMPLATE = "selectedTemplate";
     private static final String ATTR_TRANSACTION = "transaction";
-    private static final String ATTR_TEMPLATES = "templates";
     private static final String ATTR_PROJECTS = "projects";
-    private static final String ATTR_IS_EDIT = "isEdit";
     private static final String ATTR_SUCCESS_MESSAGE = "successMessage";
     private static final String USER_SYSTEM = "system";
 

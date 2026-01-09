@@ -40,7 +40,6 @@ import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 @Slf4j
 public class InventoryTransactionController {
 
-    private static final String ATTR_PRODUCTS = "products";
     private static final String ATTR_TRANSACTIONS = "transactions";
     private static final String ATTR_TRANSACTION = "transaction";
     private static final String REDIRECT_INVENTORY_TRANSACTIONS = "redirect:/inventory/transactions/";
