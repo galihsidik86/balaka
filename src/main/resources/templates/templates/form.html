@@ -558,18 +558,23 @@
                     }, 300);
                 },
 
+                clearPreview(line) {
+                    if (line) {
+                        line.previewResult = null;
+                        line.previewError = null;
+                    }
+                },
+
                 async fetchLinePreview(index) {
                     const line = this.journalLines[index];
                     if (!line || !line.formula) {
-                        line.previewResult = null;
-                        line.previewError = null;
+                        this.clearPreview(line);
                         return;
                     }
 
                     const amount = this.parsePreviewAmount();
                     if (amount === 0) {
-                        line.previewResult = null;
-                        line.previewError = null;
+                        this.clearPreview(line);
                         return;
                     }
 
