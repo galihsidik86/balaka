@@ -487,7 +487,7 @@ public class DataImportService {
             return 0;
         } catch (Exception e) {
             log.error("Error importing file {}: {}", LogSanitizer.filename(filename), e.getMessage(), e);
-            throw new RuntimeException("Failed to import " + filename + ": " + e.getMessage(), e);
+            throw new IllegalStateException("Failed to import " + filename + ": " + e.getMessage(), e);
         }
     }
 

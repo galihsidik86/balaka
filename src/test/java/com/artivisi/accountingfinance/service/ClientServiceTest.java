@@ -99,7 +99,7 @@ class ClientServiceTest {
         @Test
         @DisplayName("findByFilters should filter by active status")
         void findByFiltersShouldFilterByActiveStatus() {
-            Client active = createTestClient();
+            createTestClient(); // Create active client for test
             Client inactive = createTestClient();
             clientService.deactivate(inactive.getId());
 

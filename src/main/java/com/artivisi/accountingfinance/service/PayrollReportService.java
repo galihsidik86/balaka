@@ -2,6 +2,7 @@ package com.artivisi.accountingfinance.service;
 
 import com.artivisi.accountingfinance.entity.PayrollDetail;
 import com.artivisi.accountingfinance.entity.PayrollRun;
+import com.artivisi.accountingfinance.exception.ReportGenerationException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -106,7 +107,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Payroll Summary PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate PDF: " + e.getMessage(), e);
         }
     }
 
@@ -169,7 +170,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating Payroll Summary Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate Excel: " + e.getMessage(), e);
         }
     }
 
@@ -244,7 +245,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating PPh 21 Report PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate PDF: " + e.getMessage(), e);
         }
     }
 
@@ -293,7 +294,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating PPh 21 Report Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate Excel: " + e.getMessage(), e);
         }
     }
 
@@ -386,7 +387,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating BPJS Report PDF", e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate PDF: " + e.getMessage(), e);
         }
     }
 
@@ -486,7 +487,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (IOException e) {
             log.error("Error generating BPJS Report Excel", e);
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate Excel: " + e.getMessage(), e);
         }
     }
 
@@ -583,7 +584,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating Payslip PDF for employee: {}", detail.getEmployeeId(), e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate PDF: " + e.getMessage(), e);
         }
     }
 
@@ -715,7 +716,7 @@ public class PayrollReportService {
             return baos.toByteArray();
         } catch (DocumentException | IOException e) {
             log.error("Error generating 1721-A1 for employee: {}", summary.employee().getEmployeeId(), e);
-            throw new RuntimeException("Failed to generate PDF: " + e.getMessage());
+            throw new ReportGenerationException("Failed to generate PDF: " + e.getMessage(), e);
         }
     }
 

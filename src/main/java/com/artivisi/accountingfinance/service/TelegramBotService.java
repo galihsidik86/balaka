@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.SecureRandom;
@@ -282,12 +283,12 @@ public class TelegramBotService {
                         "(3) URL validation ensures it starts with expected Telegram domain. " +
                         "(4) Cannot be used to access internal services or arbitrary URLs."
     )
-    private byte[] downloadPhoto(String fileId) throws Exception {
+    private byte[] downloadPhoto(String fileId) throws IOException {
         var getFileRequest = new TelegramApiClient.GetFileRequest(fileId);
         var fileResponse = telegramApiClient.getFile(getFileRequest);
 
         if (!Boolean.TRUE.equals(fileResponse.ok()) || fileResponse.result() == null) {
-            throw new RuntimeException("Failed to get file info: " + fileResponse.description());
+            throw new IllegalStateException("Failed to get file info: " + fileResponse.description());
         }
 
         String filePath = fileResponse.result().file_path();

@@ -536,8 +536,6 @@ class SecurityRegressionTest extends PlaywrightTestBase {
             // Expected behavior: page loads normally, showing ONLY the employee's own payslips
             // The URL may still contain the userId param, but it's not used server-side
 
-            String content = page.content().toLowerCase();
-
             // Page should load without access denied (the param is simply ignored)
             // But should NOT show admin's data - only employee's own data
             // If the page shows "Employee User" (the logged-in user's name), that's correct

@@ -319,12 +319,10 @@ public class AlpineInteractivityTest extends PlaywrightTestBase {
 
         // Find input containers
         Locator amountContainer = page.locator("[data-testid='amount-input-container']");
-        Locator percentageContainer = page.locator("[data-testid='percentage-input-container']");
 
         if (amountContainer.count() == 0) {
             // Fallback: find by x-cloak attribute
             amountContainer = page.locator("div[x-cloak]:has(input[name='defaultValue'])").first();
-            percentageContainer = page.locator("div[x-cloak]:has(input[name='percentageValue'])").first();
         }
 
         // Check initial state - one should be visible, one hidden

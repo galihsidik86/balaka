@@ -60,7 +60,7 @@ public class DocumentStorageService {
             Files.createDirectories(rootLocation);
             log.info("Document storage initialized at: {}", rootLocation);
         } catch (IOException e) {
-            throw new RuntimeException("Could not create document storage directory: " + rootLocation, e);
+            throw new IllegalStateException("Could not create document storage directory: " + rootLocation, e);
         }
     }
 
@@ -117,7 +117,7 @@ public class DocumentStorageService {
             }
 
             if (!Files.exists(filePath) || !Files.isReadable(filePath)) {
-                throw new RuntimeException("Could not read file: " + relativePath);
+                throw new IllegalStateException("Could not read file: " + relativePath);
             }
 
             // Read encrypted content and decrypt
@@ -136,7 +136,7 @@ public class DocumentStorageService {
                 }
             };
         } catch (IOException e) {
-            throw new RuntimeException("Could not read file: " + relativePath, e);
+            throw new java.io.UncheckedIOException("Could not read file: " + relativePath, e);
         }
     }
 
@@ -164,7 +164,7 @@ public class DocumentStorageService {
             byte[] hash = digest.digest(file.getBytes());
             return bytesToHex(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
+            throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
     }
 
@@ -322,7 +322,7 @@ public class DocumentStorageService {
             byte[] hash = digest.digest(bytes);
             return bytesToHex(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
+            throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
     }
 

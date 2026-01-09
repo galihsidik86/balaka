@@ -103,13 +103,13 @@ class DataSubjectServiceTest {
         void shouldExportAllPersonalData() {
             Map<String, Object> exportedData = dataSubjectService.exportPersonalData(testEmployee.getId());
 
-            assertThat(exportedData).isNotNull();
-            assertThat(exportedData.get("employee_id")).isEqualTo(testEmployee.getEmployeeId());
-            assertThat(exportedData.get("name")).isEqualTo("Test Employee");
-            assertThat(exportedData.get("email")).isEqualTo("test@example.com");
-            assertThat(exportedData.get("phone")).isEqualTo("08123456789");
-            assertThat(exportedData.get("job_title")).isEqualTo("Software Engineer");
-            assertThat(exportedData.get("department")).isEqualTo("IT");
+            assertThat(exportedData).isNotNull()
+                .containsEntry("employee_id", testEmployee.getEmployeeId())
+                .containsEntry("name", "Test Employee")
+                .containsEntry("email", "test@example.com")
+                .containsEntry("phone", "08123456789")
+                .containsEntry("job_title", "Software Engineer")
+                .containsEntry("department", "IT");
             assertThat(exportedData.get("export_timestamp")).isNotNull();
         }
 

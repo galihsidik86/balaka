@@ -102,7 +102,7 @@ class EmployeeServiceTest {
         @Test
         @DisplayName("findByFilters should filter by employment status")
         void findByFiltersShouldFilterByStatus() {
-            Employee active = createTestEmployeeWithStatus(EmploymentStatus.ACTIVE);
+            createTestEmployeeWithStatus(EmploymentStatus.ACTIVE);
             createTestEmployeeWithStatus(EmploymentStatus.RESIGNED);
 
             Page<Employee> page = employeeService.findByFilters(
@@ -114,7 +114,7 @@ class EmployeeServiceTest {
         @Test
         @DisplayName("findByFilters should filter by active status")
         void findByFiltersShouldFilterByActiveStatus() {
-            Employee active = createTestEmployee();
+            createTestEmployee(); // Create active employee for test
             Employee inactive = createTestEmployee();
             employeeService.deactivate(inactive.getId());
 
@@ -127,7 +127,7 @@ class EmployeeServiceTest {
         @Test
         @DisplayName("findByFilters should search by name")
         void findByFiltersShouldSearchByName() {
-            Employee employee = createTestEmployeeWithName("John Unique Smith");
+            createTestEmployeeWithName("John Unique Smith");
 
             Page<Employee> page = employeeService.findByFilters(
                 "Unique", null, null, PageRequest.of(0, 10));
@@ -456,8 +456,8 @@ class EmployeeServiceTest {
         @Test
         @DisplayName("countActiveEmployees should return correct count")
         void countActiveEmployeesShouldReturnCorrectCount() {
-            Employee active1 = createTestEmployee();
-            Employee active2 = createTestEmployee();
+            createTestEmployee(); // Create 2 active employees
+            createTestEmployee();
             Employee inactive = createTestEmployee();
             employeeService.deactivate(inactive.getId());
 

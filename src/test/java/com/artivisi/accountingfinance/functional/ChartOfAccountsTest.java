@@ -141,9 +141,6 @@ public class ChartOfAccountsTest extends PlaywrightTestBase {
         navigateTo("/accounts/new");
         waitForPageLoad();
 
-        // Initially permanent should be checked (default)
-        boolean initialState = page.locator("#permanent").isChecked();
-
         // Select EXPENSE type - should auto-uncheck permanent (temporary account)
         page.getByTestId("account-type").selectOption("EXPENSE");
         page.waitForTimeout(100);
