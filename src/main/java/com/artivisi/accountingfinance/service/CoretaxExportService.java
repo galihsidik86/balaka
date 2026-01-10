@@ -226,6 +226,7 @@ public class CoretaxExportService {
         sheet.autoSizeColumn(1);
     }
 
+    @SuppressWarnings("java:S125") // Inline comments document Coretax export field names, not commented-out code
     private void createBupotSheet(Workbook workbook, List<TaxTransactionDetail> details, CompanyConfig config) {
         Sheet sheet = workbook.createSheet("DATA");
         CellStyle headerStyle = createHeaderStyle(workbook);
