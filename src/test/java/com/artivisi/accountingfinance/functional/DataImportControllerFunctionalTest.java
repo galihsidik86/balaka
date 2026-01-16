@@ -90,13 +90,18 @@ class DataImportControllerFunctionalTest extends PlaywrightTestBase {
 
         // Upload the invalid file
         page.locator("#file").setInputFiles(txtFile);
+
+        // Handle the confirmation dialog
+        page.onDialog(dialog -> dialog.accept());
+
         page.locator("#btn-import").click();
         waitForPageLoad();
 
-        // Should stay on import page (error is shown via flash attribute)
-        // The page title should still be visible
+        // Should stay on import page with error message
         assertThat(page.locator("#page-title")).isVisible();
         assertThat(page.locator("#page-title")).hasText("Import Data");
+        // Should show error message for non-ZIP file
+        assertThat(page.locator("#import-error-message")).isVisible();
     }
 
     @Test
@@ -111,13 +116,17 @@ class DataImportControllerFunctionalTest extends PlaywrightTestBase {
         navigateTo("/settings/import");
         waitForPageLoad();
 
+        // Handle the confirmation dialog
+        page.onDialog(dialog -> dialog.accept());
+
         // Upload the empty ZIP
         page.locator("#file").setInputFiles(emptyZip);
         page.locator("#btn-import").click();
         waitForPageLoad();
 
-        // Should show error or stay on page
+        // Should stay on import page (error or success message shown)
         assertThat(page.locator("#page-title")).isVisible();
+        assertThat(page.locator("#page-title")).hasText("Import Data");
     }
 
     @Test
@@ -136,13 +145,17 @@ class DataImportControllerFunctionalTest extends PlaywrightTestBase {
         navigateTo("/settings/import");
         waitForPageLoad();
 
+        // Handle the confirmation dialog
+        page.onDialog(dialog -> dialog.accept());
+
         // Upload the invalid ZIP
         page.locator("#file").setInputFiles(invalidZip);
         page.locator("#btn-import").click();
         waitForPageLoad();
 
-        // Should show error or success (depends on service implementation)
+        // Should stay on import page (error or success message shown)
         assertThat(page.locator("#page-title")).isVisible();
+        assertThat(page.locator("#page-title")).hasText("Import Data");
     }
 
     @Test
