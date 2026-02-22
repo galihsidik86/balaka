@@ -1234,11 +1234,11 @@ Items below are not planned phases. They are implemented only when a concrete cl
 4. **Test rollback** - Every migration must have tested rollback script
 
 ### Migration Files
-- V001: Security schema (users)
-- V002: Security data (admin user)
-- V003: App schema (COA, journal entries, templates, transactions, etc.)
-- V004: App seed data
-- V901-V907: Test data migrations
+- V001: Security (users, audit_logs, admin seed)
+- V002: Core schema (COA, templates, transactions, clients, projects, invoices, vendors, bills, employees, payroll, assets, inventory, documents, tax)
+- V003: Feature schema (device auth, bank recon, analysis reports, tags, alerts, payments, recurring transactions)
+- V004: Seed data (transaction sequences, bank parser configs, alert rules)
+- V900-V912: Test data migrations
 
 ---
 

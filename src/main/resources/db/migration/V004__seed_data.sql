@@ -1,5 +1,17 @@
--- V007: Bank Reconciliation Seed Data
--- Preloaded parser configs for major Indonesian banks
+-- V004: Seed Data
+-- Transaction sequences, bank parser configs, alert rules
+
+-- ============================================
+-- Transaction Sequences - Initialize for 2025
+-- ============================================
+
+INSERT INTO transaction_sequences (id, sequence_type, prefix, year, last_number) VALUES
+('d0000000-0000-0000-0000-000000000001', 'TRANSACTION', 'TRX', 2025, 0),
+('d0000000-0000-0000-0000-000000000002', 'JOURNAL', 'JE', 2025, 0);
+
+-- ============================================
+-- Bank Statement Parser Configs
+-- ============================================
 
 -- BCA (Bank Central Asia)
 -- CSV format: Date, Description, Branch, Amount (negative=debit), Balance
@@ -26,26 +38,15 @@ VALUES (gen_random_uuid(), 'BSI', 'BSI - CSV Standar', 'Format CSV standar dari 
 INSERT INTO bank_statement_parser_configs (id, bank_type, config_name, description, date_column, description_column, debit_column, credit_column, balance_column, date_format, delimiter, skip_header_rows, encoding, decimal_separator, thousand_separator, is_system, active)
 VALUES (gen_random_uuid(), 'CIMB', 'CIMB Niaga - CSV Standar', 'Format CSV standar dari CIMB Niaga OCTO', 0, 1, 2, 3, 4, 'dd/MM/yyyy', ',', 1, 'UTF-8', '.', ',', TRUE, TRUE);
 
--- Analysis Reports table
--- Stores structured AI-generated financial analysis reports
-CREATE TABLE analysis_reports (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    row_version BIGINT NOT NULL DEFAULT 0,
-    title VARCHAR(255) NOT NULL,
-    report_type VARCHAR(50) NOT NULL,
-    industry VARCHAR(50),
-    period_start DATE,
-    period_end DATE,
-    ai_source VARCHAR(50),
-    ai_model VARCHAR(100),
-    executive_summary TEXT,
-    metrics JSONB,
-    findings JSONB,
-    recommendations JSONB,
-    risks JSONB,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    created_by VARCHAR(100),
-    updated_by VARCHAR(100),
-    deleted_at TIMESTAMP
-);
+-- ============================================
+-- Smart Alert Rules
+-- ============================================
+
+INSERT INTO alert_rules (id, row_version, alert_type, threshold, enabled, description) VALUES
+    (gen_random_uuid(), 0, 'CASH_LOW', 10000000.00, true, 'Peringatan jika saldo kas + bank di bawah ambang batas'),
+    (gen_random_uuid(), 0, 'RECEIVABLE_OVERDUE', 0, true, 'Peringatan jika ada piutang yang jatuh tempo'),
+    (gen_random_uuid(), 0, 'EXPENSE_SPIKE', 30.00, true, 'Peringatan jika biaya bulan ini naik lebih dari X% dari rata-rata 3 bulan sebelumnya'),
+    (gen_random_uuid(), 0, 'PROJECT_COST_OVERRUN', 0, true, 'Peringatan jika ada proyek yang melebihi anggaran'),
+    (gen_random_uuid(), 0, 'PROJECT_MARGIN_DROP', 10.00, true, 'Peringatan jika margin proyek turun di bawah X%'),
+    (gen_random_uuid(), 0, 'COLLECTION_SLOWDOWN', 30.00, true, 'Peringatan jika rata-rata hari penagihan melebihi X hari'),
+    (gen_random_uuid(), 0, 'CLIENT_CONCENTRATION', 50.00, true, 'Peringatan jika satu klien menyumbang lebih dari X% pendapatan');

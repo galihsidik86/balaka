@@ -44,7 +44,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 | Services | `src/main/java/.../service/` |
 | Controllers | `src/main/java/.../controller/` |
 | Templates | `src/main/resources/templates/` |
-| Migrations (Production) | `src/main/resources/db/migration/` (V001-V009) |
+| Migrations (Production) | `src/main/resources/db/migration/` (V001-V004) |
 | Test Migrations (Integration) | `src/test/resources/db/test/integration/` (V900-V912) |
 | Industry Seed Packs | `industry-seed/{it-service,online-seller,coffee-shop,campus}/` (loaded via DataImportService) |
 | Functional Tests | `src/test/java/.../functional/` |
@@ -91,7 +91,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 ## Database
 
 - PostgreSQL via Testcontainers (tests)
-- Production migrations: V001-V011 (schema + minimal bootstrap + bank recon + analysis reports + transaction tags + payment tracking + recurring transactions)
+- Production migrations: V001-V004 (V001 security, V002 core schema, V003 feature schema, V004 seed data)
 - **Migration caveat:** Modifying already-applied migrations requires manual schema fix on production + checksum update in `flyway_schema_history`. See `docs/03-operations-guide.md` Troubleshooting section.
 - Test data:
   - Functional tests: NO migrations - all data loaded via `@TestConfiguration` initializers from industry-seed/ packs

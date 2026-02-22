@@ -1,5 +1,6 @@
--- V003: Application Schema
--- All application tables and functions
+-- V002: Core Application Schema
+-- All core business tables: COA, templates, transactions, clients, projects,
+-- invoices, vendors, bills, employees, payroll, assets, inventory, documents, tax
 
 -- ============================================
 -- Company Configuration
@@ -42,6 +43,7 @@ CREATE TABLE company_bank_accounts (
     currency_code VARCHAR(10) NOT NULL DEFAULT 'IDR',
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
     active BOOLEAN NOT NULL DEFAULT TRUE,
+    id_account UUID,  -- FK added after chart_of_accounts is created
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -81,6 +83,11 @@ CREATE INDEX idx_coa_account_type ON chart_of_accounts(account_type);
 CREATE INDEX idx_coa_parent ON chart_of_accounts(id_parent);
 CREATE INDEX idx_coa_active ON chart_of_accounts(active);
 
+-- Now add the FK from company_bank_accounts to chart_of_accounts
+ALTER TABLE company_bank_accounts ADD CONSTRAINT fk_company_bank_account
+    FOREIGN KEY (id_account) REFERENCES chart_of_accounts(id);
+CREATE INDEX idx_company_bank_account ON company_bank_accounts(id_account);
+
 -- ============================================
 -- Journal Templates
 -- ============================================
@@ -100,6 +107,13 @@ CREATE TABLE journal_templates (
     is_current_version BOOLEAN NOT NULL DEFAULT TRUE,
     usage_count INTEGER NOT NULL DEFAULT 0,
     last_used_at TIMESTAMP,
+    -- AI-friendly semantic metadata
+    semantic_description TEXT,
+    keywords TEXT[],
+    example_merchants TEXT[],
+    typical_amount_min NUMERIC(15,2),
+    typical_amount_max NUMERIC(15,2),
+    merchant_patterns TEXT[],
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(100),
@@ -115,6 +129,20 @@ CREATE INDEX idx_jt_category ON journal_templates(category);
 CREATE INDEX idx_jt_active ON journal_templates(active);
 CREATE INDEX idx_jt_original ON journal_templates(id_original_template);
 CREATE INDEX idx_jt_current_version ON journal_templates(is_current_version);
+CREATE INDEX idx_journal_templates_keywords ON journal_templates USING GIN (keywords);
+
+COMMENT ON COLUMN journal_templates.semantic_description IS
+    'Human-readable explanation of when to use this template (for AI comprehension)';
+COMMENT ON COLUMN journal_templates.keywords IS
+    'Array of searchable keywords for AI matching (lowercase)';
+COMMENT ON COLUMN journal_templates.example_merchants IS
+    'Array of example merchant names that typically use this template';
+COMMENT ON COLUMN journal_templates.typical_amount_min IS
+    'Typical minimum transaction amount for this template (optional)';
+COMMENT ON COLUMN journal_templates.typical_amount_max IS
+    'Typical maximum transaction amount for this template (optional)';
+COMMENT ON COLUMN journal_templates.merchant_patterns IS
+    'Array of regex patterns for merchant name matching';
 
 CREATE TABLE journal_template_lines (
     id UUID PRIMARY KEY,
@@ -574,7 +602,7 @@ CREATE INDEX idx_documents_invoice ON documents(id_invoice);
 CREATE INDEX idx_documents_uploaded_at ON documents(uploaded_at);
 
 -- ============================================
--- Telegram Receipt Import (Phase 2.2)
+-- Telegram Receipt Import
 -- ============================================
 
 -- Link Telegram users to app users
@@ -651,13 +679,17 @@ CREATE TABLE draft_transactions (
     -- Created transaction (after approval)
     id_transaction UUID REFERENCES transactions(id),
 
+    -- API fields
+    api_source VARCHAR(50),
+    metadata JSONB,
+
     -- Audit
     created_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     processed_by VARCHAR(100),
     processed_at TIMESTAMP,
 
-    CONSTRAINT chk_draft_source CHECK (source IN ('TELEGRAM', 'MANUAL', 'EMAIL')),
+    CONSTRAINT chk_draft_source CHECK (source IN ('TELEGRAM', 'MANUAL', 'EMAIL', 'API')),
     CONSTRAINT chk_draft_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'AUTO_APPROVED'))
 );
 
@@ -665,6 +697,12 @@ CREATE INDEX idx_draft_transactions_status ON draft_transactions(status);
 CREATE INDEX idx_draft_transactions_user ON draft_transactions(created_by);
 CREATE INDEX idx_draft_transactions_date ON draft_transactions(transaction_date);
 CREATE INDEX idx_draft_transactions_telegram ON draft_transactions(telegram_chat_id, telegram_message_id);
+CREATE INDEX idx_draft_transactions_api_source ON draft_transactions(api_source) WHERE api_source IS NOT NULL;
+
+COMMENT ON COLUMN draft_transactions.api_source IS
+    'External tool/client that created this draft via API (claude-code, gemini-cli, postman, etc.)';
+COMMENT ON COLUMN draft_transactions.metadata IS
+    'Additional metadata: items list, category, custom fields, etc. Stored as JSONB for flexibility.';
 
 -- ============================================
 -- Tax Transaction Details (for Coretax export)
@@ -713,7 +751,7 @@ CREATE INDEX idx_tax_details_type ON tax_transaction_details(tax_type);
 CREATE INDEX idx_tax_details_faktur_date ON tax_transaction_details(faktur_date);
 
 -- ============================================
--- Fiscal Periods (Phase 2.7)
+-- Fiscal Periods
 -- ============================================
 
 CREATE TABLE fiscal_periods (
@@ -740,7 +778,7 @@ CREATE INDEX idx_fiscal_periods_status ON fiscal_periods(status);
 CREATE INDEX idx_fiscal_periods_year_month ON fiscal_periods(year, month);
 
 -- ============================================
--- Tax Deadlines (Phase 2.8)
+-- Tax Deadlines
 -- ============================================
 
 CREATE TABLE tax_deadlines (
@@ -787,7 +825,7 @@ CREATE INDEX idx_tax_completions_deadline ON tax_deadline_completions(id_tax_dea
 CREATE INDEX idx_tax_completions_period ON tax_deadline_completions(year, month);
 
 -- ============================================
--- Employees (Phase 3.1)
+-- Employees
 -- ============================================
 
 CREATE TABLE employees (
@@ -843,7 +881,7 @@ CREATE INDEX idx_employees_npwp ON employees(npwp);
 CREATE INDEX idx_employees_user ON employees(id_user);
 
 -- ============================================
--- Salary Components (Phase 3.2)
+-- Salary Components
 -- ============================================
 
 CREATE TABLE salary_components (
@@ -893,7 +931,7 @@ CREATE INDEX idx_esc_effective_date ON employee_salary_components(effective_date
 CREATE INDEX idx_esc_end_date ON employee_salary_components(end_date);
 
 -- ============================================
--- Payroll Processing (Phase 3.5)
+-- Payroll Processing
 -- ============================================
 
 CREATE TABLE payroll_runs (
@@ -972,7 +1010,7 @@ CREATE INDEX idx_payroll_details_run ON payroll_details(id_payroll_run);
 CREATE INDEX idx_payroll_details_employee ON payroll_details(id_employee);
 
 -- ============================================
--- Asset Categories (Phase 4)
+-- Asset Categories
 -- ============================================
 
 CREATE TABLE asset_categories (
@@ -997,7 +1035,7 @@ CREATE INDEX idx_asset_categories_code ON asset_categories(code);
 CREATE INDEX idx_asset_categories_active ON asset_categories(active);
 
 -- ============================================
--- Fixed Assets (Phase 4)
+-- Fixed Assets
 -- ============================================
 
 CREATE TABLE fixed_assets (
@@ -1064,7 +1102,7 @@ CREATE INDEX idx_fixed_assets_status ON fixed_assets(status);
 CREATE INDEX idx_fixed_assets_purchase_date ON fixed_assets(purchase_date);
 
 -- ============================================
--- Depreciation Entries (Phase 4)
+-- Depreciation Entries
 -- ============================================
 
 CREATE TABLE depreciation_entries (
@@ -1092,7 +1130,7 @@ CREATE INDEX idx_depreciation_entries_status ON depreciation_entries(status);
 CREATE INDEX idx_depreciation_entries_period_end ON depreciation_entries(period_end);
 
 -- ============================================
--- Product Categories (Phase 5 - Inventory)
+-- Product Categories (Inventory)
 -- ============================================
 
 CREATE TABLE product_categories (
@@ -1111,7 +1149,7 @@ CREATE INDEX idx_product_categories_parent ON product_categories(id_parent);
 CREATE INDEX idx_product_categories_active ON product_categories(active);
 
 -- ============================================
--- Products (Phase 5 - Inventory)
+-- Products (Inventory)
 -- ============================================
 
 CREATE TABLE products (
@@ -1184,7 +1222,7 @@ CREATE TABLE bill_lines (
 CREATE INDEX idx_bill_lines_bill ON bill_lines(id_bill);
 
 -- ============================================
--- Inventory Balances (Phase 5 - Inventory)
+-- Inventory Balances (Inventory)
 -- ============================================
 
 CREATE TABLE inventory_balances (
@@ -1201,7 +1239,7 @@ CREATE TABLE inventory_balances (
 CREATE INDEX idx_inventory_balances_product ON inventory_balances(id_product);
 
 -- ============================================
--- Inventory Transactions (Phase 5 - Inventory)
+-- Inventory Transactions (Inventory)
 -- ============================================
 
 CREATE TABLE inventory_transactions (
@@ -1234,7 +1272,7 @@ CREATE INDEX idx_inv_transactions_date ON inventory_transactions(transaction_dat
 CREATE INDEX idx_inv_transactions_reference ON inventory_transactions(reference_number);
 
 -- ============================================
--- Inventory FIFO Layers (Phase 5 - Inventory)
+-- Inventory FIFO Layers (Inventory)
 -- ============================================
 
 CREATE TABLE inventory_fifo_layers (
@@ -1255,7 +1293,7 @@ CREATE INDEX idx_fifo_layers_date ON inventory_fifo_layers(layer_date);
 CREATE INDEX idx_fifo_layers_consumed ON inventory_fifo_layers(fully_consumed);
 
 -- ============================================
--- Bill of Materials (Phase 5.4 - Production)
+-- Bill of Materials (Production)
 -- ============================================
 
 CREATE TABLE bill_of_materials (
@@ -1275,7 +1313,7 @@ CREATE INDEX idx_bom_code ON bill_of_materials(code);
 CREATE INDEX idx_bom_active ON bill_of_materials(active);
 
 -- ============================================
--- Bill of Materials Lines (Phase 5.4 - Production)
+-- Bill of Materials Lines (Production)
 -- ============================================
 
 CREATE TABLE bill_of_material_lines (
@@ -1293,7 +1331,7 @@ CREATE INDEX idx_bom_lines_bom ON bill_of_material_lines(id_bill_of_material);
 CREATE INDEX idx_bom_lines_component ON bill_of_material_lines(id_component);
 
 -- ============================================
--- Production Orders (Phase 5.4 - Production)
+-- Production Orders (Production)
 -- ============================================
 
 CREATE TABLE production_orders (
@@ -1325,7 +1363,7 @@ CREATE INDEX idx_production_orders_status ON production_orders(status);
 CREATE INDEX idx_production_orders_date ON production_orders(order_date);
 
 -- ============================================
--- Security Audit Logs (Phase 6 - Security Hardening)
+-- Security Audit Logs (Security Hardening)
 -- ============================================
 
 CREATE TABLE security_audit_logs (
