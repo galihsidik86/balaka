@@ -40,6 +40,20 @@
       "endpoints": [
         {
           "method": "POST",
+          "path": "/api/drafts",
+          "scope": "transactions:post",
+          "description": "Create a DRAFT transaction directly with template + account overrides. Returns TransactionResponse (not DraftResponse). Use POST /api/transactions/{id}/post to post afterwards.",
+          "requestBody": {
+            "templateId": "UUID (required)",
+            "description": "string (required)",
+            "amount": "number (required)",
+            "transactionDate": "yyyy-MM-dd (required)",
+            "lineAccountOverrides": "Map<int,UUID> (optional). Maps template lineOrder to accountId for lines with accountHint."
+          },
+          "response": "TransactionResponse: transactionId, transactionNumber, status=DRAFT, amount, journalEntries"
+        },
+        {
+          "method": "POST",
           "path": "/api/drafts/from-receipt",
           "scope": "drafts:create",
           "description": "Create draft from OCR-parsed receipt data",
@@ -691,6 +705,16 @@
         "POST /api/drafts/from-text",
         "Show user the draft + suggested template",
         "POST /api/drafts/{id}/approve"
+      ]
+    },
+    {
+      "name": "Draft Then Post (Two-Step)",
+      "steps": [
+        "GET /api/templates (find matching template, check lines for accountHint)",
+        "POST /api/drafts (create DRAFT with templateId + lineAccountOverrides)",
+        "GET /api/transactions/{id}/journal-preview (optional, preview entries)",
+        "PUT /api/transactions/{id} (optional, correct fields)",
+        "POST /api/transactions/{id}/post (post to ledger)"
       ]
     },
     {

@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.service;
 
 import com.artivisi.accountingfinance.dto.ApproveDraftRequest;
+import com.artivisi.accountingfinance.dto.CreateDraftRequest;
 import com.artivisi.accountingfinance.dto.CreateFromReceiptRequest;
 import com.artivisi.accountingfinance.dto.CreateFromTextRequest;
 import com.artivisi.accountingfinance.dto.CreateTransactionRequest;
@@ -516,6 +517,36 @@ public class TransactionApiService {
                 clarificationQuestion,
                 transactionId
         );
+    }
+
+    /**
+     * Create a DRAFT transaction directly (bypassing the from-text/from-receipt draft workflow).
+     * Creates a Transaction in DRAFT status with template + optional account overrides.
+     */
+    public TransactionResponse createDraft(CreateDraftRequest request, String username) {
+        log.info("Creating draft directly: template={}, amount={}", request.templateId(), request.amount());
+
+        if (request.transactionDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Transaction date cannot be in the future");
+        }
+
+        JournalTemplate template = journalTemplateService.findByIdWithLines(request.templateId());
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionNumber(null);
+        transaction.setTransactionDate(request.transactionDate());
+        transaction.setJournalTemplate(template);
+        transaction.setAmount(request.amount());
+        transaction.setDescription(request.description());
+        transaction.setCreatedBy(username);
+
+        Map<UUID, UUID> accountMappings = resolveLineAccountOverrides(template, request.lineAccountOverrides());
+
+        Transaction saved = transactionService.create(transaction, accountMappings, null);
+
+        log.info("Created draft transaction {} via direct API", saved.getId());
+
+        return buildTransactionResponse(saved);
     }
 
     /**

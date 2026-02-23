@@ -417,6 +417,73 @@ class DraftAndTransactionCorrectionApiTest extends PlaywrightTestBase {
     }
 
     @Nested
+    @DisplayName("POST /api/drafts (direct draft creation)")
+    class PostDraftDirect {
+
+        @Test
+        @DisplayName("Should create DRAFT transaction directly with template and post it")
+        void shouldCreateDraftAndPost() throws Exception {
+            String templateId = getFirstTemplateId();
+            String accountId = getFirstAccountId();
+
+            Map<String, Object> request = new HashMap<>();
+            request.put("templateId", templateId);
+            request.put("description", "Direct draft creation test");
+            request.put("amount", 120000);
+            request.put("transactionDate", "2026-02-15");
+            request.put("lineAccountOverrides", Map.of(1, accountId, 2, accountId));
+
+            APIResponse createResponse = apiContext.post("/api/drafts",
+                    RequestOptions.create()
+                            .setHeader("Content-Type", "application/json")
+                            .setHeader("Authorization", "Bearer " + accessToken)
+                            .setData(request));
+
+            assertThat(createResponse.status())
+                    .as("Create draft failed: %d %s", createResponse.status(), createResponse.text())
+                    .isEqualTo(201);
+
+            JsonNode createBody = objectMapper.readTree(createResponse.text());
+            assertThat(createBody.get("status").asText()).isEqualTo("DRAFT");
+            String transactionId = createBody.get("transactionId").asText();
+            assertThat(transactionId).isNotNull();
+
+            // Now post it
+            APIResponse postResponse = apiContext.post("/api/transactions/" + transactionId + "/post",
+                    RequestOptions.create()
+                            .setHeader("Authorization", "Bearer " + accessToken));
+
+            assertThat(postResponse.ok())
+                    .as("Post failed: %d %s", postResponse.status(), postResponse.text())
+                    .isTrue();
+
+            JsonNode postBody = objectMapper.readTree(postResponse.text());
+            assertThat(postBody.get("status").asText()).isEqualTo("POSTED");
+            assertThat(postBody.get("journalEntries").size()).isGreaterThanOrEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("Should reject direct draft with future date")
+        void shouldRejectFutureDate() throws Exception {
+            String templateId = getFirstTemplateId();
+
+            Map<String, Object> request = new HashMap<>();
+            request.put("templateId", templateId);
+            request.put("description", "Future date test");
+            request.put("amount", 50000);
+            request.put("transactionDate", "2099-12-31");
+
+            APIResponse response = apiContext.post("/api/drafts",
+                    RequestOptions.create()
+                            .setHeader("Content-Type", "application/json")
+                            .setHeader("Authorization", "Bearer " + accessToken)
+                            .setData(request));
+
+            assertThat(response.status()).isGreaterThanOrEqualTo(400);
+        }
+    }
+
+    @Nested
     @DisplayName("POST /api/drafts/{id}/approve - transactionId")
     class ApproveTransactionId {
 

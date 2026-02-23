@@ -1,9 +1,11 @@
 package com.artivisi.accountingfinance.controller.api;
 
 import com.artivisi.accountingfinance.dto.ApproveDraftRequest;
+import com.artivisi.accountingfinance.dto.CreateDraftRequest;
 import com.artivisi.accountingfinance.dto.CreateFromReceiptRequest;
 import com.artivisi.accountingfinance.dto.CreateFromTextRequest;
 import com.artivisi.accountingfinance.dto.DraftResponse;
+import com.artivisi.accountingfinance.dto.TransactionResponse;
 import com.artivisi.accountingfinance.dto.UpdateDraftRequest;
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.JournalTemplate;
@@ -49,6 +51,27 @@ public class DraftTransactionApiController {
     private final JournalTemplateService journalTemplateService;
     private final ChartOfAccountService chartOfAccountService;
     private final SecurityAuditService securityAuditService;
+
+    /**
+     * Create a DRAFT transaction directly with template + account overrides.
+     * POST /api/drafts
+     */
+    @PostMapping
+    public ResponseEntity<TransactionResponse> createDraft(@Valid @RequestBody CreateDraftRequest request) {
+        String username = getCurrentUsername();
+        log.info("API: Create draft directly - template={}, amount={}, user={}",
+                request.templateId(), request.amount(), username);
+
+        auditApiCall(Map.of(
+                "action", "create-draft",
+                "templateId", request.templateId().toString(),
+                "amount", request.amount().toString(),
+                ATTR_SOURCE, "api"
+        ));
+
+        TransactionResponse response = transactionApiService.createDraft(request, username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     /**
      * Create draft from AI-parsed receipt data.
