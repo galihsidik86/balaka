@@ -36,7 +36,7 @@
   "endpointGroups": [
     {
       "name": "Draft Transactions",
-      "description": "Create and manage AI-parsed transaction drafts",
+      "description": "Create and manage AI-parsed transaction drafts. Note: DraftResponse uses 'draftId' (not 'id') to distinguish draft from transaction context. After approval, 'transactionId' contains the created Transaction UUID.",
       "endpoints": [
         {
           "method": "POST",
@@ -79,7 +79,7 @@
           "path": "/api/drafts/{id}",
           "scope": "drafts:read",
           "description": "Get draft transaction by ID",
-          "response": "DraftResponse: draftId, status, merchant, amount, suggestedTemplate, confidence"
+          "response": "DraftResponse: draftId, status, merchant, amount, suggestedTemplate, confidence, transactionId (null if not yet approved)"
         },
         {
           "method": "PATCH",
