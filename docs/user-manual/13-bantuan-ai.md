@@ -166,7 +166,7 @@ GET /api/templates
 Authorization: Bearer {accessToken}
 ```
 
-Response (contoh 2 template dari 38 total):
+Response (contoh 1 template, field `lines` disertakan):
 
 ```json
 [
@@ -175,57 +175,41 @@ Response (contoh 2 template dari 38 total):
     "name": "Bayar Beban Listrik",
     "category": "EXPENSE",
     "description": "Pembayaran listrik kantor",
-    "semanticDescription": "Gunakan template ini untuk mencatat pembayaran tagihan listrik bulanan ke PLN atau penyedia listrik lainnya. Termasuk token listrik prabayar.",
-    "keywords": [
-      "listrik",
-      "electricity",
-      "pln",
-      "token",
-      "utility",
-      "utilitas"
-    ],
-    "exampleMerchants": [
-      "PLN",
-      "PLN Mobile",
-      "Tokopedia PLN",
-      "Bukalapak Token Listrik"
-    ],
+    "semanticDescription": "Gunakan template ini untuk mencatat pembayaran tagihan listrik bulanan ke PLN atau penyedia listrik lainnya.",
+    "keywords": ["listrik", "electricity", "pln", "token", "utility"],
+    "exampleMerchants": ["PLN", "PLN Mobile", "Tokopedia PLN"],
     "typicalAmountMin": 50000,
     "typicalAmountMax": 5000000,
-    "merchantPatterns": [
-      ".*pln.*",
-      ".*listrik.*",
-      ".*electricity.*"
+    "merchantPatterns": [".*pln.*", ".*listrik.*"],
+    "lines": [
+      {
+        "lineOrder": 1,
+        "position": "DEBIT",
+        "accountId": "uuid-akun-beban-listrik",
+        "accountCode": "5.1.05",
+        "accountName": "Beban Listrik",
+        "accountHint": null,
+        "formula": "AMOUNT",
+        "description": null
+      },
+      {
+        "lineOrder": 2,
+        "position": "CREDIT",
+        "accountId": null,
+        "accountCode": null,
+        "accountName": null,
+        "accountHint": "Kas / Bank",
+        "formula": "AMOUNT",
+        "description": null
+      }
     ]
-  },
-  {
-    "id": "cfb2a55c-4626-4ec6-a719-a243cee8dbf9",
-    "name": "Pendapatan Jasa Konsultasi",
-    "category": "INCOME",
-    "description": "Mencatat pendapatan dari jasa konsultasi/development",
-    "semanticDescription": "Template untuk mencatat pendapatan dari layanan konsultasi IT, software development, system integration, atau jasa profesional lainnya (untuk non-PKP atau tanpa PPN).",
-    "keywords": [
-      "pendapatan",
-      "income",
-      "revenue",
-      "konsultasi",
-      "consulting",
-      "development",
-      "jasa",
-      "service"
-    ],
-    "exampleMerchants": [
-      "Client A",
-      "PT Client B",
-      "Government Agency",
-      "Startup C"
-    ],
-    "typicalAmountMin": 5000000,
-    "typicalAmountMax": 500000000,
-    "merchantPatterns": []
   }
 ]
 ```
+
+Setiap template menyertakan array `lines` yang menunjukkan struktur jurnal:
+- **accountId/accountCode/accountName**: Akun tetap (sudah ditentukan di template)
+- **accountHint**: Akun yang perlu dipilih saat transaksi (gunakan `lineAccountOverrides` untuk menentukan akun)
 
 > **Catatan**: Semua template dari seed pack (IT Service, Online Seller, Coffee Shop, Campus) sudah dilengkapi metadata semantik untuk AI matching.
 
@@ -320,6 +304,91 @@ Transaksi yang dibuat via AI akan memiliki:
 
 ---
 
+## Buat Draft Langsung via API
+
+Selain alur dari-teks/dari-struk, AI juga dapat membuat transaksi DRAFT langsung dengan template dan account overrides dalam satu panggilan. Alur ini cocok ketika AI sudah tahu template mana yang harus dipakai.
+
+### Request
+
+```bash
+POST /api/drafts
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "templateId": "UUID-template",
+  "description": "Bayar listrik Januari 2026",
+  "amount": 350000,
+  "transactionDate": "2026-02-10",
+  "lineAccountOverrides": {
+    "2": "UUID-akun-bank-bca"
+  }
+}
+```
+
+Field `lineAccountOverrides` memetakan `lineOrder` template ke akun yang dipilih. Gunakan ini untuk line yang memiliki `accountHint` (lihat `lines` di response GET /api/templates).
+
+### Response
+
+```json
+{
+  "transactionId": "uuid-transaksi-baru",
+  "transactionNumber": null,
+  "status": "DRAFT",
+  "amount": 350000,
+  "transactionDate": "2026-02-10",
+  "description": "Bayar listrik Januari 2026",
+  "journalEntries": []
+}
+```
+
+Transaksi dibuat dalam status **DRAFT**. Langkah selanjutnya:
+1. (Opsional) Preview jurnal: `GET /api/transactions/{id}/journal-preview`
+2. (Opsional) Koreksi: `PUT /api/transactions/{id}`
+3. Posting: `POST /api/transactions/{id}/post`
+
+---
+
+## Preview Jurnal Sebelum Posting
+
+Sebelum mem-posting transaksi DRAFT, AI dapat melihat preview jurnal yang akan dihasilkan:
+
+```bash
+GET /api/transactions/{id}/journal-preview
+Authorization: Bearer {accessToken}
+```
+
+**Response:**
+```json
+{
+  "valid": true,
+  "errors": [],
+  "entries": [
+    {
+      "accountCode": "5.1.05",
+      "accountName": "Beban Listrik",
+      "debitAmount": 350000,
+      "creditAmount": 0
+    },
+    {
+      "accountCode": "1.1.02",
+      "accountName": "Bank BCA",
+      "debitAmount": 0,
+      "creditAmount": 350000
+    }
+  ],
+  "totalDebit": 350000,
+  "totalCredit": 350000
+}
+```
+
+Jika `valid` bernilai `false`, field `errors` berisi daftar masalah (contoh: akun belum dipilih untuk line dengan accountHint).
+
+---
+
 ## Koreksi Transaksi via AI
 
 Jika AI salah mengklasifikasi transaksi atau ada kesalahan pada draft/transaksi, AI dapat memperbaikinya tanpa perlu intervensi manual di web UI.
@@ -345,6 +414,27 @@ Content-Type: application/json
 }
 ```
 
+### Approve Draft → transactionId
+
+Setelah approve, response menyertakan `transactionId` dari transaksi yang dibuat:
+
+```bash
+POST /api/drafts/{id}/approve
+```
+
+Response:
+```json
+{
+  "draftId": "uuid-draft",
+  "status": "APPROVED",
+  "transactionId": "uuid-transaksi-yang-dibuat",
+  "merchant": "Starbucks Reserve",
+  "amount": 95000
+}
+```
+
+> **Catatan**: Draft endpoints mengembalikan `draftId` (bukan `id`) untuk membedakan konteks draft dari transaksi.
+
 ### Koreksi Transaksi DRAFT (Belum Posted)
 
 Transaksi yang sudah di-approve dari draft tetapi belum di-post (status DRAFT) dapat dikoreksi:
@@ -361,14 +451,17 @@ Content-Type: application/json
   "templateId": "UUID-template-yang-benar",
   "description": "Deskripsi yang diperbaiki",
   "amount": 350000,
-  "transactionDate": "2026-02-10"
+  "transactionDate": "2026-02-10",
+  "lineAccountOverrides": {
+    "2": "UUID-akun-bank-lain"
+  }
 }
 ```
 
 Validasi:
 - Hanya transaksi berstatus **DRAFT** yang bisa dikoreksi
 - Tanggal transaksi tidak boleh di masa depan
-- Jika `templateId` diubah, jurnal entries akan di-regenerate sesuai template baru
+- `lineAccountOverrides` dapat dikirim berulang kali (idempotent) — overrides sebelumnya akan diganti
 
 ### Hapus Transaksi DRAFT
 
@@ -389,10 +482,14 @@ Hanya transaksi berstatus **DRAFT** yang bisa dihapus. Transaksi yang sudah POST
 Skenario 1: Koreksi sebelum approve
   PATCH /api/drafts/{id}  →  POST /api/drafts/{id}/approve
 
-Skenario 2: Koreksi setelah approve, sebelum post
+Skenario 2: Buat draft langsung, preview, lalu post
+  POST /api/drafts  →  GET /api/transactions/{id}/journal-preview
+  →  PUT /api/transactions/{id} (opsional)  →  POST /api/transactions/{id}/post
+
+Skenario 3: Koreksi setelah approve, sebelum post
   PUT /api/transactions/{id}  →  POST /api/transactions/{id}/post
 
-Skenario 3: Hapus dan buat ulang
+Skenario 4: Hapus dan buat ulang
   DELETE /api/transactions/{id}  →  (buat draft/transaksi baru)
 ```
 
@@ -1221,23 +1318,24 @@ Setiap user dapat melihat dan mencabut device token miliknya sendiri di halaman 
 | POST | `/api/device/code` | Request device code |
 | POST | `/api/device/token` | Poll for access token |
 
-**Draft Transaksi (scope: `drafts:*`):**
+**Draft Transaksi (scope: `drafts:*`, `transactions:post`):**
 
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
+| POST | `/api/drafts` | Buat DRAFT transaction langsung dengan template + overrides |
 | POST | `/api/drafts/from-receipt` | Buat draft dari struk |
 | POST | `/api/drafts/from-text` | Buat draft dari teks |
 | GET | `/api/drafts/{id}` | Get draft by ID |
 | PATCH | `/api/drafts/{id}` | Koreksi draft PENDING |
-| POST | `/api/drafts/{id}/approve` | Approve draft |
+| POST | `/api/drafts/{id}/approve` | Approve draft (response menyertakan `transactionId`) |
 | POST | `/api/drafts/{id}/reject` | Reject draft |
 
 **Template (scope: `drafts:read`, `drafts:create`):**
 
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| GET | `/api/templates` | List templates dengan metadata |
-| GET | `/api/templates/{id}` | Get single template |
+| GET | `/api/templates` | List templates dengan metadata dan lines |
+| GET | `/api/templates/{id}` | Get single template dengan lines |
 | POST | `/api/templates` | Buat template baru |
 | PUT | `/api/templates/{id}` | Update template |
 | DELETE | `/api/templates/{id}` | Hapus template (soft delete) |
@@ -1247,9 +1345,10 @@ Setiap user dapat melihat dan mencabut device token miliknya sendiri di halaman 
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
 | POST | `/api/transactions` | Post transaction langsung |
-| PUT | `/api/transactions/{id}` | Koreksi transaksi DRAFT |
+| PUT | `/api/transactions/{id}` | Koreksi transaksi DRAFT (termasuk lineAccountOverrides) |
 | DELETE | `/api/transactions/{id}` | Hapus transaksi DRAFT |
 | POST | `/api/transactions/{id}/post` | Post satu transaksi DRAFT |
+| GET | `/api/transactions/{id}/journal-preview` | Preview jurnal entries sebelum posting |
 | POST | `/api/transactions/bulk-post` | Batch post transaksi DRAFT |
 
 **Analisis Keuangan (scope: `analysis:read`):**
