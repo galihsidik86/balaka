@@ -4,6 +4,7 @@ import com.artivisi.accountingfinance.dto.ApproveDraftRequest;
 import com.artivisi.accountingfinance.dto.CreateFromReceiptRequest;
 import com.artivisi.accountingfinance.dto.CreateFromTextRequest;
 import com.artivisi.accountingfinance.dto.DraftResponse;
+import com.artivisi.accountingfinance.dto.UpdateDraftRequest;
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.JournalTemplate;
 import com.artivisi.accountingfinance.enums.AuditEventType;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -97,6 +99,21 @@ public class DraftTransactionApiController {
         log.info("API: Get draft {}", LogSanitizer.sanitize(id.toString()));
 
         DraftResponse response = transactionApiService.getDraft(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Update a PENDING draft transaction.
+     * PATCH /api/drafts/{id}
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<DraftResponse> updateDraft(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateDraftRequest request) {
+
+        log.info("API: Update draft {}", LogSanitizer.sanitize(id.toString()));
+
+        DraftResponse response = transactionApiService.updateDraft(id, request);
         return ResponseEntity.ok(response);
     }
 

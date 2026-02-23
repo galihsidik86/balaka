@@ -18,6 +18,7 @@ import com.artivisi.accountingfinance.enums.TemplateCategory;
 import com.artivisi.accountingfinance.enums.TransactionStatus;
 import com.artivisi.accountingfinance.enums.VoidReason;
 import com.artivisi.accountingfinance.repository.ChartOfAccountRepository;
+import com.artivisi.accountingfinance.repository.DraftTransactionRepository;
 import com.artivisi.accountingfinance.repository.JournalEntryRepository;
 import com.artivisi.accountingfinance.repository.ProjectRepository;
 import com.artivisi.accountingfinance.repository.TagRepository;
@@ -53,6 +54,7 @@ public class TransactionService {
     private final TransactionSequenceRepository transactionSequenceRepository;
     private final JournalEntryRepository journalEntryRepository;
     private final ChartOfAccountRepository chartOfAccountRepository;
+    private final DraftTransactionRepository draftTransactionRepository;
     private final ProjectRepository projectRepository;
     private final TagRepository tagRepository;
     private final JournalTemplateService journalTemplateService;
@@ -355,11 +357,23 @@ public class TransactionService {
     }
 
     @Transactional
+    public Transaction saveDirectly(Transaction transaction) {
+        return transactionRepository.save(transaction);
+    }
+
+    @Transactional
     public void delete(UUID id) {
         Transaction transaction = findById(id);
         if (!transaction.isDraft()) {
             throw new IllegalStateException("Only draft transactions can be deleted");
         }
+
+        // Clear DraftTransaction FK reference if this transaction was created from a draft
+        draftTransactionRepository.findByTransactionId(id).ifPresent(draft -> {
+            draft.setTransaction(null);
+            draftTransactionRepository.save(draft);
+        });
+
         transactionRepository.delete(transaction);
     }
 

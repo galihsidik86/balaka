@@ -82,6 +82,20 @@
           "response": "DraftResponse: draftId, status, merchant, amount, suggestedTemplate, confidence"
         },
         {
+          "method": "PATCH",
+          "path": "/api/drafts/{id}",
+          "scope": "drafts:create",
+          "description": "Update a PENDING draft (fix merchant name, amount, template, category). Only provided fields are updated.",
+          "requestBody": {
+            "merchantName": "string (optional)",
+            "amount": "number (optional)",
+            "description": "string (optional)",
+            "suggestedTemplateId": "UUID (optional)",
+            "category": "string (optional)"
+          },
+          "response": "DraftResponse: draftId, status, merchant, amount, suggestedTemplate, confidence, needsClarification"
+        },
+        {
           "method": "POST",
           "path": "/api/drafts/{id}/approve",
           "scope": "drafts:approve",
@@ -121,7 +135,7 @@
     },
     {
       "name": "Transactions",
-      "description": "Direct transaction posting (bypass draft workflow)",
+      "description": "Transaction creation, editing, and posting",
       "endpoints": [
         {
           "method": "POST",
@@ -139,6 +153,26 @@
             "referenceNumber": "string (optional)"
           },
           "response": "TransactionResponse: transactionId, transactionNumber, status, amount, journalEntries"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/transactions/{id}",
+          "scope": "transactions:post",
+          "description": "Update a DRAFT transaction (reclassify template, fix description/amount/date). Only DRAFT status allowed.",
+          "requestBody": {
+            "templateId": "UUID (optional, reclassify to different template)",
+            "description": "string (optional, fix remarks)",
+            "amount": "number (optional, correct amount)",
+            "transactionDate": "yyyy-MM-dd (optional, fix date)"
+          },
+          "response": "TransactionResponse: transactionId, transactionNumber, status, amount, journalEntries"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/transactions/{id}",
+          "scope": "transactions:post",
+          "description": "Delete a DRAFT transaction. Only DRAFT status allowed.",
+          "response": "204 No Content"
         },
         {
           "method": "POST",
@@ -671,6 +705,28 @@
       "steps": [
         "Prepare ZIP with CSV files (numbered in dependency order: 01_, 02_, etc.)",
         "POST /api/data-import (multipart/form-data)"
+      ]
+    },
+    {
+      "name": "Correct Misclassified Draft",
+      "steps": [
+        "GET /api/drafts/{id} (review current state)",
+        "PATCH /api/drafts/{id} (fix merchantName, amount, suggestedTemplateId, etc.)",
+        "POST /api/drafts/{id}/approve (approve with corrected data)"
+      ]
+    },
+    {
+      "name": "Correct Draft Transaction Before Posting",
+      "steps": [
+        "GET /api/analysis/transactions/{id} (review current state)",
+        "PUT /api/transactions/{id} (reclassify templateId, fix description/amount/date)",
+        "POST /api/transactions/{id}/post (post after correction)"
+      ]
+    },
+    {
+      "name": "Delete Bad Draft Transaction",
+      "steps": [
+        "DELETE /api/transactions/{id} (only DRAFT status)"
       ]
     }
   ],

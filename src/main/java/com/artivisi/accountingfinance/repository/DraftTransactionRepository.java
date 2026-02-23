@@ -50,4 +50,6 @@ public interface DraftTransactionRepository extends JpaRepository<DraftTransacti
            "AND d.suggestedTemplate IS NOT NULL " +
            "ORDER BY d.overallConfidence DESC")
     List<DraftTransaction> findAutoApproveCandidates(@Param("minConfidence") java.math.BigDecimal minConfidence);
+
+    Optional<DraftTransaction> findByTransactionId(UUID transactionId);
 }

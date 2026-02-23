@@ -2,6 +2,7 @@ package com.artivisi.accountingfinance.controller.api;
 
 import com.artivisi.accountingfinance.dto.CreateTransactionRequest;
 import com.artivisi.accountingfinance.dto.TransactionResponse;
+import com.artivisi.accountingfinance.dto.UpdateTransactionRequest;
 import com.artivisi.accountingfinance.entity.JournalEntry;
 import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.enums.AuditEventType;
@@ -16,8 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,6 +68,50 @@ public class TransactionApiController {
 
         TransactionResponse response = transactionApiService.createTransactionDirect(request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Update a DRAFT transaction (reclassify template, fix description/amount/date).
+     * PUT /api/transactions/{id}
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_transactions:post')")
+    public ResponseEntity<TransactionResponse> updateTransaction(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateTransactionRequest request) {
+
+        String username = getCurrentUsername();
+        log.info("API: Update transaction id={}, user={}", id, username);
+
+        auditApiCall(Map.of(
+                "action", "update",
+                "transactionId", id.toString(),
+                KEY_SOURCE, "api"
+        ));
+
+        TransactionResponse response = transactionApiService.updateTransaction(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Delete a DRAFT transaction.
+     * DELETE /api/transactions/{id}
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_transactions:post')")
+    public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {
+
+        String username = getCurrentUsername();
+        log.info("API: Delete transaction id={}, user={}", id, username);
+
+        auditApiCall(Map.of(
+                "action", "delete",
+                "transactionId", id.toString(),
+                KEY_SOURCE, "api"
+        ));
+
+        transactionApiService.deleteTransaction(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**

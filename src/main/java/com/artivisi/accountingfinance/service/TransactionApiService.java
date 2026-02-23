@@ -7,6 +7,8 @@ import com.artivisi.accountingfinance.dto.CreateTransactionRequest;
 import com.artivisi.accountingfinance.dto.DraftResponse;
 import com.artivisi.accountingfinance.dto.TemplateSuggestion;
 import com.artivisi.accountingfinance.dto.TransactionResponse;
+import com.artivisi.accountingfinance.dto.UpdateDraftRequest;
+import com.artivisi.accountingfinance.dto.UpdateTransactionRequest;
 import com.artivisi.accountingfinance.entity.Document;
 import com.artivisi.accountingfinance.entity.DraftTransaction;
 import com.artivisi.accountingfinance.entity.JournalEntry;
@@ -188,6 +190,86 @@ public class TransactionApiService {
         );
 
         return buildDraftResponse(draft);
+    }
+
+    /**
+     * Update a PENDING draft transaction fields.
+     */
+    public DraftResponse updateDraft(UUID draftId, UpdateDraftRequest request) {
+        DraftTransaction draft = draftTransactionService.findById(draftId);
+
+        if (!draft.isPending()) {
+            throw new IllegalStateException("Only pending drafts can be updated: " + draft.getStatus());
+        }
+
+        if (request.merchantName() != null) {
+            draft.setMerchantName(request.merchantName());
+        }
+        if (request.amount() != null) {
+            draft.setAmount(request.amount());
+        }
+        if (request.description() != null) {
+            draft.setRawOcrText(request.description());
+        }
+        if (request.suggestedTemplateId() != null) {
+            JournalTemplate template = journalTemplateService.findByIdWithLines(request.suggestedTemplateId());
+            draft.setSuggestedTemplate(template);
+        }
+        if (request.category() != null) {
+            Map<String, Object> metadata = draft.getMetadata();
+            if (metadata == null) {
+                metadata = new HashMap<>();
+            }
+            metadata.put("category", request.category());
+            draft.setMetadata(metadata);
+        }
+
+        DraftTransaction saved = draftTransactionService.save(draft);
+        log.info("Updated draft {} fields", saved.getId());
+
+        return buildDraftResponse(saved);
+    }
+
+    /**
+     * Update a DRAFT transaction (template, description, amount, date).
+     */
+    public TransactionResponse updateTransaction(UUID transactionId, UpdateTransactionRequest request) {
+        Transaction transaction = transactionService.findById(transactionId);
+
+        if (!transaction.isDraft()) {
+            throw new IllegalStateException("Only draft transactions can be updated: " + transaction.getStatus());
+        }
+
+        if (request.templateId() != null) {
+            JournalTemplate template = journalTemplateService.findByIdWithLines(request.templateId());
+            transaction.setJournalTemplate(template);
+            journalTemplateService.recordUsage(template.getId());
+        }
+        if (request.description() != null) {
+            transaction.setDescription(request.description());
+        }
+        if (request.amount() != null) {
+            transaction.setAmount(request.amount());
+        }
+        if (request.transactionDate() != null) {
+            if (request.transactionDate().isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException("Transaction date cannot be in the future");
+            }
+            transaction.setTransactionDate(request.transactionDate());
+        }
+
+        Transaction saved = transactionService.saveDirectly(transaction);
+        log.info("Updated transaction {} via API", saved.getId());
+
+        return buildTransactionResponse(saved);
+    }
+
+    /**
+     * Delete a DRAFT transaction.
+     */
+    public void deleteTransaction(UUID transactionId) {
+        transactionService.delete(transactionId);
+        log.info("Deleted draft transaction {} via API", transactionId);
     }
 
     /**
