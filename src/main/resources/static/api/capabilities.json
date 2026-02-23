@@ -215,27 +215,52 @@
           "method": "POST",
           "path": "/api/templates",
           "scope": "drafts:create",
-          "description": "Create new journal template",
+          "description": "Create new journal template. Must include at least 2 lines (min 1 DEBIT + 1 CREDIT).",
           "requestBody": {
             "templateName": "string (required)",
             "category": "INCOME|EXPENSE|PAYMENT|RECEIPT|TRANSFER (required)",
             "cashFlowCategory": "OPERATING|INVESTING|FINANCING (required)",
             "templateType": "SIMPLE|VARIABLE|SPLIT|MULTI_LINE (optional, default SIMPLE)",
-            "description": "string (optional)"
+            "description": "string (optional)",
+            "semanticDescription": "string (optional, AI matching hint)",
+            "keywords": "string[] (optional, for AI keyword matching)",
+            "exampleMerchants": "string[] (optional, for AI merchant matching)",
+            "typicalAmountMin": "number (optional)",
+            "typicalAmountMax": "number (optional)",
+            "merchantPatterns": "string[] (optional, regex patterns)",
+            "lines": "TemplateLine[] (required, min 2). Each: {lineOrder: int, position: DEBIT|CREDIT, formula: string (e.g. 'AMOUNT', 'AMOUNT * 0.11'), accountId: UUID (optional), accountHint: string (optional), description: string (optional)}"
           },
-          "response": "TemplateDto: id, name, category, description"
+          "response": "TemplateDto: id, name, category, description",
+          "example": {
+            "templateName": "Bayar Fee Freelancer",
+            "category": "EXPENSE",
+            "cashFlowCategory": "OPERATING",
+            "templateType": "SIMPLE",
+            "description": "Pembayaran fee untuk freelancer/pekerja lepas",
+            "lines": [
+              {"lineOrder": 1, "position": "DEBIT", "formula": "AMOUNT", "accountHint": "Beban Jasa Profesional"},
+              {"lineOrder": 2, "position": "CREDIT", "formula": "AMOUNT", "accountHint": "Kas / Bank"}
+            ]
+          }
         },
         {
           "method": "PUT",
           "path": "/api/templates/{id}",
           "scope": "drafts:create",
-          "description": "Update existing template",
+          "description": "Update existing template. If lines are provided, they replace all existing lines.",
           "requestBody": {
             "templateName": "string (optional)",
             "category": "INCOME|EXPENSE|PAYMENT|RECEIPT|TRANSFER (optional)",
             "cashFlowCategory": "OPERATING|INVESTING|FINANCING (optional)",
             "templateType": "SIMPLE|VARIABLE|SPLIT|MULTI_LINE (optional)",
-            "description": "string (optional)"
+            "description": "string (optional)",
+            "semanticDescription": "string (optional)",
+            "keywords": "string[] (optional)",
+            "exampleMerchants": "string[] (optional)",
+            "typicalAmountMin": "number (optional)",
+            "typicalAmountMax": "number (optional)",
+            "merchantPatterns": "string[] (optional)",
+            "lines": "TemplateLine[] (optional, if provided must have min 2 with ≥1 DEBIT + ≥1 CREDIT)"
           },
           "response": "TemplateDto"
         },
