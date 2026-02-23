@@ -17,6 +17,7 @@ import com.artivisi.accountingfinance.entity.JournalTemplate;
 import com.artivisi.accountingfinance.entity.JournalTemplateLine;
 import com.artivisi.accountingfinance.entity.MerchantMapping;
 import com.artivisi.accountingfinance.entity.Transaction;
+import com.artivisi.accountingfinance.entity.TransactionAccountMapping;
 import com.artivisi.accountingfinance.repository.DocumentRepository;
 import com.artivisi.accountingfinance.repository.MerchantMappingRepository;
 import com.artivisi.accountingfinance.security.LogSanitizer;
@@ -53,6 +54,7 @@ public class TransactionApiService {
     private final TransactionService transactionService;
     private final JournalEntryService journalEntryService;
     private final JournalTemplateService journalTemplateService;
+    private final TemplateExecutionEngine templateExecutionEngine;
     private final MerchantMappingRepository merchantMappingRepository;
     private final DocumentStorageService documentStorageService;
     private final DocumentRepository documentRepository;
@@ -298,6 +300,38 @@ public class TransactionApiService {
 
         DraftTransaction draft = draftTransactionService.reject(draftId, reason, username);
         return buildDraftResponse(draft);
+    }
+
+    /**
+     * Preview journal entries for a DRAFT transaction using TemplateExecutionEngine.
+     */
+    @Transactional(readOnly = true)
+    public TemplateExecutionEngine.PreviewResult previewJournalEntries(UUID transactionId) {
+        Transaction transaction = transactionService.findByIdWithMappingsAndVariables(transactionId);
+
+        if (!transaction.isDraft()) {
+            throw new IllegalStateException("Journal preview is only available for DRAFT transactions: " + transaction.getStatus());
+        }
+
+        JournalTemplate template = journalTemplateService.findByIdWithLines(transaction.getJournalTemplate().getId());
+
+        // Build account mappings from stored TransactionAccountMappings (lineOrder → accountId)
+        Map<String, String> accountMappings = new HashMap<>();
+        for (TransactionAccountMapping mapping : transaction.getAccountMappings()) {
+            int lineOrder = mapping.getTemplateLine().getLineOrder();
+            accountMappings.put(String.valueOf(lineOrder), mapping.getAccount().getId().toString());
+        }
+
+        TemplateExecutionEngine.ExecutionContext context = new TemplateExecutionEngine.ExecutionContext(
+                transaction.getTransactionDate(),
+                transaction.getAmount(),
+                transaction.getDescription(),
+                transaction.getReferenceNumber(),
+                Map.of(),
+                accountMappings
+        );
+
+        return templateExecutionEngine.preview(template, context);
     }
 
     /**

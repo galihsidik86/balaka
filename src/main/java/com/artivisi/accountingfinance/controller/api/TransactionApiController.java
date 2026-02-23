@@ -7,6 +7,7 @@ import com.artivisi.accountingfinance.entity.JournalEntry;
 import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.enums.AuditEventType;
 import com.artivisi.accountingfinance.service.SecurityAuditService;
+import com.artivisi.accountingfinance.service.TemplateExecutionEngine;
 import com.artivisi.accountingfinance.service.TransactionApiService;
 import com.artivisi.accountingfinance.service.TransactionService;
 import jakarta.validation.Valid;
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -137,6 +140,33 @@ public class TransactionApiController {
     }
 
     /**
+     * Preview journal entries for a DRAFT transaction.
+     * GET /api/transactions/{id}/journal-preview
+     */
+    @GetMapping("/{id}/journal-preview")
+    @PreAuthorize("hasAuthority('SCOPE_transactions:post')")
+    public ResponseEntity<JournalPreviewResponse> getJournalPreview(@PathVariable UUID id) {
+        log.info("API: Journal preview for transaction id={}", id);
+
+        TemplateExecutionEngine.PreviewResult preview = transactionApiService.previewJournalEntries(id);
+
+        List<JournalPreviewEntry> entries = preview.entries().stream()
+                .map(e -> new JournalPreviewEntry(
+                        e.accountCode(),
+                        e.accountName(),
+                        e.debitAmount(),
+                        e.creditAmount()))
+                .toList();
+
+        return ResponseEntity.ok(new JournalPreviewResponse(
+                preview.valid(),
+                preview.errors(),
+                entries,
+                preview.totalDebit(),
+                preview.totalCredit()));
+    }
+
+    /**
      * Bulk post multiple DRAFT transactions.
      * POST /api/transactions/bulk-post
      */
@@ -235,5 +265,20 @@ public class TransactionApiController {
             boolean success,
             String transactionNumber,
             String errorMessage
+    ) {}
+
+    public record JournalPreviewResponse(
+            boolean valid,
+            List<String> errors,
+            List<JournalPreviewEntry> entries,
+            BigDecimal totalDebit,
+            BigDecimal totalCredit
+    ) {}
+
+    public record JournalPreviewEntry(
+            String accountCode,
+            String accountName,
+            BigDecimal debitAmount,
+            BigDecimal creditAmount
     ) {}
 }

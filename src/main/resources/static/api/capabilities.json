@@ -198,6 +198,13 @@
           "response": "TransactionResponse: transactionId, transactionNumber, status=POSTED"
         },
         {
+          "method": "GET",
+          "path": "/api/transactions/{id}/journal-preview",
+          "scope": "transactions:post",
+          "description": "Preview journal entries for a DRAFT transaction. Uses the transaction's template, amount, and stored account mappings to compute entries without posting.",
+          "response": "JournalPreviewResponse: valid, errors[], entries[accountCode, accountName, debitAmount, creditAmount], totalDebit, totalCredit"
+        },
+        {
           "method": "POST",
           "path": "/api/transactions/bulk-post",
           "scope": "transactions:post",

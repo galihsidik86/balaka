@@ -517,6 +517,62 @@ class DraftAndTransactionCorrectionApiTest extends PlaywrightTestBase {
     }
 
     @Nested
+    @DisplayName("GET /api/transactions/{id}/journal-preview")
+    class JournalPreview {
+
+        @Test
+        @DisplayName("Should return journal preview for DRAFT transaction")
+        void shouldReturnJournalPreview() throws Exception {
+            // Create a draft with account overrides so the preview can resolve accounts
+            String templateId = getFirstTemplateId();
+            String accountId = getFirstAccountId();
+
+            Map<String, Object> request = new HashMap<>();
+            request.put("templateId", templateId);
+            request.put("description", "Journal preview test");
+            request.put("amount", 95000);
+            request.put("transactionDate", "2026-02-10");
+            request.put("lineAccountOverrides", Map.of(1, accountId, 2, accountId));
+
+            APIResponse createResponse = apiContext.post("/api/drafts",
+                    RequestOptions.create()
+                            .setHeader("Content-Type", "application/json")
+                            .setHeader("Authorization", "Bearer " + accessToken)
+                            .setData(request));
+
+            assertThat(createResponse.status())
+                    .as("Create draft failed: %d %s", createResponse.status(), createResponse.text())
+                    .isEqualTo(201);
+
+            JsonNode createBody = objectMapper.readTree(createResponse.text());
+            String transactionId = createBody.get("transactionId").asText();
+
+            // Get journal preview
+            APIResponse previewResponse = apiContext.get("/api/transactions/" + transactionId + "/journal-preview",
+                    RequestOptions.create()
+                            .setHeader("Authorization", "Bearer " + accessToken));
+
+            assertThat(previewResponse.ok())
+                    .as("Journal preview failed: %d %s", previewResponse.status(), previewResponse.text())
+                    .isTrue();
+
+            JsonNode preview = objectMapper.readTree(previewResponse.text());
+            assertThat(preview.get("valid").asBoolean()).isTrue();
+            assertThat(preview.get("entries").isArray()).isTrue();
+            assertThat(preview.get("entries").size()).isGreaterThanOrEqualTo(2);
+            assertThat(preview.get("totalDebit").asDouble()).isGreaterThan(0);
+            assertThat(preview.get("totalCredit").asDouble()).isGreaterThan(0);
+
+            // Verify entries have account codes
+            JsonNode firstEntry = preview.get("entries").get(0);
+            assertThat(firstEntry.has("accountCode")).isTrue();
+            assertThat(firstEntry.has("accountName")).isTrue();
+            assertThat(firstEntry.has("debitAmount")).isTrue();
+            assertThat(firstEntry.has("creditAmount")).isTrue();
+        }
+    }
+
+    @Nested
     @DisplayName("GET /api/templates")
     class GetTemplates {
 
