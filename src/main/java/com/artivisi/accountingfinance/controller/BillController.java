@@ -285,22 +285,30 @@ public class BillController {
 
             BillLine line = new BillLine();
             line.setDescription(desc);
-            line.setQuantity(quantities != null && i < quantities.size() && quantities.get(i) != null
-                    ? quantities.get(i) : BigDecimal.ONE);
-            line.setUnitPrice(unitPrices != null && i < unitPrices.size() && unitPrices.get(i) != null
-                    ? unitPrices.get(i) : BigDecimal.ZERO);
-            line.setTaxRate(taxRates != null && i < taxRates.size() ? taxRates.get(i) : null);
-
-            if (expenseAccountIds != null && i < expenseAccountIds.size() && expenseAccountIds.get(i) != null) {
-                com.artivisi.accountingfinance.entity.ChartOfAccount account = new com.artivisi.accountingfinance.entity.ChartOfAccount();
-                account.setId(expenseAccountIds.get(i));
-                line.setExpenseAccount(account);
-            }
-
+            line.setQuantity(getListValue(quantities, i, BigDecimal.ONE));
+            line.setUnitPrice(getListValue(unitPrices, i, BigDecimal.ZERO));
+            line.setTaxRate(getListValue(taxRates, i, null));
+            setExpenseAccount(line, expenseAccountIds, i);
             line.calculateAmounts();
             lines.add(line);
         }
 
         return lines;
+    }
+
+    private <T> T getListValue(List<T> list, int index, T defaultValue) {
+        if (list != null && index < list.size() && list.get(index) != null) {
+            return list.get(index);
+        }
+        return defaultValue;
+    }
+
+    private void setExpenseAccount(BillLine line, List<UUID> expenseAccountIds, int index) {
+        UUID accountId = getListValue(expenseAccountIds, index, null);
+        if (accountId != null) {
+            com.artivisi.accountingfinance.entity.ChartOfAccount account = new com.artivisi.accountingfinance.entity.ChartOfAccount();
+            account.setId(accountId);
+            line.setExpenseAccount(account);
+        }
     }
 }

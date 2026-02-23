@@ -62,6 +62,7 @@ public class TransactionController {
     private static final String ATTR_TRANSACTION = "transaction";
     private static final String ATTR_PROJECTS = "projects";
     private static final String ATTR_SUCCESS_MESSAGE = "successMessage";
+    private static final String ATTR_TAGS_BY_TYPE = "tagsByType";
     private static final String USER_SYSTEM = "system";
 
     private final TransactionService transactionService;
@@ -97,7 +98,7 @@ public class TransactionController {
         model.addAttribute("statuses", TransactionStatus.values());
         model.addAttribute("categories", TemplateCategory.values());
         model.addAttribute(ATTR_PROJECTS, projectService.findActiveProjects());
-        model.addAttribute("tagsByType", tagService.findAllActiveGroupedByType());
+        model.addAttribute(ATTR_TAGS_BY_TYPE, tagService.findAllActiveGroupedByType());
         List<JournalTemplate> templates = journalTemplateService.findAll();
         model.addAttribute(ATTR_TEMPLATES, templates);
         // Group templates by category for dropdown
@@ -154,7 +155,7 @@ public class TransactionController {
         model.addAttribute(ATTR_TEMPLATES, journalTemplateService.findAllWithLines());
         model.addAttribute(ATTR_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
         model.addAttribute(ATTR_PROJECTS, projectService.findActiveProjects());
-        model.addAttribute("tagsByType", tagService.findAllActiveGroupedByType());
+        model.addAttribute(ATTR_TAGS_BY_TYPE, tagService.findAllActiveGroupedByType());
 
         if (templateId != null) {
             JournalTemplate template = journalTemplateService.findByIdWithLines(templateId);
@@ -221,7 +222,7 @@ public class TransactionController {
         model.addAttribute(ATTR_TEMPLATES, journalTemplateService.findAll());
         model.addAttribute(ATTR_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
         model.addAttribute(ATTR_PROJECTS, projectService.findActiveProjects());
-        model.addAttribute("tagsByType", tagService.findAllActiveGroupedByType());
+        model.addAttribute(ATTR_TAGS_BY_TYPE, tagService.findAllActiveGroupedByType());
         model.addAttribute("selectedTagIds", transaction.getTransactionTags().stream()
                 .map(tt -> tt.getTag().getId()).toList());
 

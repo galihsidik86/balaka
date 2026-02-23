@@ -27,6 +27,8 @@ import static com.artivisi.accountingfinance.security.Permission.REPORT_VIEW;
 @PreAuthorize("hasAuthority('" + REPORT_VIEW + "')")
 public class StatementController {
 
+    private static final String ATTR_STATEMENT = "statement";
+
     private final StatementService statementService;
     private final ClientService clientService;
     private final VendorService vendorService;
@@ -50,7 +52,7 @@ public class StatementController {
         AccountStatement statement = statementService.generateClientStatement(
                 client.getId(), client.getCode(), client.getName(), dateFrom, dateTo);
 
-        model.addAttribute("statement", statement);
+        model.addAttribute(ATTR_STATEMENT, statement);
         model.addAttribute("client", client);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_CLIENT_STATEMENT);
         return "statements/client";
@@ -75,7 +77,7 @@ public class StatementController {
         AccountStatement statement = statementService.generateClientStatement(
                 client.getId(), client.getCode(), client.getName(), dateFrom, dateTo);
 
-        model.addAttribute("statement", statement);
+        model.addAttribute(ATTR_STATEMENT, statement);
         model.addAttribute("client", client);
         return "statements/client-print";
     }
@@ -99,7 +101,7 @@ public class StatementController {
         AccountStatement statement = statementService.generateVendorStatement(
                 vendor.getId(), vendor.getCode(), vendor.getName(), dateFrom, dateTo);
 
-        model.addAttribute("statement", statement);
+        model.addAttribute(ATTR_STATEMENT, statement);
         model.addAttribute("vendor", vendor);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_VENDOR_STATEMENT);
         return "statements/vendor";
@@ -124,7 +126,7 @@ public class StatementController {
         AccountStatement statement = statementService.generateVendorStatement(
                 vendor.getId(), vendor.getCode(), vendor.getName(), dateFrom, dateTo);
 
-        model.addAttribute("statement", statement);
+        model.addAttribute(ATTR_STATEMENT, statement);
         model.addAttribute("vendor", vendor);
         return "statements/vendor-print";
     }

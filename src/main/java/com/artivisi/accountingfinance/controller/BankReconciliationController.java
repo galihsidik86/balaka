@@ -52,6 +52,7 @@ public class BankReconciliationController {
 
     private static final String ATTR_SUCCESS = "successMessage";
     private static final String ATTR_ERROR = "errorMessage";
+    private static final String ATTR_BANK_TYPES = "bankTypes";
 
     private final BankStatementParserConfigService parserConfigService;
     private final BankStatementImportService importService;
@@ -85,7 +86,7 @@ public class BankReconciliationController {
     public String newParserConfigForm(Model model) {
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
         model.addAttribute("config", new BankStatementParserConfig());
-        model.addAttribute("bankTypes", BankStatementParserType.values());
+        model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
         model.addAttribute(ATTR_IS_EDIT, false);
         return "bank-reconciliation/parser-configs/form";
     }
@@ -100,7 +101,7 @@ public class BankReconciliationController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
-            model.addAttribute("bankTypes", BankStatementParserType.values());
+            model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, false);
             return "bank-reconciliation/parser-configs/form";
         }
@@ -114,7 +115,7 @@ public class BankReconciliationController {
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("configName", "duplicate", e.getMessage());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
-            model.addAttribute("bankTypes", BankStatementParserType.values());
+            model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, false);
             return "bank-reconciliation/parser-configs/form";
         }
@@ -125,7 +126,7 @@ public class BankReconciliationController {
     public String editParserConfigForm(@PathVariable UUID id, Model model) {
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
         model.addAttribute("config", parserConfigService.findById(id));
-        model.addAttribute("bankTypes", BankStatementParserType.values());
+        model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
         model.addAttribute(ATTR_IS_EDIT, true);
         return "bank-reconciliation/parser-configs/form";
     }
@@ -142,7 +143,7 @@ public class BankReconciliationController {
         if (bindingResult.hasErrors()) {
             config.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
-            model.addAttribute("bankTypes", BankStatementParserType.values());
+            model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, true);
             return "bank-reconciliation/parser-configs/form";
         }
@@ -157,7 +158,7 @@ public class BankReconciliationController {
             bindingResult.rejectValue("configName", "duplicate", e.getMessage());
             config.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
-            model.addAttribute("bankTypes", BankStatementParserType.values());
+            model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, true);
             return "bank-reconciliation/parser-configs/form";
         }

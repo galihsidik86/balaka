@@ -67,9 +67,9 @@ public class AlertController {
     public String updateRule(
             @PathVariable UUID id,
             @RequestParam BigDecimal threshold,
-            @RequestParam(required = false) boolean enabled,
+            @RequestParam(required = false) Boolean enabled,
             RedirectAttributes redirectAttributes) {
-        alertService.updateRule(id, threshold, enabled);
+        alertService.updateRule(id, threshold, Boolean.TRUE.equals(enabled));
         redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Konfigurasi peringatan berhasil diperbarui");
         return "redirect:/alerts/config";
     }

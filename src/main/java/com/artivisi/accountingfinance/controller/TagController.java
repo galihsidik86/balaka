@@ -33,6 +33,8 @@ import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 public class TagController {
 
     private static final String ATTR_SUCCESS_MESSAGE = "successMessage";
+    private static final String ATTR_TAG_TYPE = "tagType";
+    private static final String ERR_TAG_TYPE_NOT_FOUND = "Tipe label tidak ditemukan: ";
     private static final String VIEW_FORM = "tags/form";
 
     private final TagService tagService;
@@ -47,11 +49,11 @@ public class TagController {
             Model model) {
 
         TagType tagType = tagTypeService.findById(tagTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Tipe label tidak ditemukan: " + tagTypeId));
+                .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
         Page<Tag> tags = tagService.findByTagTypeAndSearch(tagTypeId, search, pageable);
 
-        model.addAttribute("tagType", tagType);
+        model.addAttribute(ATTR_TAG_TYPE, tagType);
         model.addAttribute("tags", tags);
         model.addAttribute("search", search);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
@@ -67,13 +69,13 @@ public class TagController {
     @PreAuthorize("hasAuthority('" + Permission.TAG_CREATE + "')")
     public String newForm(@PathVariable UUID tagTypeId, Model model) {
         TagType tagType = tagTypeService.findById(tagTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Tipe label tidak ditemukan: " + tagTypeId));
+                .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
         Tag tag = new Tag();
         tag.setTagType(tagType);
         tag.setActive(true);
 
-        model.addAttribute("tagType", tagType);
+        model.addAttribute(ATTR_TAG_TYPE, tagType);
         model.addAttribute("tag", tag);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
         return VIEW_FORM;
@@ -89,7 +91,7 @@ public class TagController {
             RedirectAttributes redirectAttributes) {
 
         TagType tagType = tagTypeService.findById(tagTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Tipe label tidak ditemukan: " + tagTypeId));
+                .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
         tag.setTagType(tagType);
 
@@ -102,7 +104,7 @@ public class TagController {
         }
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("tagType", tagType);
+            model.addAttribute(ATTR_TAG_TYPE, tagType);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
             return VIEW_FORM;
         }
@@ -117,7 +119,7 @@ public class TagController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
-            model.addAttribute("tagType", tagType);
+            model.addAttribute(ATTR_TAG_TYPE, tagType);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
             return VIEW_FORM;
         }
@@ -127,12 +129,12 @@ public class TagController {
     @PreAuthorize("hasAuthority('" + Permission.TAG_EDIT + "')")
     public String editForm(@PathVariable UUID tagTypeId, @PathVariable UUID id, Model model) {
         TagType tagType = tagTypeService.findById(tagTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Tipe label tidak ditemukan: " + tagTypeId));
+                .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
         Tag tag = tagService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Label tidak ditemukan: " + id));
 
-        model.addAttribute("tagType", tagType);
+        model.addAttribute(ATTR_TAG_TYPE, tagType);
         model.addAttribute("tag", tag);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
         return VIEW_FORM;
@@ -149,7 +151,7 @@ public class TagController {
             RedirectAttributes redirectAttributes) {
 
         TagType tagType = tagTypeService.findById(tagTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Tipe label tidak ditemukan: " + tagTypeId));
+                .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
         // Validate manually
         if (tag.getCode() == null || tag.getCode().isBlank()) {
@@ -160,7 +162,7 @@ public class TagController {
         }
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("tagType", tagType);
+            model.addAttribute(ATTR_TAG_TYPE, tagType);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
             return VIEW_FORM;
         }
@@ -175,7 +177,7 @@ public class TagController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
-            model.addAttribute("tagType", tagType);
+            model.addAttribute(ATTR_TAG_TYPE, tagType);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
             return VIEW_FORM;
         }

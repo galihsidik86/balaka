@@ -38,6 +38,8 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class BankReconciliationService {
 
+    private static final String ERR_RECON_COMPLETED = "Rekonsiliasi sudah selesai";
+
     private final BankReconciliationRepository reconciliationRepository;
     private final ReconciliationItemRepository reconciliationItemRepository;
     private final BankStatementItemRepository statementItemRepository;
@@ -111,58 +113,48 @@ public class BankReconciliationService {
 
         recon.setStatus(ReconciliationStatus.IN_PROGRESS);
 
-        // Get unmatched statement items
-        List<BankStatementItem> unmatchedItems = statementItemRepository
-                .findByBankStatementIdAndMatchStatusOrderByLineNumberAsc(
-                        recon.getBankStatement().getId(), StatementItemMatchStatus.UNMATCHED);
-
-        // Get book transactions for the period
         ChartOfAccount glAccount = recon.getBankAccount().getGlAccount();
         List<JournalEntry> bookEntries = journalEntryRepository.findPostedEntriesByAccountAndDateRange(
                 glAccount.getId(), recon.getPeriodStart(), recon.getPeriodEnd());
 
-        // Track matched transactions to avoid double-matching
-        Set<UUID> matchedTransactionIds = new HashSet<>();
-
-        // Load already matched transaction IDs
-        List<ReconciliationItem> existingItems = reconciliationItemRepository
-                .findByReconciliationIdAndMatchStatus(reconciliationId, StatementItemMatchStatus.MATCHED);
-        for (ReconciliationItem item : existingItems) {
-            if (item.getTransaction() != null) {
-                matchedTransactionIds.add(item.getTransaction().getId());
-            }
-        }
+        Set<UUID> matchedTransactionIds = loadMatchedTransactionIds(reconciliationId);
 
         int matchCount = 0;
 
         // Pass 1: Exact match (same date + same amount)
-        matchCount += matchPass(recon, unmatchedItems, bookEntries, matchedTransactionIds,
+        matchCount += matchPass(recon, getUnmatchedItems(recon), bookEntries, matchedTransactionIds,
                 MatchType.EXACT, new BigDecimal("1.00"), 0, username);
 
-        // Refresh unmatched items
-        unmatchedItems = statementItemRepository
-                .findByBankStatementIdAndMatchStatusOrderByLineNumberAsc(
-                        recon.getBankStatement().getId(), StatementItemMatchStatus.UNMATCHED);
-
         // Pass 2: Fuzzy date (same amount, date +/-1 day)
-        matchCount += matchPass(recon, unmatchedItems, bookEntries, matchedTransactionIds,
+        matchCount += matchPass(recon, getUnmatchedItems(recon), bookEntries, matchedTransactionIds,
                 MatchType.FUZZY_DATE, new BigDecimal("0.90"), 1, username);
 
-        // Refresh unmatched items
-        unmatchedItems = statementItemRepository
-                .findByBankStatementIdAndMatchStatusOrderByLineNumberAsc(
-                        recon.getBankStatement().getId(), StatementItemMatchStatus.UNMATCHED);
-
         // Pass 3: Keyword (same amount, description overlap, date +/-3 days)
-        matchCount += keywordMatchPass(recon, unmatchedItems, bookEntries, matchedTransactionIds, username);
+        matchCount += keywordMatchPass(recon, getUnmatchedItems(recon), bookEntries, matchedTransactionIds, username);
 
-        // Update reconciliation counts
         updateReconciliationCounts(recon);
         reconciliationRepository.save(recon);
 
         log.info("Auto-match completed for reconciliation {}: {} matches",
                 LogSanitizer.sanitize(reconciliationId.toString()), matchCount);
         return matchCount;
+    }
+
+    private List<BankStatementItem> getUnmatchedItems(BankReconciliation recon) {
+        return statementItemRepository.findByBankStatementIdAndMatchStatusOrderByLineNumberAsc(
+                recon.getBankStatement().getId(), StatementItemMatchStatus.UNMATCHED);
+    }
+
+    private Set<UUID> loadMatchedTransactionIds(UUID reconciliationId) {
+        Set<UUID> ids = new HashSet<>();
+        List<ReconciliationItem> existingItems = reconciliationItemRepository
+                .findByReconciliationIdAndMatchStatus(reconciliationId, StatementItemMatchStatus.MATCHED);
+        for (ReconciliationItem item : existingItems) {
+            if (item.getTransaction() != null) {
+                ids.add(item.getTransaction().getId());
+            }
+        }
+        return ids;
     }
 
     private int matchPass(BankReconciliation recon, List<BankStatementItem> unmatchedItems,
@@ -297,7 +289,7 @@ public class BankReconciliationService {
     public void manualMatch(UUID reconciliationId, UUID statementItemId, UUID transactionId, String username) {
         BankReconciliation recon = findById(reconciliationId);
         if (recon.isCompleted()) {
-            throw new IllegalStateException("Rekonsiliasi sudah selesai");
+            throw new IllegalStateException(ERR_RECON_COMPLETED);
         }
 
         BankStatementItem item = statementItemRepository.findById(statementItemId)
@@ -315,7 +307,7 @@ public class BankReconciliationService {
     public void markBankOnly(UUID reconciliationId, UUID statementItemId, String notes, String username) {
         BankReconciliation recon = findById(reconciliationId);
         if (recon.isCompleted()) {
-            throw new IllegalStateException("Rekonsiliasi sudah selesai");
+            throw new IllegalStateException(ERR_RECON_COMPLETED);
         }
 
         BankStatementItem item = statementItemRepository.findById(statementItemId)
@@ -342,7 +334,7 @@ public class BankReconciliationService {
     public void markBookOnly(UUID reconciliationId, UUID transactionId, String notes) {
         BankReconciliation recon = findById(reconciliationId);
         if (recon.isCompleted()) {
-            throw new IllegalStateException("Rekonsiliasi sudah selesai");
+            throw new IllegalStateException(ERR_RECON_COMPLETED);
         }
 
         Transaction transaction = transactionService.findById(transactionId);
@@ -363,7 +355,7 @@ public class BankReconciliationService {
     public void unmatch(UUID reconciliationId, UUID reconciliationItemId) {
         BankReconciliation recon = findById(reconciliationId);
         if (recon.isCompleted()) {
-            throw new IllegalStateException("Rekonsiliasi sudah selesai");
+            throw new IllegalStateException(ERR_RECON_COMPLETED);
         }
 
         ReconciliationItem reconItem = reconciliationItemRepository.findById(reconciliationItemId)
@@ -392,7 +384,7 @@ public class BankReconciliationService {
 
         BankReconciliation recon = findById(reconciliationId);
         if (recon.isCompleted()) {
-            throw new IllegalStateException("Rekonsiliasi sudah selesai");
+            throw new IllegalStateException(ERR_RECON_COMPLETED);
         }
 
         BankStatementItem item = statementItemRepository.findById(statementItemId)

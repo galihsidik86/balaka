@@ -75,58 +75,19 @@ public class InvoiceService {
         return invoiceRepository.findOverdueInvoices(LocalDate.now());
     }
 
-    @Transactional
     public Invoice create(Invoice invoice) {
-        return create(invoice, null);
+        return create(invoice, List.of());
     }
 
     @Transactional
     public Invoice create(Invoice invoice, List<InvoiceLine> lines) {
-        // Generate invoice number if not provided
-        if (invoice.getInvoiceNumber() == null || invoice.getInvoiceNumber().isBlank()) {
-            invoice.setInvoiceNumber(generateInvoiceNumber());
-        } else {
-            // Check for duplicate invoice number
-            if (invoiceRepository.existsByInvoiceNumber(invoice.getInvoiceNumber())) {
-                throw new IllegalArgumentException("Invoice number already exists: " + invoice.getInvoiceNumber());
-            }
-        }
-
-        // Load and set client
-        if (invoice.getClient() != null && invoice.getClient().getId() != null) {
-            Client client = clientRepository.findById(invoice.getClient().getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-            invoice.setClient(client);
-        }
-
-        // Load and set project if specified
-        if (invoice.getProject() != null && invoice.getProject().getId() != null) {
-            Project project = projectRepository.findById(invoice.getProject().getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Project not found"));
-            invoice.setProject(project);
-        } else {
-            invoice.setProject(null);
-        }
-
-        // Load and set payment term if specified
-        if (invoice.getPaymentTerm() != null && invoice.getPaymentTerm().getId() != null) {
-            ProjectPaymentTerm paymentTerm = paymentTermRepository.findById(invoice.getPaymentTerm().getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Payment term not found"));
-            invoice.setPaymentTerm(paymentTerm);
-        }
+        ensureInvoiceNumber(invoice);
+        resolveClient(invoice);
+        resolveProject(invoice);
+        resolvePaymentTerm(invoice);
 
         invoice.setStatus(InvoiceStatus.DRAFT);
-
-        if (lines != null && !lines.isEmpty()) {
-            for (int i = 0; i < lines.size(); i++) {
-                InvoiceLine line = lines.get(i);
-                line.setInvoice(invoice);
-                line.setLineOrder(i);
-                resolveLineProduct(line);
-            }
-            invoice.getLines().addAll(lines);
-            invoice.recalculateFromLines();
-        }
+        attachLines(invoice, lines);
 
         return invoiceRepository.save(invoice);
     }
@@ -164,7 +125,6 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    @Transactional
     public Invoice update(UUID id, Invoice updatedInvoice) {
         return update(id, updatedInvoice, null);
     }
@@ -353,6 +313,53 @@ public class InvoiceService {
         Integer maxSeq = invoiceRepository.findMaxSequenceByPrefix(prefix + "%");
         int nextSeq = (maxSeq == null ? 0 : maxSeq) + 1;
         return prefix + String.format("%04d", nextSeq);
+    }
+
+    private void ensureInvoiceNumber(Invoice invoice) {
+        if (invoice.getInvoiceNumber() == null || invoice.getInvoiceNumber().isBlank()) {
+            invoice.setInvoiceNumber(generateInvoiceNumber());
+        } else if (invoiceRepository.existsByInvoiceNumber(invoice.getInvoiceNumber())) {
+            throw new IllegalArgumentException("Invoice number already exists: " + invoice.getInvoiceNumber());
+        }
+    }
+
+    private void resolveClient(Invoice invoice) {
+        if (invoice.getClient() != null && invoice.getClient().getId() != null) {
+            Client client = clientRepository.findById(invoice.getClient().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+            invoice.setClient(client);
+        }
+    }
+
+    private void resolveProject(Invoice invoice) {
+        if (invoice.getProject() != null && invoice.getProject().getId() != null) {
+            Project project = projectRepository.findById(invoice.getProject().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+            invoice.setProject(project);
+        } else {
+            invoice.setProject(null);
+        }
+    }
+
+    private void resolvePaymentTerm(Invoice invoice) {
+        if (invoice.getPaymentTerm() != null && invoice.getPaymentTerm().getId() != null) {
+            ProjectPaymentTerm paymentTerm = paymentTermRepository.findById(invoice.getPaymentTerm().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Payment term not found"));
+            invoice.setPaymentTerm(paymentTerm);
+        }
+    }
+
+    private void attachLines(Invoice invoice, List<InvoiceLine> lines) {
+        if (lines != null && !lines.isEmpty()) {
+            for (int i = 0; i < lines.size(); i++) {
+                InvoiceLine line = lines.get(i);
+                line.setInvoice(invoice);
+                line.setLineOrder(i);
+                resolveLineProduct(line);
+            }
+            invoice.getLines().addAll(lines);
+            invoice.recalculateFromLines();
+        }
     }
 
     private void resolveLineProduct(InvoiceLine line) {

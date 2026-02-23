@@ -67,6 +67,8 @@ public class SettingsController {
     private static final String REDIRECT_SETTINGS = "redirect:/settings";
     private static final String VIEW_BANK_FORM = "settings/bank-form";
     private static final String ATTR_BANK_ACCOUNTS = "bankAccounts";
+    private static final String ATTR_GL_ACCOUNTS = "glAccounts";
+    private static final String REDIRECT_SETTINGS_DEVICES = "redirect:/settings/devices";
     private static final String ERR_USER_NOT_FOUND = "User not found";
     private static final Set<String> ALLOWED_LOGO_TYPES = Set.of(
             "image/png", "image/jpeg", "image/gif", "image/webp"
@@ -257,7 +259,7 @@ public class SettingsController {
     @GetMapping("/bank-accounts/new")
     public String newBankAccountForm(Model model) {
         model.addAttribute("bankAccount", new CompanyBankAccount());
-        model.addAttribute("glAccounts", chartOfAccountService.findTransactableAccounts());
+        model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
         return VIEW_BANK_FORM;
     }
@@ -276,7 +278,7 @@ public class SettingsController {
         }
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("glAccounts", chartOfAccountService.findTransactableAccounts());
+            model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return VIEW_BANK_FORM;
         }
@@ -289,7 +291,7 @@ public class SettingsController {
             return REDIRECT_SETTINGS;
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountNumber", "duplicate", e.getMessage());
-            model.addAttribute("glAccounts", chartOfAccountService.findTransactableAccounts());
+            model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return VIEW_BANK_FORM;
         }
@@ -299,7 +301,7 @@ public class SettingsController {
     public String editBankAccountForm(@PathVariable UUID id, Model model) {
         CompanyBankAccount bankAccount = bankAccountService.findById(id);
         model.addAttribute("bankAccount", bankAccount);
-        model.addAttribute("glAccounts", chartOfAccountService.findTransactableAccounts());
+        model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
         return VIEW_BANK_FORM;
     }
@@ -322,7 +324,7 @@ public class SettingsController {
 
         if (bindingResult.hasErrors()) {
             bankAccount.setId(id);
-            model.addAttribute("glAccounts", chartOfAccountService.findTransactableAccounts());
+            model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return VIEW_BANK_FORM;
         }
@@ -336,7 +338,7 @@ public class SettingsController {
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountNumber", "duplicate", e.getMessage());
             bankAccount.setId(id);
-            model.addAttribute("glAccounts", chartOfAccountService.findTransactableAccounts());
+            model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return VIEW_BANK_FORM;
         }
@@ -491,14 +493,14 @@ public class SettingsController {
         boolean belongsToUser = userTokens.stream().anyMatch(t -> t.getId().equals(id));
         if (!belongsToUser) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR_MESSAGE, "Token tidak ditemukan");
-            return "redirect:/settings/devices";
+            return REDIRECT_SETTINGS_DEVICES;
         }
 
         deviceAuthService.revokeToken(id, username);
         securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                 "Device token revoked: " + id);
         redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Sesi perangkat berhasil dicabut");
-        return "redirect:/settings/devices";
+        return REDIRECT_SETTINGS_DEVICES;
     }
 
     @PostMapping("/devices/revoke-all")
@@ -515,7 +517,7 @@ public class SettingsController {
                 "All device tokens revoked: " + count + " tokens");
         redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE,
                 count + " sesi perangkat berhasil dicabut");
-        return "redirect:/settings/devices";
+        return REDIRECT_SETTINGS_DEVICES;
     }
 
     // ==================== About ====================

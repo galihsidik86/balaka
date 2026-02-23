@@ -59,6 +59,12 @@ import java.util.UUID;
 @Slf4j
 public class FinancialAnalysisApiController {
 
+    private static final String META_CURRENCY = "currency";
+    private static final String META_CURRENCY_IDR = "IDR";
+    private static final String META_DESCRIPTION = "description";
+    private static final String META_ACCOUNTING_BASIS = "accountingBasis";
+    private static final String META_ACCRUAL = "accrual";
+
     private final ReportService reportService;
     private final DashboardService dashboardService;
     private final TaxReportService taxReportService;
@@ -76,7 +82,7 @@ public class FinancialAnalysisApiController {
             return ResponseEntity.ok(new AnalysisResponse<>(
                     "company", LocalDateTime.now(), Map.of(),
                     new CompanyDto(null, null, null, null, null, null),
-                    Map.of("description", "No company configuration found.")));
+                    Map.of(META_DESCRIPTION, "No company configuration found.")));
         }
 
         CompanyDto data = new CompanyDto(
@@ -88,7 +94,7 @@ public class FinancialAnalysisApiController {
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "company", LocalDateTime.now(), Map.of(), data,
-                Map.of("description", "Company configuration. The 'industry' field determines "
+                Map.of(META_DESCRIPTION, "Company configuration. The 'industry' field determines "
                         + "which analysis types and KPIs are relevant for this business.")));
     }
 
@@ -117,9 +123,9 @@ public class FinancialAnalysisApiController {
                 "snapshot", LocalDateTime.now(),
                 Map.of("month", month),
                 data,
-                Map.of("currency", "IDR",
-                        "accountingBasis", "accrual",
-                        "description", "Financial KPI snapshot for " + month
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_ACCOUNTING_BASIS, META_ACCRUAL,
+                        META_DESCRIPTION, "Financial KPI snapshot for " + month
                                 + ". Change percentages are vs previous month.")));
     }
 
@@ -142,9 +148,9 @@ public class FinancialAnalysisApiController {
                 "trial-balance", LocalDateTime.now(),
                 Map.of("asOfDate", asOfDate),
                 data,
-                Map.of("currency", "IDR",
-                        "accountingBasis", "accrual",
-                        "description", "Trial balance as of " + asOfDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_ACCOUNTING_BASIS, META_ACCRUAL,
+                        META_DESCRIPTION, "Trial balance as of " + asOfDate
                                 + ". Each account shows debit and credit balances. "
                                 + "Total debits must equal total credits.")));
     }
@@ -175,9 +181,9 @@ public class FinancialAnalysisApiController {
                 "income-statement", LocalDateTime.now(),
                 Map.of("startDate", startDate, "endDate", endDate),
                 data,
-                Map.of("currency", "IDR",
-                        "accountingBasis", "accrual",
-                        "description", "Income statement for period " + startDate + " to " + endDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_ACCOUNTING_BASIS, META_ACCRUAL,
+                        META_DESCRIPTION, "Income statement for period " + startDate + " to " + endDate
                                 + ". Net income = total revenue - total expense.")));
     }
 
@@ -209,9 +215,9 @@ public class FinancialAnalysisApiController {
                 "balance-sheet", LocalDateTime.now(),
                 Map.of("asOfDate", asOfDate),
                 data,
-                Map.of("currency", "IDR",
-                        "accountingBasis", "accrual",
-                        "description", "Balance sheet as of " + asOfDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_ACCOUNTING_BASIS, META_ACCRUAL,
+                        META_DESCRIPTION, "Balance sheet as of " + asOfDate
                                 + ". Assets = Liabilities + Equity + Current Year Earnings.")));
     }
 
@@ -249,9 +255,9 @@ public class FinancialAnalysisApiController {
                 "cash-flow", LocalDateTime.now(),
                 Map.of("startDate", startDate, "endDate", endDate),
                 data,
-                Map.of("currency", "IDR",
-                        "accountingBasis", "accrual",
-                        "description", "Cash flow statement for period " + startDate + " to " + endDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_ACCOUNTING_BASIS, META_ACCRUAL,
+                        META_DESCRIPTION, "Cash flow statement for period " + startDate + " to " + endDate
                                 + ". Positive amounts = cash inflow, negative = cash outflow.")));
     }
 
@@ -278,8 +284,8 @@ public class FinancialAnalysisApiController {
                 "tax-summary", LocalDateTime.now(),
                 Map.of("startDate", startDate, "endDate", endDate),
                 data,
-                Map.of("currency", "IDR",
-                        "description", "Tax account summary for period " + startDate + " to " + endDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_DESCRIPTION, "Tax account summary for period " + startDate + " to " + endDate
                                 + ". Includes PPN (VAT), PPh (income tax), and other tax accounts.")));
     }
 
@@ -310,8 +316,8 @@ public class FinancialAnalysisApiController {
                 "receivables", LocalDateTime.now(),
                 Map.of("asOfDate", asOfDate),
                 data,
-                Map.of("currency", "IDR",
-                        "description", "Accounts receivable (Piutang) as of " + asOfDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_DESCRIPTION, "Accounts receivable (Piutang) as of " + asOfDate
                                 + ". ASSET accounts with code prefix 1.1.04.")));
     }
 
@@ -342,8 +348,8 @@ public class FinancialAnalysisApiController {
                 "payables", LocalDateTime.now(),
                 Map.of("asOfDate", asOfDate),
                 data,
-                Map.of("currency", "IDR",
-                        "description", "Accounts payable (Hutang Usaha) as of " + asOfDate
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_DESCRIPTION, "Accounts payable (Hutang Usaha) as of " + asOfDate
                                 + ". LIABILITY accounts with code prefix 2.1.01.")));
     }
 
@@ -366,7 +372,7 @@ public class FinancialAnalysisApiController {
                 "accounts", LocalDateTime.now(),
                 Map.of(),
                 data,
-                Map.of("description", "Chart of accounts (leaf/transactable accounts only). "
+                Map.of(META_DESCRIPTION, "Chart of accounts (leaf/transactable accounts only). "
                         + "normalBalance indicates whether the account normally carries a DEBIT or CREDIT balance.")));
     }
 
@@ -403,8 +409,8 @@ public class FinancialAnalysisApiController {
                 "drafts", LocalDateTime.now(),
                 Map.of("page", String.valueOf(page), "size", String.valueOf(size)),
                 data,
-                Map.of("currency", "IDR",
-                        "description", "Pending draft transactions awaiting review. "
+                Map.of(META_CURRENCY, META_CURRENCY_IDR,
+                        META_DESCRIPTION, "Pending draft transactions awaiting review. "
                                 + "Higher confidence scores indicate more reliable AI extraction.")));
     }
 
@@ -441,7 +447,7 @@ public class FinancialAnalysisApiController {
                 "analysis-report", LocalDateTime.now(),
                 Map.of("reportId", saved.getId().toString()),
                 dto,
-                Map.of("description", "Published analysis report: " + saved.getTitle())));
+                Map.of(META_DESCRIPTION, "Published analysis report: " + saved.getTitle())));
     }
 
     @GetMapping("/reports")
@@ -463,7 +469,7 @@ public class FinancialAnalysisApiController {
                 Map.of("page", String.valueOf(page), "size", String.valueOf(size)),
                 new ReportListDto(reports,
                         reportsPage.getTotalElements(), reportsPage.getTotalPages(), page, size),
-                Map.of("description", "Published analysis reports, newest first.")));
+                Map.of(META_DESCRIPTION, "Published analysis reports, newest first.")));
     }
 
     @GetMapping("/transactions")
@@ -476,29 +482,9 @@ public class FinancialAnalysisApiController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size) {
 
-        Map<String, String> params = new HashMap<>();
-        if (status != null) params.put("status", status);
-        if (category != null) params.put("category", category);
-        if (startDate != null) params.put("startDate", startDate);
-        if (endDate != null) params.put("endDate", endDate);
-        if (search != null) params.put("search", search);
-        params.put("page", String.valueOf(page));
-        params.put("size", String.valueOf(size));
+        Map<String, String> params = buildParamsMap(status, category, startDate, endDate, search, page, size);
 
-        Page<Transaction> txPage;
-        if (search != null && !search.isBlank()) {
-            txPage = transactionRepository.searchTransactions(search, PageRequest.of(page, size));
-        } else {
-            TransactionStatus txStatus = status != null ? TransactionStatus.valueOf(status) : null;
-            TemplateCategory txCategory = category != null ? TemplateCategory.valueOf(category) : null;
-            LocalDate start = startDate != null ? LocalDate.parse(startDate) : null;
-            LocalDate end = endDate != null ? LocalDate.parse(endDate) : null;
-            txPage = transactionRepository.findByFilters(
-                    txStatus != null ? txStatus.name() : null,
-                    txCategory != null ? txCategory.name() : null,
-                    null, start, end,
-                    PageRequest.of(page, size));
-        }
+        Page<Transaction> txPage = queryTransactions(status, category, startDate, endDate, search, page, size);
 
         List<TransactionItemDto> items = txPage.getContent().stream()
                 .map(this::toTransactionItemDto)
@@ -511,7 +497,35 @@ public class FinancialAnalysisApiController {
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "transactions", LocalDateTime.now(), params, data,
-                Map.of("currency", "IDR")));
+                Map.of(META_CURRENCY, META_CURRENCY_IDR)));
+    }
+
+    private Map<String, String> buildParamsMap(String status, String category,
+                                                String startDate, String endDate,
+                                                String search, int page, int size) {
+        Map<String, String> params = new HashMap<>();
+        if (status != null) params.put("status", status);
+        if (category != null) params.put("category", category);
+        if (startDate != null) params.put("startDate", startDate);
+        if (endDate != null) params.put("endDate", endDate);
+        if (search != null) params.put("search", search);
+        params.put("page", String.valueOf(page));
+        params.put("size", String.valueOf(size));
+        return params;
+    }
+
+    private Page<Transaction> queryTransactions(String status, String category,
+                                                 String startDate, String endDate,
+                                                 String search, int page, int size) {
+        if (search != null && !search.isBlank()) {
+            return transactionRepository.searchTransactions(search, PageRequest.of(page, size));
+        }
+        return transactionRepository.findByFilters(
+                status, category,
+                null,
+                startDate != null ? LocalDate.parse(startDate) : null,
+                endDate != null ? LocalDate.parse(endDate) : null,
+                PageRequest.of(page, size));
     }
 
     @GetMapping("/transactions/{id}")
@@ -551,7 +565,7 @@ public class FinancialAnalysisApiController {
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "transaction-detail", LocalDateTime.now(),
                 Map.of("id", id.toString()), data,
-                Map.of("currency", "IDR")));
+                Map.of(META_CURRENCY, META_CURRENCY_IDR)));
     }
 
     private TransactionItemDto toTransactionItemDto(Transaction tx) {

@@ -37,6 +37,8 @@ import java.util.UUID;
 @Slf4j
 public class TransactionApiController {
 
+    private static final String KEY_SOURCE = "source";
+
     private final TransactionApiService transactionApiService;
     private final TransactionService transactionService;
     private final SecurityAuditService securityAuditService;
@@ -56,7 +58,7 @@ public class TransactionApiController {
         auditApiCall(Map.of(
                 "merchant", request.merchant(),
                 "amount", request.amount().toString(),
-                "source", request.source(),
+                KEY_SOURCE, request.source(),
                 "templateId", request.templateId().toString(),
                 "userApproved", request.userApproved().toString()
         ));
@@ -81,7 +83,7 @@ public class TransactionApiController {
         auditApiCall(Map.of(
                 "action", "post",
                 "transactionId", id.toString(),
-                "source", "api"
+                KEY_SOURCE, "api"
         ));
 
         return ResponseEntity.ok(toTransactionResponse(posted));
@@ -120,7 +122,7 @@ public class TransactionApiController {
                 "count", String.valueOf(request.transactionIds().size()),
                 "success", String.valueOf(successCount),
                 "failure", String.valueOf(failureCount),
-                "source", "api"
+                KEY_SOURCE, "api"
         ));
 
         return ResponseEntity.ok(new BulkPostResponse(results, successCount, failureCount));
@@ -164,7 +166,7 @@ public class TransactionApiController {
      */
     private void auditApiCall(Map<String, String> details) {
         String detailsStr = String.format("API call from %s: %s",
-                details.getOrDefault("source", "unknown"),
+                details.getOrDefault(KEY_SOURCE, "unknown"),
                 details.toString());
         securityAuditService.log(AuditEventType.API_CALL, detailsStr, true);
     }

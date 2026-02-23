@@ -72,28 +72,10 @@ public class BankReconciliationReportService {
         BigDecimal bookBalance = recon.getBookBalance() != null ? recon.getBookBalance() : BigDecimal.ZERO;
         BigDecimal bankBalance = recon.getBankBalance() != null ? recon.getBankBalance() : BigDecimal.ZERO;
 
-        // Bank-only items: in bank but not in books (need to add/subtract from book balance)
-        BigDecimal bankOnlyDebitTotal = BigDecimal.ZERO;
-        BigDecimal bankOnlyCreditTotal = BigDecimal.ZERO;
-        for (ReconciliationItem ri : items) {
-            if (ri.getMatchStatus() == StatementItemMatchStatus.BANK_ONLY && ri.getStatementItem() != null) {
-                BankStatementItem si = ri.getStatementItem();
-                if (si.getDebitAmount() != null && si.getDebitAmount().compareTo(BigDecimal.ZERO) > 0) {
-                    bankOnlyDebitTotal = bankOnlyDebitTotal.add(si.getDebitAmount());
-                }
-                if (si.getCreditAmount() != null && si.getCreditAmount().compareTo(BigDecimal.ZERO) > 0) {
-                    bankOnlyCreditTotal = bankOnlyCreditTotal.add(si.getCreditAmount());
-                }
-            }
-        }
-
-        // Book-only items: in books but not in bank (need to add/subtract from bank balance)
-        BigDecimal bookOnlyTotal = BigDecimal.ZERO;
-        for (ReconciliationItem ri : items) {
-            if (ri.getMatchStatus() == StatementItemMatchStatus.BOOK_ONLY && ri.getTransaction() != null) {
-                bookOnlyTotal = bookOnlyTotal.add(ri.getTransaction().getAmount());
-            }
-        }
+        BigDecimal[] bankOnlyTotals = computeBankOnlyTotals(items);
+        BigDecimal bankOnlyDebitTotal = bankOnlyTotals[0];
+        BigDecimal bankOnlyCreditTotal = bankOnlyTotals[1];
+        BigDecimal bookOnlyTotal = computeBookOnlyTotal(items);
 
         BigDecimal adjustedBookBalance = bookBalance.add(bankOnlyCreditTotal).subtract(bankOnlyDebitTotal);
         BigDecimal adjustedBankBalance = bankBalance.add(bookOnlyTotal);
@@ -109,6 +91,34 @@ public class BankReconciliationReportService {
                 "adjustedBankBalance", adjustedBankBalance,
                 "difference", difference
         );
+    }
+
+    private BigDecimal[] computeBankOnlyTotals(List<ReconciliationItem> items) {
+        BigDecimal debitTotal = BigDecimal.ZERO;
+        BigDecimal creditTotal = BigDecimal.ZERO;
+        for (ReconciliationItem ri : items) {
+            if (ri.getMatchStatus() != StatementItemMatchStatus.BANK_ONLY || ri.getStatementItem() == null) {
+                continue;
+            }
+            BankStatementItem si = ri.getStatementItem();
+            if (si.getDebitAmount() != null && si.getDebitAmount().compareTo(BigDecimal.ZERO) > 0) {
+                debitTotal = debitTotal.add(si.getDebitAmount());
+            }
+            if (si.getCreditAmount() != null && si.getCreditAmount().compareTo(BigDecimal.ZERO) > 0) {
+                creditTotal = creditTotal.add(si.getCreditAmount());
+            }
+        }
+        return new BigDecimal[]{debitTotal, creditTotal};
+    }
+
+    private BigDecimal computeBookOnlyTotal(List<ReconciliationItem> items) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (ReconciliationItem ri : items) {
+            if (ri.getMatchStatus() == StatementItemMatchStatus.BOOK_ONLY && ri.getTransaction() != null) {
+                total = total.add(ri.getTransaction().getAmount());
+            }
+        }
+        return total;
     }
 
     public List<ReconciliationItem> getOutstandingItems(UUID reconciliationId) {

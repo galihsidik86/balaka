@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "app.theme")
 public class ThemeConfig {
 
+    private static final String THEMES_PATH_PREFIX = "/themes/";
+
     private String name;
     private String footerText;
     private String dir;
@@ -36,14 +38,14 @@ public class ThemeConfig {
     }
 
     public String getLogoPath() {
-        return "/themes/" + name + "/logo.svg";
+        return THEMES_PATH_PREFIX + name + "/logo.svg";
     }
 
     public String getLogoDarkPath() {
-        return "/themes/" + name + "/logo-dark.svg";
+        return THEMES_PATH_PREFIX + name + "/logo-dark.svg";
     }
 
     public String getThemeCssPath() {
-        return "/themes/" + name + "/theme.css";
+        return THEMES_PATH_PREFIX + name + "/theme.css";
     }
 }

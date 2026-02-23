@@ -337,54 +337,10 @@ public class RecurringTransactionService {
 
         LocalDate next = switch (frequency) {
             case DAILY -> fromDate;
-            case WEEKLY -> {
-                if (dayOfWeek != null) {
-                    DayOfWeek target = DayOfWeek.of(dayOfWeek);
-                    LocalDate d = fromDate;
-                    while (d.getDayOfWeek() != target) {
-                        d = d.plusDays(1);
-                    }
-                    yield d;
-                }
-                yield fromDate;
-            }
-            case MONTHLY -> {
-                if (dayOfMonth != null) {
-                    LocalDate d = fromDate.withDayOfMonth(Math.min(dayOfMonth, fromDate.lengthOfMonth()));
-                    if (d.isBefore(fromDate)) {
-                        d = d.plusMonths(1).withDayOfMonth(Math.min(dayOfMonth, d.plusMonths(1).lengthOfMonth()));
-                    }
-                    yield d;
-                }
-                yield fromDate;
-            }
-            case QUARTERLY -> {
-                if (dayOfMonth != null) {
-                    LocalDate d = fromDate.withDayOfMonth(Math.min(dayOfMonth, fromDate.lengthOfMonth()));
-                    if (d.isBefore(fromDate)) {
-                        d = d.plusMonths(3);
-                        d = d.withDayOfMonth(Math.min(dayOfMonth, d.lengthOfMonth()));
-                    }
-                    // Align to quarter boundary (Jan, Apr, Jul, Oct)
-                    int monthInQuarter = (d.getMonthValue() - 1) % 3;
-                    if (monthInQuarter != 0) {
-                        d = d.plusMonths(3L - monthInQuarter);
-                        d = d.withDayOfMonth(Math.min(dayOfMonth, d.lengthOfMonth()));
-                    }
-                    yield d;
-                }
-                yield fromDate.plusMonths(3);
-            }
-            case YEARLY -> {
-                if (dayOfMonth != null) {
-                    LocalDate d = fromDate.withDayOfMonth(Math.min(dayOfMonth, fromDate.lengthOfMonth()));
-                    if (d.isBefore(fromDate)) {
-                        d = d.plusYears(1).withDayOfMonth(Math.min(dayOfMonth, d.plusYears(1).lengthOfMonth()));
-                    }
-                    yield d;
-                }
-                yield fromDate.plusYears(1);
-            }
+            case WEEKLY -> calculateNextWeekly(fromDate, dayOfWeek);
+            case MONTHLY -> calculateNextMonthly(fromDate, dayOfMonth);
+            case QUARTERLY -> calculateNextQuarterly(fromDate, dayOfMonth);
+            case YEARLY -> calculateNextYearly(fromDate, dayOfMonth);
         };
 
         if (skipWeekends && next != null) {
@@ -392,6 +348,58 @@ public class RecurringTransactionService {
         }
 
         return next;
+    }
+
+    private static LocalDate calculateNextWeekly(LocalDate fromDate, Integer dayOfWeek) {
+        if (dayOfWeek != null) {
+            DayOfWeek target = DayOfWeek.of(dayOfWeek);
+            LocalDate d = fromDate;
+            while (d.getDayOfWeek() != target) {
+                d = d.plusDays(1);
+            }
+            return d;
+        }
+        return fromDate;
+    }
+
+    private static LocalDate calculateNextMonthly(LocalDate fromDate, Integer dayOfMonth) {
+        if (dayOfMonth != null) {
+            LocalDate d = fromDate.withDayOfMonth(Math.min(dayOfMonth, fromDate.lengthOfMonth()));
+            if (d.isBefore(fromDate)) {
+                d = d.plusMonths(1).withDayOfMonth(Math.min(dayOfMonth, d.plusMonths(1).lengthOfMonth()));
+            }
+            return d;
+        }
+        return fromDate;
+    }
+
+    private static LocalDate calculateNextQuarterly(LocalDate fromDate, Integer dayOfMonth) {
+        if (dayOfMonth != null) {
+            LocalDate d = fromDate.withDayOfMonth(Math.min(dayOfMonth, fromDate.lengthOfMonth()));
+            if (d.isBefore(fromDate)) {
+                d = d.plusMonths(3);
+                d = d.withDayOfMonth(Math.min(dayOfMonth, d.lengthOfMonth()));
+            }
+            // Align to quarter boundary (Jan, Apr, Jul, Oct)
+            int monthInQuarter = (d.getMonthValue() - 1) % 3;
+            if (monthInQuarter != 0) {
+                d = d.plusMonths(3L - monthInQuarter);
+                d = d.withDayOfMonth(Math.min(dayOfMonth, d.lengthOfMonth()));
+            }
+            return d;
+        }
+        return fromDate.plusMonths(3);
+    }
+
+    private static LocalDate calculateNextYearly(LocalDate fromDate, Integer dayOfMonth) {
+        if (dayOfMonth != null) {
+            LocalDate d = fromDate.withDayOfMonth(Math.min(dayOfMonth, fromDate.lengthOfMonth()));
+            if (d.isBefore(fromDate)) {
+                d = d.plusYears(1).withDayOfMonth(Math.min(dayOfMonth, d.plusYears(1).lengthOfMonth()));
+            }
+            return d;
+        }
+        return fromDate.plusYears(1);
     }
 
     private static LocalDate advancePastWeekend(LocalDate date) {
