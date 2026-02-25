@@ -65,8 +65,8 @@ public class Client {
     private String notes;
 
     // Tax identification fields (for Coretax integration)
-    @Pattern(regexp = "^$|^\\d{2}\\.\\d{3}\\.\\d{3}\\.\\d-\\d{3}\\.\\d{3}$",
-            message = "Format NPWP tidak valid (XX.XXX.XXX.X-XXX.XXX)")
+    @Pattern(regexp = "^$|^\\d{2}\\.\\d{3}\\.\\d{3}\\.\\d-\\d{3}\\.\\d{3}$|^\\d{16}$",
+            message = "Format NPWP tidak valid (XX.XXX.XXX.X-XXX.XXX atau 16 digit)")
     @Size(max = 20, message = "NPWP maksimal 20 karakter")
     @Column(name = "npwp", length = 20)
     private String npwp;

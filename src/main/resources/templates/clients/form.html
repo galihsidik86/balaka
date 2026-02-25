@@ -111,10 +111,10 @@
                         <input type="text" id="npwp" th:field="*{npwp}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                                th:classappend="${#fields.hasErrors('npwp')} ? 'border-red-500' : ''"
-                               placeholder="XX.XXX.XXX.X-XXX.XXX"
+                               placeholder="XX.XXX.XXX.X-XXX.XXX atau 16 digit"
                                maxlength="20">
                         <p th:if="${#fields.hasErrors('npwp')}" th:errors="*{npwp}" class="mt-1 text-sm text-red-500"></p>
-                        <p class="mt-1 text-xs text-gray-500">Format: 15 atau 16 digit (XX.XXX.XXX.X-XXX.XXX)</p>
+                        <p class="mt-1 text-xs text-gray-500">Format: XX.XXX.XXX.X-XXX.XXX atau 16 digit Coretax</p>
                     </div>
 
                     <!-- NITKU -->
