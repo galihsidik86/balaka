@@ -222,9 +222,9 @@ INSERT INTO journal_template_lines (id, id_journal_template, id_account, positio
 -- ============================================
 
 INSERT INTO tax_deadlines (id, name, deadline_type, due_day, use_last_day_of_month, description, reminder_days_before, active) VALUES
-('f0000000-0000-0000-0000-000000000001', 'Setor PPh 21', 'PPH_21_PAYMENT', 10, FALSE, 'Pembayaran PPh Pasal 21 atas gaji karyawan. Jatuh tempo tanggal 10 bulan berikutnya.', 7, TRUE),
-('f0000000-0000-0000-0000-000000000002', 'Setor PPh 23', 'PPH_23_PAYMENT', 10, FALSE, 'Pembayaran PPh Pasal 23 atas jasa, dividen, bunga, royalti. Jatuh tempo tanggal 10 bulan berikutnya.', 7, TRUE),
-('f0000000-0000-0000-0000-000000000003', 'Setor PPh 4(2)', 'PPH_42_PAYMENT', 10, FALSE, 'Pembayaran PPh Pasal 4 ayat 2 (final) atas sewa tanah/bangunan, dll. Jatuh tempo tanggal 10 bulan berikutnya.', 7, TRUE),
+('f0000000-0000-0000-0000-000000000001', 'Setor PPh 21', 'PPH_21_PAYMENT', 15, FALSE, 'Pembayaran PPh Pasal 21 atas gaji karyawan. Jatuh tempo tanggal 15 bulan berikutnya (PMK 81/2024).', 7, TRUE),
+('f0000000-0000-0000-0000-000000000002', 'Setor PPh 23', 'PPH_23_PAYMENT', 15, FALSE, 'Pembayaran PPh Pasal 23 atas jasa, dividen, bunga, royalti. Jatuh tempo tanggal 15 bulan berikutnya (PMK 81/2024).', 7, TRUE),
+('f0000000-0000-0000-0000-000000000003', 'Setor PPh 4(2)', 'PPH_42_PAYMENT', 15, FALSE, 'Pembayaran PPh Pasal 4 ayat 2 (final) atas sewa tanah/bangunan, dll. Jatuh tempo tanggal 15 bulan berikutnya (PMK 81/2024).', 7, TRUE),
 ('f0000000-0000-0000-0000-000000000004', 'Setor PPh 25', 'PPH_25_PAYMENT', 15, FALSE, 'Pembayaran angsuran PPh Pasal 25. Jatuh tempo tanggal 15 bulan berikutnya.', 7, TRUE),
 ('f0000000-0000-0000-0000-000000000005', 'Setor PPN', 'PPN_PAYMENT', 31, TRUE, 'Pembayaran PPN terutang. Jatuh tempo akhir bulan berikutnya.', 7, TRUE),
 ('f0000000-0000-0000-0000-000000000006', 'Lapor SPT PPh 21', 'SPT_PPH_21', 20, FALSE, 'Pelaporan SPT Masa PPh 21. Jatuh tempo tanggal 20 bulan berikutnya.', 7, TRUE),

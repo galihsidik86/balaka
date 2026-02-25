@@ -1346,10 +1346,10 @@ Key difference: **BUMN is pemungut PPN** — they withhold PPN and remit it dire
 - [x] Functional tests (21 tests)
 
 ### 12.8 Tax Calendar Data & Deadline Updates
-- [ ] Update seed data: payment deadlines from 10th → 15th (per PMK 81/2024)
-- [ ] Update PPN reporting deadline reference
-- [ ] Migration to update existing tax_deadlines rows in production
-- [ ] User manual update for section 04-perpajakan.md
+- [x] Update seed data: payment deadlines from 10th → 15th (per PMK 81/2024)
+- [x] Update PPN reporting deadline reference
+- [x] Migration to update existing tax_deadlines rows in production
+- [x] User manual update for section 04-perpajakan.md
 
 ### 12.9 Retrofit 2025 Data
 

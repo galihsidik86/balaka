@@ -152,10 +152,13 @@ Buka menu **Pajak** > **Kalender Pajak**.
 
 | Pajak | Setor | Lapor |
 |-------|-------|-------|
-| PPN | Tgl 15 bulan berikutnya | Tgl 20 bulan berikutnya |
-| PPh 21 | Tgl 10 bulan berikutnya | Tgl 20 bulan berikutnya |
-| PPh 23 | Tgl 10 bulan berikutnya | Tgl 20 bulan berikutnya |
+| PPN | Akhir bulan berikutnya | Akhir bulan berikutnya |
+| PPh 21 | Tgl 15 bulan berikutnya | Tgl 20 bulan berikutnya |
+| PPh 23 | Tgl 15 bulan berikutnya | Tgl 20 bulan berikutnya |
+| PPh 4(2) | Tgl 15 bulan berikutnya | Tgl 20 bulan berikutnya |
 | PPh 25 | Tgl 15 bulan berikutnya | Tgl 20 bulan berikutnya |
+
+> **Catatan:** Deadline penyetoran PPh 21, PPh 23, dan PPh 4(2) berubah dari tanggal 10 menjadi tanggal 15 sesuai PMK 81/2024.
 
 ### Kalender Tahunan
 
