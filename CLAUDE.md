@@ -24,7 +24,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 - **AI Analysis Reports:** ✅ Complete (structured report publishing with per-industry KPIs)
 - **Phase 10:** ✅ Complete (Invoice & Bill Management — invoices, vendor bills, bill API, payment tracking, aging reports, customer/vendor statements)
 - **Phase 11:** ✅ Complete (Recurring Transactions — templates, scheduling, auto-posting)
-- **Phase 12:** 🔧 In Progress (Tax Data Management — 12.1 PPN formula fix ✅, 12.2 tax detail entry UI ✅, 12.3 tax detail & document API ✅, 12.4 auto-populate tax details ✅, 12.5 client management UI ✅, 12.6 fiscal period management ✅, 12.7 tax report enhancements ✅, 12.8 tax deadline updates ✅, 12.9 retrofit 2025 data ✅, 12.10 tax export API ⏳)
+- **Phase 12:** 🔧 In Progress (Tax Data Management — 12.1 PPN formula fix ✅, 12.2 tax detail entry UI ✅, 12.3 tax detail & document API ✅, 12.4 auto-populate tax details ✅, 12.5 client management UI ✅, 12.6 fiscal period management ✅, 12.7 tax report enhancements ✅, 12.8 tax deadline updates ✅, 12.9 retrofit 2025 data ✅, 12.10 tax export API ⏳, 12.11 PPN docs update ⏳)
 - **Phase 13:** ⏳ Not Started (WhatsApp Notifications)
 - See `docs/06-implementation-plan.md` for full plan
 

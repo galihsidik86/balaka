@@ -1408,6 +1408,18 @@ Expose Coretax export functionality via API (currently web-only with session aut
 - [ ] `GET /api/tax-export/bupot-unifikasi?startMonth=yyyy-MM&endMonth=yyyy-MM` — Bupot Unifikasi Excel
 - [ ] `GET /api/tax-export/ppn-detail?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — PPN detail (JSON + Excel)
 - [ ] `GET /api/tax-export/pph23-detail?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — PPh 23 detail (JSON + Excel)
+- [ ] `GET /api/tax-export/rekonsiliasi-fiskal?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — Rekonsiliasi Fiskal (JSON + Excel)
+- [ ] `GET /api/tax-export/pph-badan?year=yyyy` — PPh Badan calculation summary (JSON)
+- [ ] Register new endpoints in `capabilities.json`
+- [ ] Functional tests
+
+### 12.11 PPN Documentation Update
+
+Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regime.
+
+- [ ] Template formula comments: clarify `amount × 11/100` = nominal 12% × DPP Nilai Lain (11/12 × Harga Jual)
+- [ ] User manual 04-perpajakan.md: add DPP Nilai Lain explanation (PMK 131/2024)
+- [ ] User manual 12-lampiran-template.md: update PPN template formula description
 
 ---
 
