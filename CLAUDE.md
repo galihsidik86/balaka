@@ -110,11 +110,11 @@ User → Controller (MVC) → Service → Repository → PostgreSQL
 
 ## Current Release
 
-**2026.02.4-RELEASE** deployed to production (akunting.artivisi.id). See `docs/releases/2026.02.4-RELEASE.md` for release notes.
+**2026.02.5-RELEASE** deployed to production (akunting.artivisi.id). See `docs/releases/2026.02.5-RELEASE.md` for release notes.
 
 ## Current Focus
 
-Phases 0-13 complete. Phase 14 (WhatsApp Notifications) not started. 18/22 transactions have FP tax details + PDF documents attached. 4 transactions without FP PDFs (Client-B 001/003, Client-F 6, Client-D 002). Bupot PDFs pending collection from clients.
+Phases 0-13 complete. Phase 14 (WhatsApp Notifications) not started.
 
 User Manual (15-section structure, published at artivisi.com/aplikasi-akunting/):
 - 01-setup-awal.md through 15-peringatan.md

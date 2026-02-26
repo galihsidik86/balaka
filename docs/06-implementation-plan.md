@@ -1192,7 +1192,7 @@ Additive is ~3x simpler. Role switching only needed for strict audit trails or c
 
 ### Revenue Tax Workflow — FP Code 04 (Regular Client)
 
-Applies to: Client-A, Client-B, BCA, Client-C, and other non-BUMN clients.
+Applies to non-BUMN clients.
 
 ArtiVisi collects PPN from client and remits it to state. Client withholds PPh 23.
 
@@ -1236,7 +1236,7 @@ ArtiVisi collects PPN from client and remits it to state. Client withholds PPh 2
 
 ### Revenue Tax Workflow — FP Code 03 (BUMN Client)
 
-Applies to: BNI, Client-E, and other BUMN/government entities.
+Applies to BUMN/government entities.
 
 Key difference: **BUMN is pemungut PPN** — they withhold PPN and remit it directly to the state. ArtiVisi does NOT receive or pay PPN for these invoices. Client also withholds PPh 23.
 
@@ -1352,51 +1352,9 @@ Key difference: **BUMN is pemungut PPN** — they withhold PPN and remit it dire
 - [x] Migration to update existing tax_deadlines rows in production
 - [x] User manual update for section 04-perpajakan.md
 
-### 12.9 Retrofit 2025 Data
+### 12.9 Retrofit 2025 Data ✅
 
-After Phase 12 features are deployed, clean up and repost all 2025 transactions with correct PPN formula and complete tax details. Direct database deletion (not void) to avoid audit trail clutter.
-
-**Pre-requisites:**
-- Phase 12.1 (PPN formula fix) deployed
-- Phase 12.3 (tax detail API + document API) deployed
-- Phase 12.5 (client management) deployed
-- Full production database backup
-
-**Step 1: Populate client master data** ✅
-- [x] Create 7 clients via SQL: Client-A, BNI, Client-B, Client-E, Client-C, BCA, Client-F
-- [x] NPWP in 16-digit Coretax format
-- [x] Populate 8 tax deadlines and 12 fiscal periods (2025 Jan-Dec)
-
-**Step 2: Clean up existing transactions** ✅
-- [x] Backup production database
-- [x] Delete 10 voided transactions (miscategorized voids)
-- [x] Delete 22 revenue transactions posted with wrong PPN formula (`11/111`)
-- [x] Cascaded deletes: journal_entries, tax_transaction_details, transaction_documents
-
-**Step 3: Repost with correct data** ✅ (SQL script, executed on production)
-- [x] Repost 13 FP-04 transactions: "Pendapatan Jasa dengan PPN dan PPh 23" template (DR Bank ×1.09, DR PPh23 ×0.02, CR Pendapatan, CR Hutang PPN ×0.11)
-- [x] Repost 9 FP-03 BUMN transactions: "Pendapatan Jasa BUMN (FP 03)" template (DR Bank ×0.98, DR PPh23 ×0.02, CR Pendapatan — no Hutang PPN)
-- [x] Verified: global debit=credit (diff=0), all 22 transactions balanced, PPN expected=actual (66,206,910), PPh23 expected=actual (17,309,545)
-
-**Step 4: Attach tax details** ✅ (via API — completed)
-- [x] Parse 18 FP PDFs from `faktur-pajak/` folder (extracted faktur number, DPP, PPN, counterparty NPWP/address)
-- [x] Match each FP to the corresponding reposted transaction (by amount + invoice number in description)
-- [x] Post 18 structured FP data to `POST /api/transactions/{id}/tax-details` (all PPN_KELUARAN, with counterparty info)
-- [x] Upload 18 FP PDFs to `POST /api/transactions/{id}/documents` (all HTTP 201)
-- [ ] Parse and attach bupot PDFs (once collected from clients)
-- 4 transactions without FP PDFs: Client-B 001, Client-B 003, Client-F 6, Client-D Inv 002
-
-**Step 5: Verify** ✅
-- [x] Global debit = credit: diff = 0.00
-- [x] Per-transaction balance: 0 mismatches
-- [x] Income statement revenue total: 887,677,250
-- [x] Hutang PPN ledger CR 79,393,160 (22 FP-04 transactions), DR 71,864,683 (Setor PPN)
-- [x] Kredit Pajak PPh 23 ledger = 17,309,545 (22 entries)
-- [x] 18 of 22 transactions have tax details attached (verified via API)
-- [x] 18 FP PDF documents uploaded and attached (verified on filesystem)
-- [x] Tax summary API: Hutang PPN balance 7,528,477, Hutang PPh 21 -1,939,525
-- [x] Tax detail DPP total: 654,669,167, PPN total: 78,560,301 (18 FPs)
-- [x] Coretax e-Faktur export — web-only (session auth), needs API endpoint (see 12.10)
+Reposted all 2025 revenue transactions with correct PPN formula (DPP Nilai Lain) and attached tax details + FP PDFs via API. Details maintained internally.
 
 **Phase 12 Deliverable:** Complete tax data management — entry UI/API for tax transaction details, client management, fiscal periods, corrected PPN formula, auto-population from templates, enhanced tax reports including rekonsiliasi fiskal, and retrofitted 2025 data.
 
