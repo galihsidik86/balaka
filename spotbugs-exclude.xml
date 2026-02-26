@@ -130,6 +130,18 @@ Each exclusion must have a justification comment explaining the mitigation.
         <Bug pattern="CRLF_INJECTION_LOGS"/>
     </Match>
 
+    <!-- TaxDetailApiController: Log params are UUID path variables (validated by Spring type binding) -->
+    <Match>
+        <Class name="com.artivisi.accountingfinance.controller.api.TaxDetailApiController"/>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+
+    <!-- DocumentApiController: Log params are UUID path variables (validated by Spring type binding) -->
+    <Match>
+        <Class name="com.artivisi.accountingfinance.controller.api.DocumentApiController"/>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+
     <!--
     EI_EXPOSE_REP / EI_EXPOSE_REP2 - Spring Dependency Injection False Positives
 

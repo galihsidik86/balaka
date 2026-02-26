@@ -30,7 +30,8 @@
       { "scope": "analysis:read", "description": "Read all financial analysis reports" },
       { "scope": "analysis:write", "description": "Publish AI-generated analysis reports" },
       { "scope": "transactions:post", "description": "Post draft transactions to ledger" },
-      { "scope": "data:import", "description": "Import bulk data via ZIP" }
+      { "scope": "data:import", "description": "Import bulk data via ZIP" },
+      { "scope": "tax-export:read", "description": "Export tax data (e-Faktur, e-Bupot, PPN/PPh reports)" }
     ]
   },
   "endpointGroups": [
@@ -825,6 +826,61 @@
           "response": "204 No Content"
         }
       ]
+    },
+    {
+      "name": "Tax Export",
+      "description": "Export tax data for SPT preparation. Excel endpoints return Coretax-compatible XLSX files. JSON endpoints return structured data with optional ?format=excel for XLSX download.",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/tax-export/efaktur-keluaran?startMonth={yyyy-MM}&endMonth={yyyy-MM}",
+          "scope": "tax-export:read",
+          "description": "Export e-Faktur Keluaran (output VAT) to Coretax-compatible Excel",
+          "response": "XLSX binary (Content-Disposition: attachment)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/tax-export/efaktur-masukan?startMonth={yyyy-MM}&endMonth={yyyy-MM}",
+          "scope": "tax-export:read",
+          "description": "Export e-Faktur Masukan (input VAT) to Coretax-compatible Excel",
+          "response": "XLSX binary (Content-Disposition: attachment)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/tax-export/bupot-unifikasi?startMonth={yyyy-MM}&endMonth={yyyy-MM}",
+          "scope": "tax-export:read",
+          "description": "Export e-Bupot Unifikasi (PPh withholding) to Coretax-compatible Excel",
+          "response": "XLSX binary (Content-Disposition: attachment)"
+        },
+        {
+          "method": "GET",
+          "path": "/api/tax-export/ppn-detail?startDate={yyyy-MM-dd}&endDate={yyyy-MM-dd}",
+          "scope": "tax-export:read",
+          "description": "PPN detail report with Faktur Keluaran/Masukan breakdown. Add ?format=excel for XLSX.",
+          "response": "AnalysisResponse<PPNDetailData>: keluaranItems[], masukanItems[], totals{totalDppKeluaran, totalPpnKeluaran, totalDppMasukan, totalPpnMasukan}"
+        },
+        {
+          "method": "GET",
+          "path": "/api/tax-export/pph23-detail?startDate={yyyy-MM-dd}&endDate={yyyy-MM-dd}",
+          "scope": "tax-export:read",
+          "description": "PPh 23 withholding tax detail report. Add ?format=excel for XLSX.",
+          "response": "AnalysisResponse<PPh23DetailData>: items[], totals{totalGross, totalTax}"
+        },
+        {
+          "method": "GET",
+          "path": "/api/tax-export/rekonsiliasi-fiskal?year={int}",
+          "scope": "tax-export:read",
+          "description": "Fiscal reconciliation: commercial income → taxable income (PKP). Add ?format=excel for XLSX.",
+          "response": "AnalysisResponse<RekonsiliasiFiskalData>: year, commercialNetIncome, adjustments[], pkp, pphBadan{pkp, pphTerutang, calculationMethod, kreditPajak, pph29}"
+        },
+        {
+          "method": "GET",
+          "path": "/api/tax-export/pph-badan?year={int}",
+          "scope": "tax-export:read",
+          "description": "PPh Badan corporate income tax calculation with Pasal 31E facility",
+          "response": "AnalysisResponse<PPhBadanData>: pkp, totalRevenue, pphTerutang, calculationMethod, kreditPajakPPh23, kreditPajakPPh25, totalKreditPajak, pph29"
+        }
+      ]
     }
   ],
   "workflows": [
@@ -925,6 +981,18 @@
       "name": "Void Posted Transaction",
       "steps": [
         "POST /api/transactions/{id}/void (with reason: INPUT_ERROR|DUPLICATE|CANCELLED|OTHER)"
+      ]
+    },
+    {
+      "name": "Tax Export for SPT Preparation",
+      "steps": [
+        "GET /api/tax-export/efaktur-keluaran?startMonth=2025-01&endMonth=2025-12 (download e-Faktur Keluaran Excel)",
+        "GET /api/tax-export/efaktur-masukan?startMonth=2025-01&endMonth=2025-12 (download e-Faktur Masukan Excel)",
+        "GET /api/tax-export/bupot-unifikasi?startMonth=2025-01&endMonth=2025-12 (download e-Bupot Excel)",
+        "GET /api/tax-export/ppn-detail?startDate=2025-01-01&endDate=2025-12-31 (PPN summary JSON or ?format=excel)",
+        "GET /api/tax-export/pph23-detail?startDate=2025-01-01&endDate=2025-12-31 (PPh 23 summary)",
+        "GET /api/tax-export/rekonsiliasi-fiskal?year=2025 (fiscal reconciliation)",
+        "GET /api/tax-export/pph-badan?year=2025 (PPh Badan calculation)"
       ]
     }
   ],

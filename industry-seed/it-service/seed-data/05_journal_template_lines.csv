@@ -5,14 +5,14 @@ Pendapatan Jasa Konsultasi,1,,BANK,DEBIT,amount,Penerimaan kas/bank
 Pendapatan Jasa Konsultasi,2,4.1.02,,CREDIT,amount,Pendapatan jasa konsultasi
 Pendapatan Jasa + PPN,1,,BANK,DEBIT,amount * 1.11,Penerimaan kas/bank (Harga Jual + PPN 11%)
 Pendapatan Jasa + PPN,2,,PENDAPATAN,CREDIT,amount,Pendapatan jasa (Harga Jual)
-Pendapatan Jasa + PPN,3,2.1.03,,CREDIT,amount * 0.11,PPN Keluaran 11%
+Pendapatan Jasa + PPN,3,2.1.03,,CREDIT,amount * 0.11,PPN Keluaran efektif 11% (nominal 12% x DPP Nilai Lain PMK 131/2024)
 Pendapatan Jasa + PPh 23 Dipotong,1,,BANK,DEBIT,amount * 0.98,Penerimaan kas/bank (netto)
 Pendapatan Jasa + PPh 23 Dipotong,2,1.1.26,,DEBIT,amount * 0.02,Kredit Pajak PPh 23
 Pendapatan Jasa + PPh 23 Dipotong,3,,PENDAPATAN,CREDIT,amount,Pendapatan jasa (bruto)
 Pendapatan Jasa + PPN + PPh 23,1,,BANK,DEBIT,amount * 1.09,Penerimaan kas/bank (Harga Jual + PPN 11% - PPh 23 2%)
 Pendapatan Jasa + PPN + PPh 23,2,1.1.26,,DEBIT,amount * 0.02,Kredit Pajak PPh 23 (2% dari Harga Jual)
 Pendapatan Jasa + PPN + PPh 23,3,,PENDAPATAN,CREDIT,amount,Pendapatan jasa (Harga Jual)
-Pendapatan Jasa + PPN + PPh 23,4,2.1.03,,CREDIT,amount * 0.11,PPN Keluaran 11%
+Pendapatan Jasa + PPN + PPh 23,4,2.1.03,,CREDIT,amount * 0.11,PPN Keluaran efektif 11% (nominal 12% x DPP Nilai Lain PMK 131/2024)
 Terima DP Proyek,1,,BANK,DEBIT,amount,Penerimaan kas/bank
 Terima DP Proyek,2,2.1.04,,CREDIT,amount,Pendapatan diterima dimuka
 Pengakuan Pendapatan Proyek,1,2.1.04,,DEBIT,amount,Pendapatan diterima dimuka
@@ -39,7 +39,7 @@ Bayar Beban Sewa,2,,BANK,CREDIT,amount,Pembayaran dari bank
 Bayar Beban Operasional,1,5.1.99,,DEBIT,amount,Beban operasional lainnya
 Bayar Beban Operasional,2,,BANK,CREDIT,amount,Pembayaran dari bank
 Pembelian dengan PPN,1,,BEBAN,DEBIT,amount,Beban/Aset (Harga Jual)
-Pembelian dengan PPN,2,1.1.25,,DEBIT,amount * 0.11,PPN Masukan 11%
+Pembelian dengan PPN,2,1.1.25,,DEBIT,amount * 0.11,PPN Masukan efektif 11% (nominal 12% x DPP Nilai Lain PMK 131/2024)
 Pembelian dengan PPN,3,,BANK,CREDIT,amount * 1.11,Pembayaran dari bank (Harga Jual + PPN)
 Pembayaran Jasa dengan PPh 23,1,,BEBAN,DEBIT,amount,Beban jasa
 Pembayaran Jasa dengan PPh 23,2,,BANK,CREDIT,amount * 0.98,Pembayaran dari bank (netto)

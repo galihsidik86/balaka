@@ -34,6 +34,8 @@ Dr. Bank/Kas                    amount * 1.11
     Cr. Pendapatan Jasa             amount
 ```
 
+> **Formula PPN**: `amount * 0.11` = nominal 12% × DPP Nilai Lain (11/12 × Harga Jual). Lihat [Perpajakan — Konsep PPN](04-perpajakan.md#konsep-ppn-dpp-nilai-lain--pmk-1312024).
+
 ### Pendapatan Jasa (Non-PKP)
 
 **Digunakan**: Menerima pembayaran jasa tanpa PPN
@@ -95,6 +97,8 @@ Dr. Bank/Kas                    amount * 1.11
     Cr. Penjualan                   amount
 ```
 
+> **Formula PPN**: `amount * 0.11` = nominal 12% × DPP Nilai Lain (11/12 × Harga Jual).
+
 ### Penjualan Barang (Non-PKP)
 
 **Digunakan**: Menjual barang tanpa PPN
@@ -148,6 +152,8 @@ Dr. [Akun Beban]                amount
 Dr. PPN Masukan                 amount * 0.11
     Cr. Bank/Kas                    amount * 1.11
 ```
+
+> **Formula PPN**: `amount * 0.11` = nominal 12% × DPP Nilai Lain (11/12 × Harga Jual).
 
 ### Pembelian Aset Tetap
 

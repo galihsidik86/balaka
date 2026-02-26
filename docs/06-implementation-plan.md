@@ -1395,7 +1395,7 @@ After Phase 12 features are deployed, clean up and repost all 2025 transactions 
 - [x] 18 FP PDF documents uploaded and attached (verified on filesystem)
 - [x] Tax summary API: Hutang PPN balance 7,528,477, Hutang PPh 21 -1,939,525
 - [x] Tax detail DPP total: 654,669,167, PPN total: 78,560,301 (18 FPs)
-- [ ] Coretax e-Faktur export — web-only (session auth), needs API endpoint (see 12.10)
+- [x] Coretax e-Faktur export — web-only (session auth), needs API endpoint (see 12.10)
 
 **Phase 12 Deliverable:** Complete tax data management — entry UI/API for tax transaction details, client management, fiscal periods, corrected PPN formula, auto-population from templates, enhanced tax reports including rekonsiliasi fiskal, and retrofitted 2025 data.
 
@@ -1403,43 +1403,76 @@ After Phase 12 features are deployed, clean up and repost all 2025 transactions 
 
 Expose Coretax export functionality via API (currently web-only with session auth).
 
-- [ ] `GET /api/tax-export/efaktur-keluaran?startMonth=yyyy-MM&endMonth=yyyy-MM` — e-Faktur Keluaran Excel (scope: `transactions:post`)
-- [ ] `GET /api/tax-export/efaktur-masukan?startMonth=yyyy-MM&endMonth=yyyy-MM` — e-Faktur Masukan Excel
-- [ ] `GET /api/tax-export/bupot-unifikasi?startMonth=yyyy-MM&endMonth=yyyy-MM` — Bupot Unifikasi Excel
-- [ ] `GET /api/tax-export/ppn-detail?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — PPN detail (JSON + Excel)
-- [ ] `GET /api/tax-export/pph23-detail?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — PPh 23 detail (JSON + Excel)
-- [ ] `GET /api/tax-export/rekonsiliasi-fiskal?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — Rekonsiliasi Fiskal (JSON + Excel)
-- [ ] `GET /api/tax-export/pph-badan?year=yyyy` — PPh Badan calculation summary (JSON)
-- [ ] Register new endpoints in `capabilities.json`
-- [ ] Functional tests
+- [x] `GET /api/tax-export/efaktur-keluaran?startMonth=yyyy-MM&endMonth=yyyy-MM` — e-Faktur Keluaran Excel (scope: `tax-export:read`)
+- [x] `GET /api/tax-export/efaktur-masukan?startMonth=yyyy-MM&endMonth=yyyy-MM` — e-Faktur Masukan Excel
+- [x] `GET /api/tax-export/bupot-unifikasi?startMonth=yyyy-MM&endMonth=yyyy-MM` — Bupot Unifikasi Excel
+- [x] `GET /api/tax-export/ppn-detail?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — PPN detail (JSON + Excel)
+- [x] `GET /api/tax-export/pph23-detail?startDate=yyyy-MM-dd&endDate=yyyy-MM-dd` — PPh 23 detail (JSON + Excel)
+- [x] `GET /api/tax-export/rekonsiliasi-fiskal?year=yyyy` — Rekonsiliasi Fiskal (JSON + Excel)
+- [x] `GET /api/tax-export/pph-badan?year=yyyy` — PPh Badan calculation summary (JSON)
+- [x] Register new endpoints in `capabilities.json`
+- [x] Functional tests (12 tests passing)
 
 ### 12.11 PPN Documentation Update
 
 Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regime.
 
-- [ ] Template formula comments: clarify `amount × 11/100` = nominal 12% × DPP Nilai Lain (11/12 × Harga Jual)
-- [ ] User manual 04-perpajakan.md: add DPP Nilai Lain explanation (PMK 131/2024)
-- [ ] User manual 12-lampiran-template.md: update PPN template formula description
+- [x] Template formula comments: clarify `amount × 11/100` = nominal 12% × DPP Nilai Lain (11/12 × Harga Jual)
+- [x] User manual 04-perpajakan.md: add DPP Nilai Lain explanation (PMK 131/2024)
+- [x] User manual 12-lampiran-template.md: update PPN template formula description
 
 ---
 
-## Phase 13: WhatsApp Notifications
+## Phase 13: OpenAPI Migration
+
+**Goal:** Replace custom `capabilities.json` with auto-generated OpenAPI spec (springdoc-openapi). Reduces maintenance burden — endpoint docs are generated from controller annotations, AI-specific metadata lives in `x-` extensions.
+
+### 13.1 springdoc-openapi Setup
+- [ ] Add `springdoc-openapi-starter-webmvc-ui` dependency
+- [ ] Configure OpenAPI metadata bean (title, version, description, contact)
+- [ ] Configure OAuth 2.0 Device Authorization security scheme
+- [ ] Verify Swagger UI accessible at `/swagger-ui.html`
+- [ ] Add `/swagger-ui.html` and `/v3/api-docs/**` to Spring Security `permitAll()` whitelist
+
+### 13.2 Controller Annotations
+- [ ] Add `@Tag` to all API controllers (group endpoints)
+- [ ] Add `@Operation(summary, description)` to endpoints that need clarification beyond method names
+- [ ] Add `@Parameter` annotations for non-obvious query params
+- [ ] Add `@Schema` annotations to DTO records where field names aren't self-documenting
+- [ ] Verify all scopes appear correctly in generated spec
+
+### 13.3 AI Extensions & Custom Metadata
+- [ ] Create `OpenApiCustomizer` bean with `x-workflows` (migrate from capabilities.json)
+- [ ] Add `x-csv-files` extension (data import CSV specs)
+- [ ] Add `x-industries` extension
+- [ ] Add `x-ai-hints` on endpoints that need semantic descriptions for AI matching
+
+### 13.4 Cleanup & Verification
+- [ ] Delete `capabilities.json`
+- [ ] Update any code/docs referencing `capabilities.json`
+- [ ] Functional test: verify `/v3/api-docs` returns valid OpenAPI JSON with extensions
+- [ ] Functional test: verify Swagger UI loads
+- [ ] Update user manual (API section)
+
+---
+
+## Phase 14: WhatsApp Notifications
 
 **Goal:** Send invoice reminders and alert notifications via WhatsApp
 
-### 13.1 WhatsApp Integration
+### 14.1 WhatsApp Integration
 - [ ] WhatsApp Business API provider integration (Wablas/Fonnte or official API)
 - [ ] Provider configuration (API key, sender number)
 - [ ] Message template management
 - [ ] Send test message
 
-### 13.2 Invoice Reminders
+### 14.2 Invoice Reminders
 - [ ] Auto-send reminder for overdue invoices
 - [ ] Configurable reminder schedule (e.g., 7d before due, on due date, 7d after)
 - [ ] Per-client phone number (from Client entity)
 - [ ] Opt-out per client
 
-### 13.3 Alert Notifications
+### 14.3 Alert Notifications
 - [ ] Send smart alert events via WhatsApp to configured recipients
 - [ ] Configurable: which alert types trigger WhatsApp notification
 - [ ] Recipient list management

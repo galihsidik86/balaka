@@ -8,7 +8,7 @@ Panduan pencatatan transaksi pajak dan laporan untuk kepatuhan perpajakan Indone
 
 | Pajak | Tarif | Kewajiban |
 |-------|-------|-----------|
-| **PPN** | 11% | PKP yang menyerahkan BKP/JKP |
+| **PPN** | Nominal 12%, efektif 11% (DPP Nilai Lain) | PKP yang menyerahkan BKP/JKP |
 | **PPh 21** | Progresif | Pemberi kerja (pemotongan gaji) |
 | **PPh 23** | 2% (jasa), 15% (dividen) | Pemberi penghasilan |
 | **PPh 25** | Angsuran | Wajib pajak badan |
@@ -27,10 +27,14 @@ Panduan pencatatan transaksi pajak dan laporan untuk kepatuhan perpajakan Indone
 Net PPN = PPN Keluaran - PPN Masukan
 ```
 
-Sejak 1 Januari 2025, perhitungan PPN menggunakan DPP Nilai Lain (PMK 131/2024):
-- **DPP** = Harga Jual × 11/12
-- **PPN** = DPP × 12% = **Harga Jual × 11%**
+Sejak 1 Januari 2025, tarif PPN secara nominal naik menjadi 12%, namun menggunakan DPP Nilai Lain (PMK 131/2024) sehingga beban efektif tetap 11%:
+
+- **DPP** = Harga Jual × 11/12 (DPP Nilai Lain)
+- **PPN** = DPP × 12% = Harga Jual × 11/12 × 12% = **Harga Jual × 11%**
 - Field `amount` di template = **Harga Jual** (sebelum PPN)
+- Formula template: `amount * 0.11` = PPN efektif 11% dari Harga Jual
+
+> **Mengapa formula 0.11 (bukan 0.12)?** Tarif resmi PPN adalah 12%, tetapi DPP dihitung dari 11/12 × Harga Jual (PMK 131/2024 Pasal 3). Hasil akhirnya: PPN = 11% × Harga Jual. Di Faktur Pajak Coretax, DPP dan PPN 12% ditampilkan terpisah, tetapi secara akuntansi cukup catat PPN = `amount * 0.11`.
 
 ### Mencatat Pendapatan dengan PPN
 
