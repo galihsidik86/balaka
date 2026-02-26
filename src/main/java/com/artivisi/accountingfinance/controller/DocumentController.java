@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
+@io.swagger.v3.oas.annotations.Hidden
 @Controller
 @RequestMapping("/documents")
 @RequiredArgsConstructor

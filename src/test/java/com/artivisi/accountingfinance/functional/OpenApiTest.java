@@ -175,6 +175,49 @@ class OpenApiTest extends PlaywrightTestBase {
     }
 
     @Test
+    @DisplayName("MVC controllers are hidden from OpenAPI spec")
+    void testMvcControllersHidden() throws Exception {
+        APIResponse response = apiContext.get(API_DOCS_URL);
+        JsonNode body = objectMapper.readTree(response.text());
+
+        // Collect all tags used by endpoints
+        java.util.Set<String> tags = new java.util.HashSet<>();
+        body.get("paths").fields().forEachRemaining(pathEntry ->
+            pathEntry.getValue().fields().forEachRemaining(methodEntry -> {
+                JsonNode tagArray = methodEntry.getValue().get("tags");
+                if (tagArray != null && tagArray.isArray()) {
+                    tagArray.forEach(tag -> tags.add(tag.asText()));
+                }
+            })
+        );
+
+        // MVC controller auto-generated tags must NOT appear
+        assertThat(tags).as("No MVC controller tags in spec")
+                .doesNotContain(
+                        "transaction-controller",
+                        "journal-template-controller",
+                        "report-controller",
+                        "settings-controller",
+                        "telegram-webhook-controller",
+                        "document-controller",
+                        "draft-transaction-controller",
+                        "journal-entry-controller",
+                        "tax-calendar-controller"
+                );
+
+        // No paths outside /api/** should appear
+        java.util.List<String> nonApiPaths = new java.util.ArrayList<>();
+        body.get("paths").fieldNames().forEachRemaining(path -> {
+            if (!path.startsWith("/api/")) {
+                nonApiPaths.add(path);
+            }
+        });
+        assertThat(nonApiPaths).as("No non-API paths in spec").isEmpty();
+
+        log.info("MVC controllers verified hidden. Tags present: {}", tags);
+    }
+
+    @Test
     @DisplayName("GET /swagger-ui/index.html returns 200")
     void testSwaggerUiAccess() {
         APIResponse response = apiContext.get(SWAGGER_UI_URL);

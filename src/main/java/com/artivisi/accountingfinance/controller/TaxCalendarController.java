@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@io.swagger.v3.oas.annotations.Hidden
 @Controller
 @RequestMapping("/tax-calendar")
 @RequiredArgsConstructor

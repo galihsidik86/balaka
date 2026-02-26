@@ -28,6 +28,7 @@ import static java.util.Objects.requireNonNullElse;
  * Controller for General Ledger and Account Ledger views.
  * All transaction operations (create, edit, post, void) are handled by TransactionController.
  */
+@io.swagger.v3.oas.annotations.Hidden
 @Controller
 @RequestMapping("/journals")
 @RequiredArgsConstructor

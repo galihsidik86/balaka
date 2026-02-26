@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 
+@io.swagger.v3.oas.annotations.Hidden
 @Controller
 @RequestMapping("/transactions")
 @RequiredArgsConstructor

@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 
+@io.swagger.v3.oas.annotations.Hidden
 @Controller
 @RequestMapping("/drafts")
 @RequiredArgsConstructor
