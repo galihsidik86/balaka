@@ -4,17 +4,14 @@ Complete guide for deploying, releasing, and operating the accounting applicatio
 
 ## Quick Start
 
+Deployment configuration (Ansible playbooks, inventory, credentials) lives in a **separate private repository**. See that repository's README for setup instructions.
+
 ```bash
-# 1. Configure Ansible
-cd deploy/ansible
-cp group_vars/all.yml.example group_vars/all.yml
-cp inventory.ini.example inventory.ini
-# Edit with your credentials
-
-# 2. Server setup (one-time)
+# 1. Clone the deploy repository (private)
+# 2. Configure client-specific vars in clients/<client>/group_vars/all.yml
+# 3. Server setup (one-time)
 ansible-playbook -i inventory.ini site.yml
-
-# 3. Deploy application
+# 4. Deploy application
 ansible-playbook -i inventory.ini deploy.yml
 ```
 
@@ -88,16 +85,7 @@ Security headers (HSTS, X-Frame-Options, CSP) are configured in the SSL site tem
 
 ### Required Credentials
 
-| Credential | Source | Notes |
-|------------|--------|-------|
-| VPS Provider | IDCloudHost, Biznet, DigitalOcean | For provisioning |
-| Domain | Registrar | Point A record to VPS IP |
-| SSH Key | `ssh-keygen -t ed25519` | For passwordless SSH |
-| Database Password | `openssl rand -base64 24` | Strong, random |
-| Admin Credentials | Your choice | NOT 'admin' as username |
-| SSL Email | Your email | For Let's Encrypt |
-| B2 Account ID | Backblaze B2 Console | Optional: 25-char keyID |
-| B2 Application Key | Backblaze B2 Console | Optional: backup |
+All credentials are stored in the **private deploy repository** (`clients/<client>/group_vars/all.yml`). See the deploy repository README for the full list of required credentials.
 
 ## Deployment Process
 
@@ -171,7 +159,7 @@ Follow these steps in order:
 Before any release, create a manual backup on the production server:
 
 ```bash
-ssh endymuhardin@103.31.204.12
+ssh <user>@<server>
 sudo -u akunting /opt/aplikasi-akunting/scripts/backup.sh
 ```
 
@@ -179,6 +167,8 @@ Verify the backup was created:
 ```bash
 ls -lh /opt/aplikasi-akunting/backup/ | tail -1
 ```
+
+Server connection details are in the deploy repository's inventory file.
 
 #### 1. Prepare Release Notes
 
@@ -445,8 +435,8 @@ sudo certbot renew --dry-run
 sudo certbot renew --force-renewal
 
 # Check expiry
-echo | openssl s_client -servername akunting.artivisi.id \
-  -connect akunting.artivisi.id:443 2>/dev/null | \
+echo | openssl s_client -servername <your-domain> \
+  -connect <your-domain>:443 2>/dev/null | \
   openssl x509 -noout -dates
 ```
 
@@ -494,17 +484,17 @@ Migration checksum mismatch for migration version 003
 
 ```bash
 # Check current table schema
-PGPASSWORD='<db_password>' psql -U akunting -d accountingdb -c "\d <table_name>"
+sudo -u postgres psql -d accountingdb -c "\d <table_name>"
 
 # Add missing columns
-PGPASSWORD='<db_password>' psql -U akunting -d accountingdb \
+sudo -u postgres psql -d accountingdb \
   -c "ALTER TABLE <table_name> ADD COLUMN <column_name> <type>;"
 ```
 
 3. Update the checksum in Flyway's schema history to match the local file:
 
 ```bash
-PGPASSWORD='<db_password>' psql -U akunting -d accountingdb \
+sudo -u postgres psql -d accountingdb \
   -c "UPDATE flyway_schema_history SET checksum = <new_checksum> WHERE version = '<version>';"
 ```
 
@@ -647,46 +637,4 @@ sudo /opt/aplikasi-akunting/scripts/restore.sh \
 
 ## Configuration Reference
 
-### group_vars/all.yml
-
-```yaml
-# Application
-app_name: aplikasi-akunting
-app_domain: akunting.artivisi.id
-
-# Database
-db_password: "<STRONG_PASSWORD>"
-
-# Admin user
-admin_username: "<UNIQUE_USERNAME>"
-admin_password_plain: "<ADMIN_PASSWORD>"
-admin_full_name: "Your Name"
-admin_email: "your@email.com"
-
-# SSL
-ssl_enabled: true
-ssl_email: "admin@artivisi.com"
-
-# Backup
-backup_cron_enabled: true
-backup_cron_hour: "2"
-backup_retention_count: 7
-
-# B2 (optional)
-backup_b2_enabled: true
-backup_b2_account_id: "..."
-backup_b2_application_key: "..."
-backup_b2_bucket: "artivisi-backup"
-
-# Google Drive (optional)
-backup_gdrive_enabled: true
-backup_gdrive_token: '{"access_token":"...", ...}'
-backup_gdrive_folder: "accounting-backup"
-```
-
-### inventory.ini
-
-```ini
-[accounting]
-accounting-app ansible_host=103.31.204.12 ansible_user=endymuhardin
-```
+All deployment configuration (Ansible variables, inventory, credentials) is maintained in the **private deploy repository**. See that repository's README for variable reference and examples.
