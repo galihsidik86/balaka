@@ -1432,6 +1432,15 @@ Setiap user dapat melihat dan mencabut device token miliknya sendiri di halaman 
 |--------|----------|-----------|
 | POST | `/api/analysis/reports` | Publikasi laporan analisis terstruktur |
 
+**Koreksi Fiskal (scope: `tax-export:read`):**
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/fiscal-adjustments?year=YYYY` | Daftar koreksi fiskal per tahun |
+| POST | `/api/fiscal-adjustments` | Buat koreksi fiskal baru |
+| PUT | `/api/fiscal-adjustments/{id}` | Update koreksi fiskal |
+| DELETE | `/api/fiscal-adjustments/{id}` | Hapus koreksi fiskal |
+
 **Manajemen Data (scope: `data:import`):**
 
 | Method | Endpoint | Deskripsi |

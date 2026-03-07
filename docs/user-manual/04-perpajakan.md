@@ -265,6 +265,70 @@ Buka menu **Pajak** > **Kalender Pajak**.
 
 ---
 
+## Koreksi Fiskal
+
+Koreksi fiskal (fiscal adjustments) adalah penyesuaian atas laba komersial untuk menghitung Penghasilan Kena Pajak (PKP) pada SPT Tahunan Badan. Ada dua kategori koreksi:
+
+- **Beda Tetap (Permanent)** — biaya yang secara permanen tidak diakui pajak (contoh: denda pajak, sumbangan, biaya tanpa bukti potong)
+- **Beda Waktu (Temporary)** — perbedaan waktu pengakuan antara akuntansi komersial dan fiskal (contoh: penyusutan metode berbeda)
+
+### Mengelola Koreksi Fiskal via Web
+
+Buka menu **Laporan** > **Rekonsiliasi Fiskal**. Di halaman ini:
+
+1. Pilih tahun pajak
+2. Klik **Tambah Koreksi** untuk menambah item baru
+3. Isi form: deskripsi, kategori (Beda Tetap/Beda Waktu), arah (Positif/Negatif), jumlah, kode akun, dan catatan
+4. Klik **Simpan**
+5. Untuk menghapus, klik ikon hapus pada baris koreksi
+
+Hasil koreksi fiskal ditampilkan dalam laporan rekonsiliasi fiskal dan digunakan dalam perhitungan PPh Badan.
+
+### Mengelola Koreksi Fiskal via API
+
+Endpoint CRUD tersedia untuk integrasi dengan sistem eksternal:
+
+```
+GET    /api/fiscal-adjustments?year=2025     — daftar koreksi per tahun
+POST   /api/fiscal-adjustments               — buat koreksi baru
+PUT    /api/fiscal-adjustments/{id}           — update koreksi
+DELETE /api/fiscal-adjustments/{id}           — hapus koreksi
+```
+
+Contoh request membuat koreksi:
+
+```json
+{
+  "year": 2025,
+  "description": "Denda Pajak",
+  "adjustmentCategory": "PERMANENT",
+  "adjustmentDirection": "POSITIVE",
+  "amount": 3226367.00,
+  "accountCode": "5.9.90",
+  "notes": "Pasal 9(1)(k) UU PPh"
+}
+```
+
+Validasi:
+- `adjustmentCategory`: `PERMANENT` atau `TEMPORARY`
+- `adjustmentDirection`: `POSITIVE` atau `NEGATIVE`
+- `amount`: harus positif
+- `year` dan `description`: wajib diisi
+
+Autentikasi: Bearer token dengan scope `tax-export:read`.
+
+### Skenario Penggunaan
+
+**Persiapan SPT Tahunan Badan:**
+
+1. Setelah tutup buku komersial, buka Rekonsiliasi Fiskal
+2. Tambahkan koreksi positif untuk biaya yang tidak diakui pajak (denda, natura, biaya tanpa bukti potong)
+3. Tambahkan koreksi negatif jika ada pendapatan yang sudah dikenai pajak final
+4. Verifikasi total koreksi dan PKP yang dihasilkan
+5. Gunakan hasil untuk mengisi SPT Tahunan Badan di Coretax
+
+---
+
 ## Tips Kepatuhan
 
 1. **Catat tepat waktu** - Jangan menunda pencatatan transaksi pajak

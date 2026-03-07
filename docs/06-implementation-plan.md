@@ -25,7 +25,9 @@
 | **11** | Recurring Transactions | ✅ Complete |
 | **12** | Tax Data Management | ✅ Complete |
 | **13** | OpenAPI Migration | ✅ Complete |
-| **14** | WhatsApp Notifications | ⏳ Not Started |
+| **14** | Fiscal Adjustments API | ✅ Complete |
+| **15** | Payroll API + PPh 21 | ⏳ Not Started |
+| **—** | Bug Fixes | Ongoing |
 | **—** | Future Enhancements | As needed |
 
 ---
@@ -1418,28 +1420,87 @@ Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regim
 
 ---
 
-## Phase 14: WhatsApp Notifications
+## Phase 14: Fiscal Adjustments API ✅
 
-**Goal:** Send invoice reminders and alert notifications via WhatsApp
+**Goal:** REST API for managing fiscal adjustment entries (koreksi fiskal). Entity, repository, service, and read-side API already exist. Only write-side API controller was missing.
 
-### 14.1 WhatsApp Integration
-- [ ] WhatsApp Business API provider integration (Wablas/Fonnte or official API)
-- [ ] Provider configuration (API key, sender number)
-- [ ] Message template management
-- [ ] Send test message
+**Context:** `FiscalAdjustment` entity, `FiscalAdjustmentRepository`, `TaxReportDetailService.saveAdjustment()` / `deleteAdjustment()` / `findAdjustmentsByYear()` all exist. `GET /api/tax-export/rekonsiliasi-fiskal` already reads from this table. MVC form handlers exist in `ReportController`. 2025 data was entered via direct SQL INSERT.
 
-### 14.2 Invoice Reminders
-- [ ] Auto-send reminder for overdue invoices
-- [ ] Configurable reminder schedule (e.g., 7d before due, on due date, 7d after)
-- [ ] Per-client phone number (from Client entity)
-- [ ] Opt-out per client
+### 14.1 Fiscal Adjustments CRUD API
+- [x] `GET /api/fiscal-adjustments?year=YYYY` — list adjustments by year
+- [x] `POST /api/fiscal-adjustments` — create adjustment (validate category, direction, amount > 0, year required)
+- [x] `PUT /api/fiscal-adjustments/{id}` — update adjustment
+- [x] `DELETE /api/fiscal-adjustments/{id}` — hard delete
+- [x] OpenAPI annotations (@Tag, @Operation, @ApiResponse)
+- [x] Functional test (4 tests: CRUD lifecycle, validation 400, not-found 404, empty list)
 
-### 14.3 Alert Notifications
-- [ ] Send smart alert events via WhatsApp to configured recipients
-- [ ] Configurable: which alert types trigger WhatsApp notification
-- [ ] Recipient list management
-- [ ] Functional tests
-- [ ] User manual
+---
+
+## Phase 15: Payroll API + PPh 21
+
+**Goal:** REST API for payroll management with PPh 21 calculation (TER method per PMK 168/2023) and 1721-A1 generation. DB schema already exists (`employees`, `salary_components`, `employee_salary_components`, `payroll_runs`, `payroll_details`). Only REST API and calculation logic are missing.
+
+### 15.1 Salary Components API
+- [ ] `GET /api/salary-components` — list active components
+- [ ] `POST /api/salary-components` — create component
+- [ ] `PUT /api/salary-components/{id}` — update component
+- [ ] `DELETE /api/salary-components/{id}` — soft delete (set active = false)
+
+### 15.2 Employee API
+- [ ] `GET /api/employees` — list with filters (active, status)
+- [ ] `POST /api/employees` — create (auto-generate employeeId if omitted)
+- [ ] `GET /api/employees/{id}` — detail with salary components
+- [ ] `PUT /api/employees/{id}` — update master data
+- [ ] `POST /api/employees/{id}/salary-components` — assign component with amount + effective date
+- [ ] `PUT /api/employees/{id}/salary-components/{componentId}` — update assignment
+
+### 15.3 Payroll Run API
+- [ ] `GET /api/payroll` — list runs (filter by year, status)
+- [ ] `POST /api/payroll` — create run (DRAFT)
+- [ ] `GET /api/payroll/{id}` — detail with all payroll_details
+- [ ] `POST /api/payroll/{id}/populate` — auto-add all active employees
+- [ ] `POST /api/payroll/{id}/calculate` — PPh 21 calculation, set CALCULATED
+- [ ] `POST /api/payroll/{id}/approve` — set APPROVED
+- [ ] `POST /api/payroll/{id}/post` — post to accounting, set POSTED
+- [ ] `DELETE /api/payroll/{id}` — only if DRAFT
+
+### 15.4 PPh 21 Calculation Engine
+- [ ] TER rate lookup tables (Category A/B/C per PMK 168/2023)
+- [ ] Monthly withholding: `gross_salary × TER_rate(category, gross_salary)`
+- [ ] Annual reconciliation (December): bruto → biaya jabatan → neto → PTKP → PKP → progressive tax
+- [ ] PTKP amounts (PMK 101/2016: TK_0 through K_I_3)
+- [ ] Progressive tax rates (Pasal 17 UU HPP: 5%/15%/25%/30%/35%)
+- [ ] Mid-year hire handling (actual months worked)
+
+### 15.5 1721-A1 Generation
+- [ ] `GET /api/employees/{id}/1721-a1?year=YYYY` — 1721-A1 data with monthly breakdown
+- [ ] `GET /api/pph21/summary?year=YYYY` — annual PPh 21 summary (for SPT Tahunan Badan Lampiran III)
+
+### 15.6 Functional Tests
+- [ ] Salary component CRUD test
+- [ ] Employee CRUD + salary assignment test
+- [ ] Payroll lifecycle test (create → populate → calculate → approve → post)
+- [ ] PPh 21 calculation test (verify against known expected values)
+- [ ] 1721-A1 generation test
+
+---
+
+## Bug Fixes
+
+### BUG-001: PPN Rounding Inconsistency (FP 03 BUMN Pemungut)
+- [ ] Use consistent rounding (floor) for PPN and bank cash lines in FP 03 template execution
+- Affected: INV018, INV020, INV026 (BNI Sharing Fee) — `round()` vs `floor()` for `HJ × 11%` causes off-by-1
+
+### BUG-002: Direct PUT Creates Broken DRAFTs
+- [ ] `PUT /api/transactions/{id}` on new transaction creates DRAFT with empty journalEntries, throws 500 on post
+- Workaround: use `POST /api/drafts` with `templateId` + `lineAccountOverrides`
+
+### BUG-003: PUT lineAccountOverrides Not Idempotent
+- [ ] `PUT` with `lineAccountOverrides` on already-overridden draft returns 409
+- Workaround: only apply overrides once at draft creation
+
+### BUG-004: Analysis Endpoint Returns Empty journalEntries for DRAFT
+- [ ] `GET /api/analysis` returns `journalEntries: []` for DRAFT status transactions
 
 ---
 
@@ -1452,6 +1513,13 @@ Items below are not planned phases. They are implemented only when a concrete cl
 - [ ] ClamAV virus scanning for uploads
 - [ ] Multi-currency support
 - [ ] Materialized account balances (only if report queries exceed 2s — current performance analysis shows this is decades away for typical usage)
+
+### WhatsApp Notifications
+- [ ] WhatsApp Business API provider integration (Wablas/Fonnte or official API)
+- [ ] Provider configuration (API key, sender number)
+- [ ] Message template management
+- [ ] Auto-send reminder for overdue invoices (configurable schedule)
+- [ ] Send smart alert events via WhatsApp to configured recipients
 
 ### Custom Projects (Per Client Request)
 - [ ] PJAP integration (e-Faktur, e-Bupot)

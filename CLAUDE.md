@@ -26,7 +26,9 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 - **Phase 11:** ✅ Complete (Recurring Transactions — templates, scheduling, auto-posting)
 - **Phase 12:** ✅ Complete (Tax Data Management — 12.1 PPN formula fix, 12.2 tax detail entry UI, 12.3 tax detail & document API, 12.4 auto-populate tax details, 12.5 client management UI, 12.6 fiscal period management, 12.7 tax report enhancements, 12.8 tax deadline updates, 12.9 retrofit 2025 data, 12.10 tax export API, 12.11 PPN docs update)
 - **Phase 13:** ✅ Complete (OpenAPI Migration — springdoc-openapi 3.0.1, 11 @Tag controllers, x- extensions, Swagger UI)
-- **Phase 14:** ⏳ Not Started (WhatsApp Notifications)
+- **Phase 14:** ✅ Complete (Fiscal Adjustments API)
+- **Phase 15:** ⏳ Not Started (Payroll API + PPh 21)
+- **Bug Fixes:** BUG-001 PPN rounding, BUG-002 PUT broken DRAFTs, BUG-003 PUT overrides 409, BUG-004 empty journalEntries
 - See `docs/06-implementation-plan.md` for full plan
 
 ## Key Files

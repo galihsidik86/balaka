@@ -261,6 +261,10 @@ public class TaxReportDetailService {
         return fiscalAdjustmentRepository.findByYearOrderByAdjustmentCategoryAscDescriptionAsc(year);
     }
 
+    public FiscalAdjustment findAdjustmentById(UUID id) {
+        return fiscalAdjustmentRepository.findById(id).orElse(null);
+    }
+
     // ==================== DTOs ====================
 
     public record PPNDetailReport(
