@@ -51,6 +51,9 @@ public class TaxDetailApiController {
             @PathVariable UUID id,
             @PathVariable UUID detailId) {
         TaxTransactionDetail detail = taxDetailService.findById(detailId);
+        if (!detail.getTransaction().getId().equals(id)) {
+            throw new IllegalArgumentException("Tax detail does not belong to transaction " + id);
+        }
         return ResponseEntity.ok(TaxDetailResponse.from(detail));
     }
 

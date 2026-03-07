@@ -3,6 +3,7 @@ package com.artivisi.accountingfinance.controller.api;
 import com.artivisi.accountingfinance.dto.DocumentResponse;
 import com.artivisi.accountingfinance.entity.Document;
 import com.artivisi.accountingfinance.service.DocumentService;
+import com.artivisi.accountingfinance.security.LogSanitizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -43,7 +44,7 @@ public class DocumentApiController {
             @RequestParam("file") MultipartFile file) throws IOException {
         String username = getCurrentUsername();
         log.info("API: Upload document - transactionId={}, filename={}, user={}",
-                id, file.getOriginalFilename(), username);
+                id, LogSanitizer.sanitize(file.getOriginalFilename()), username);
 
         Document saved = documentService.uploadForTransaction(id, file, username);
 

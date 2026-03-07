@@ -3,6 +3,7 @@ package com.artivisi.accountingfinance.controller;
 import com.artivisi.accountingfinance.entity.TaxTransactionDetail;
 import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.enums.TaxType;
+import com.artivisi.accountingfinance.security.LogSanitizer;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.TaxTransactionDetailService;
 import com.artivisi.accountingfinance.service.TransactionService;
@@ -156,7 +157,8 @@ public class TaxDetailBulkController {
                 taxDetailService.save(txId, detail);
                 savedCount++;
             } catch (Exception e) {
-                log.warn("Failed to save tax detail for transaction {}: {}", txIdStr, e.getMessage());
+                log.warn("Failed to save tax detail for transaction {}: {}",
+                        LogSanitizer.sanitize(txIdStr), LogSanitizer.sanitize(e.getMessage()));
             }
         }
 
