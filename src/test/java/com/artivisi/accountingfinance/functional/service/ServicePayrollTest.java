@@ -29,16 +29,17 @@ class ServicePayrollTest extends PlaywrightTestBase {
     }
 
     @Test
-    @DisplayName("Should display employee list with 3 employees from test data")
+    @DisplayName("Should display employee list with at least 3 employees from test data")
     void shouldDisplayEmployeeList() {
         loginAsAdmin();
         initPageObjects();
 
         // Test data has 3 employees: Budi Santoso, Dewi Lestari, Agus Wijaya
+        // Other tests in the same Spring context may create additional employees
         employeeListPage.navigate()
             .verifyPageTitle()
             .verifyTableVisible()
-            .verifyEmployeeCount(3);
+            .verifyMinimumEmployeeCount(3);
 
         // Take screenshot for user manual
         takeManualScreenshot("employees-list");
