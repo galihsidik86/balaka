@@ -19,6 +19,8 @@ import com.artivisi.accountingfinance.service.DashboardService;
 import com.artivisi.accountingfinance.service.JournalEntryService;
 import com.artivisi.accountingfinance.service.ReportService;
 import com.artivisi.accountingfinance.service.SecurityAuditService;
+import com.artivisi.accountingfinance.service.TemplateExecutionEngine;
+import com.artivisi.accountingfinance.service.TransactionApiService;
 import com.artivisi.accountingfinance.service.TaxReportService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -78,6 +80,7 @@ public class FinancialAnalysisApiController {
     private final TransactionRepository transactionRepository;
     private final AnalysisReportRepository analysisReportRepository;
     private final SecurityAuditService securityAuditService;
+    private final TransactionApiService transactionApiService;
     private final CompanyConfigRepository companyConfigRepository;
 
     @GetMapping("/company")
@@ -589,13 +592,32 @@ public class FinancialAnalysisApiController {
         Transaction tx = transactionRepository.findByIdWithJournalEntries(id)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found: " + id));
 
-        List<JournalEntryItemDto> journalEntries = tx.getJournalEntries().stream()
-                .map(je -> new JournalEntryItemDto(
-                        je.getAccount().getAccountCode(),
-                        je.getAccount().getAccountName(),
-                        je.getDebitAmount(),
-                        je.getCreditAmount()))
-                .toList();
+        List<JournalEntryItemDto> journalEntries;
+        if (tx.isDraft() && tx.getJournalEntries().isEmpty()) {
+            // Generate preview entries for DRAFT transactions
+            try {
+                TemplateExecutionEngine.PreviewResult preview =
+                        transactionApiService.previewJournalEntries(tx.getId());
+                journalEntries = preview.entries().stream()
+                        .map(e -> new JournalEntryItemDto(
+                                e.accountCode(),
+                                e.accountName(),
+                                e.debitAmount(),
+                                e.creditAmount()))
+                        .toList();
+            } catch (Exception e) {
+                log.debug("Could not generate journal preview for DRAFT {}: {}", id, e.getMessage());
+                journalEntries = List.of();
+            }
+        } else {
+            journalEntries = tx.getJournalEntries().stream()
+                    .map(je -> new JournalEntryItemDto(
+                            je.getAccount().getAccountCode(),
+                            je.getAccount().getAccountName(),
+                            je.getDebitAmount(),
+                            je.getCreditAmount()))
+                    .toList();
+        }
 
         TransactionDetailDto data = new TransactionDetailDto(
                 tx.getId(),

@@ -226,11 +226,11 @@ public class FormulaEvaluator {
         }
 
         if (result instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
+            return bd.setScale(0, RoundingMode.FLOOR);
         }
 
         if (result instanceof Number num) {
-            return BigDecimal.valueOf(num.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+            return BigDecimal.valueOf(num.doubleValue()).setScale(0, RoundingMode.FLOOR);
         }
 
         throw new IllegalArgumentException("Formula must return a numeric value, got: " + result.getClass().getSimpleName());

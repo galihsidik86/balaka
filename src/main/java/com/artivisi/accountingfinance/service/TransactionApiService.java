@@ -250,11 +250,9 @@ public class TransactionApiService {
             transaction.setJournalTemplate(template);
             journalTemplateService.recordUsage(template.getId());
 
-            // Apply account slots for the new template
+            // Always replace account mappings when template changes — clears stale old mappings
             Map<UUID, UUID> accountMappings = resolveAccountSlots(template, request.accountSlots());
-            if (!accountMappings.isEmpty()) {
-                transactionService.replaceAccountMappings(transaction, accountMappings);
-            }
+            transactionService.replaceAccountMappings(transaction, accountMappings);
         } else if (request.accountSlots() != null && !request.accountSlots().isEmpty()) {
             // Apply account slots to existing template
             JournalTemplate template = journalTemplateService.findByIdWithLines(

@@ -28,7 +28,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 - **Phase 13:** ✅ Complete (OpenAPI Migration — springdoc-openapi 3.0.1, 11 @Tag controllers, x- extensions, Swagger UI)
 - **Phase 14:** ✅ Complete (Fiscal Adjustments API)
 - **Phase 15:** ✅ Complete (Payroll API + PPh 21)
-- **Bug Fixes:** BUG-001 PPN rounding, BUG-002 PUT broken DRAFTs, BUG-003 PUT overrides 409, BUG-004 empty journalEntries
+- **Bug Fixes:** ✅ Complete (BUG-001 PPN rounding, BUG-002 PUT broken DRAFTs, BUG-003 PUT overrides 409, BUG-004 empty journalEntries)
 - See `docs/06-implementation-plan.md` for full plan
 
 ## Key Files

@@ -209,7 +209,7 @@ class FormulaEvaluatorTest {
 
             BigDecimal result = evaluator.evaluate("amount * 0.11", context);
 
-            assertThat(result).isEqualByComparingTo("0.00");
+            assertThat(result).isEqualByComparingTo("0");
         }
 
         @Test
@@ -219,17 +219,19 @@ class FormulaEvaluatorTest {
 
             BigDecimal result = evaluator.evaluate("amount * 0.11", context);
 
-            assertThat(result).isEqualByComparingTo("110000000000.00");
+            assertThat(result).isEqualByComparingTo("110000000000");
         }
 
         @Test
-        @DisplayName("Should round to 2 decimal places")
-        void shouldRoundToTwoDecimalPlaces() {
+        @DisplayName("Should floor to whole rupiah")
+        void shouldFloorToWholeRupiah() {
             FormulaContext context = FormulaContext.of(new BigDecimal("10000.333"));
 
             BigDecimal result = evaluator.evaluate("amount / 3", context);
 
-            assertThat(result.scale()).isEqualTo(2);
+            assertThat(result.scale()).isEqualTo(0);
+            // 10000.333 / 3 ≈ 3333.444... → floor to 3333
+            assertThat(result).isEqualByComparingTo("3333");
         }
     }
 

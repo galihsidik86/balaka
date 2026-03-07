@@ -397,6 +397,7 @@ public class TransactionService {
                 transaction.addAccountMapping(mapping);
             }
         }
+        transactionRepository.save(transaction);
     }
 
     @Transactional

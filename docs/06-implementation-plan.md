@@ -27,7 +27,7 @@
 | **13** | OpenAPI Migration | ✅ Complete |
 | **14** | Fiscal Adjustments API | ✅ Complete |
 | **15** | Payroll API + PPh 21 | ✅ Complete |
-| **—** | Bug Fixes | Ongoing |
+| **—** | Bug Fixes (BUG-001–004) | ✅ Complete |
 | **—** | Future Enhancements | As needed |
 
 ---
@@ -1487,20 +1487,22 @@ Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regim
 
 ## Bug Fixes
 
-### BUG-001: PPN Rounding Inconsistency (FP 03 BUMN Pemungut)
-- [ ] Use consistent rounding (floor) for PPN and bank cash lines in FP 03 template execution
-- Affected: INV018, INV020, INV026 (BNI Sharing Fee) — `round()` vs `floor()` for `HJ × 11%` causes off-by-1
+### BUG-001: PPN Rounding Inconsistency (FP 03 BUMN Pemungut) ✅
+- [x] Changed `FormulaEvaluator.toBigDecimal()` from `HALF_UP` scale 2 to `FLOOR` scale 0 (whole rupiah)
+- Matches Indonesian tax practice: sub-rupiah amounts truncated, not rounded
+- FP 03 template currently has 3 lines (no separate PPN line) — bug prevented for future template updates
 
-### BUG-002: Direct PUT Creates Broken DRAFTs
-- [ ] `PUT /api/transactions/{id}` on new transaction creates DRAFT with empty journalEntries, throws 500 on post
-- Workaround: use `POST /api/drafts` with `templateId` + `lineAccountOverrides`
+### BUG-002: Direct PUT Creates Broken DRAFTs ✅
+- [x] `updateTransaction()` now always calls `replaceAccountMappings()` when template changes, clearing stale old mappings
+- Previously only called when `accountSlots` was non-empty, leaving orphan mappings from old template
 
-### BUG-003: PUT lineAccountOverrides Not Idempotent
-- [ ] `PUT` with `lineAccountOverrides` on already-overridden draft returns 409
-- Workaround: only apply overrides once at draft creation
+### BUG-003: PUT lineAccountOverrides Not Idempotent ✅
+- [x] Added missing `transactionRepository.save(transaction)` at end of `replaceAccountMappings()`
+- JPA auto-flush within `@Transactional` masked the bug, but explicit save ensures correctness
 
-### BUG-004: Analysis Endpoint Returns Empty journalEntries for DRAFT
-- [ ] `GET /api/analysis` returns `journalEntries: []` for DRAFT status transactions
+### BUG-004: Analysis Endpoint Returns Empty journalEntries for DRAFT ✅
+- [x] `getTransactionDetail()` now generates preview journal entries for DRAFT transactions using `TransactionApiService.previewJournalEntries()`
+- Falls back to empty list if preview generation fails
 
 ---
 
