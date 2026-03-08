@@ -19,7 +19,7 @@
             <span class="text-gray-900" th:text="${invoice.id != null} ? 'Edit Invoice' : 'Invoice Baru'">Invoice</span>
         </nav>
 
-        <div class="bg-white rounded-lg shadow p-6" x-data="invoiceForm()">
+        <div class="bg-white rounded-lg shadow p-6" x-data="invoiceForm">
             <form th:action="${invoice.id != null} ? @{/invoices/{invoiceNumber}(invoiceNumber=${invoice.invoiceNumber})} : @{/invoices/new}"
                   th:object="${invoice}"
                   method="post" class="space-y-6">
@@ -188,46 +188,51 @@
 
     <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
-            function invoiceForm() {
-                const existingLines = /*[[${invoice.lines}]]*/ [];
-                return {
-                    lines: existingLines.length > 0
-                        ? existingLines.map(l => ({
-                            description: l.description || '',
-                            quantity: l.quantity || 1,
-                            unitPrice: l.unitPrice || 0,
-                            taxRate: l.taxRate || '',
-                            amount: l.amount || 0
-                        }))
-                        : [],
-                    addLine() {
-                        this.lines.push({ description: '', quantity: 1, unitPrice: 0, taxRate: '', amount: 0 });
-                    },
-                    removeLine(index) {
-                        this.lines.splice(index, 1);
-                    },
-                    calcLine(line) {
-                        const qty = parseFloat(line.quantity) || 0;
-                        const price = parseFloat(line.unitPrice) || 0;
-                        line.amount = qty * price;
-                    },
-                    subtotal() {
-                        return this.lines.reduce((sum, l) => sum + (parseFloat(l.amount) || 0), 0);
-                    },
-                    totalTax() {
-                        return this.lines.reduce((sum, l) => {
-                            const rate = parseFloat(l.taxRate) || 0;
-                            return sum + ((parseFloat(l.amount) || 0) * rate / 100);
-                        }, 0);
-                    },
-                    grandTotal() {
-                        return this.subtotal() + this.totalTax();
-                    },
-                    formatRp(val) {
-                        return 'Rp ' + Math.round(val).toLocaleString('id-ID');
-                    }
-                };
-            }
+            // CSP-compatible: Register Alpine component before Alpine processes the DOM
+            document.addEventListener('alpine:init', function() {
+                var existingLines = /*[[${invoice.lines}]]*/ [];
+                Alpine.data('invoiceForm', function() {
+                    return {
+                        lines: existingLines.length > 0
+                            ? existingLines.map(function(l) {
+                                return {
+                                    description: l.description || '',
+                                    quantity: l.quantity || 1,
+                                    unitPrice: l.unitPrice || 0,
+                                    taxRate: l.taxRate || '',
+                                    amount: l.amount || 0
+                                };
+                            })
+                            : [],
+                        addLine: function() {
+                            this.lines.push({ description: '', quantity: 1, unitPrice: 0, taxRate: '', amount: 0 });
+                        },
+                        removeLine: function(index) {
+                            this.lines.splice(index, 1);
+                        },
+                        calcLine: function(line) {
+                            var qty = parseFloat(line.quantity) || 0;
+                            var price = parseFloat(line.unitPrice) || 0;
+                            line.amount = qty * price;
+                        },
+                        subtotal: function() {
+                            return this.lines.reduce(function(sum, l) { return sum + (parseFloat(l.amount) || 0); }, 0);
+                        },
+                        totalTax: function() {
+                            return this.lines.reduce(function(sum, l) {
+                                var rate = parseFloat(l.taxRate) || 0;
+                                return sum + ((parseFloat(l.amount) || 0) * rate / 100);
+                            }, 0);
+                        },
+                        grandTotal: function() {
+                            return this.subtotal() + this.totalTax();
+                        },
+                        formatRp: function(val) {
+                            return 'Rp ' + Math.round(val).toLocaleString('id-ID');
+                        }
+                    };
+                });
+            });
         </script>
     </th:block>
 </body>

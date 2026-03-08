@@ -19,7 +19,7 @@
             <span class="text-gray-900" th:text="${isEdit} ? 'Edit' : 'Baru'">Baru</span>
         </nav>
 
-        <div class="bg-white rounded-lg shadow p-6" x-data="recurringForm()">
+        <div class="bg-white rounded-lg shadow p-6" x-data="recurringForm">
             <form th:action="${isEdit} ? @{/recurring/{id}(id=${recurring.id})} : @{/recurring/new}"
                   method="post" class="space-y-6">
 
@@ -147,21 +147,24 @@
 
     <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
-            function recurringForm() {
-                const initialFrequency = /*[[${recurring.frequency?.name() ?: 'MONTHLY'}]]*/ 'MONTHLY';
-                return {
-                    frequency: initialFrequency,
-                    get showDayOfMonth() {
-                        return this.frequency === 'MONTHLY' || this.frequency === 'QUARTERLY' || this.frequency === 'YEARLY';
-                    },
-                    get showDayOfWeek() {
-                        return this.frequency === 'WEEKLY';
-                    },
-                    onFrequencyChange() {
-                        // clear irrelevant fields
-                    }
-                };
-            }
+            // CSP-compatible: Register Alpine component before Alpine processes the DOM
+            document.addEventListener('alpine:init', function() {
+                var initialFrequency = /*[[${recurring.frequency?.name() ?: 'MONTHLY'}]]*/ 'MONTHLY';
+                Alpine.data('recurringForm', function() {
+                    return {
+                        frequency: initialFrequency,
+                        get showDayOfMonth() {
+                            return this.frequency === 'MONTHLY' || this.frequency === 'QUARTERLY' || this.frequency === 'YEARLY';
+                        },
+                        get showDayOfWeek() {
+                            return this.frequency === 'WEEKLY';
+                        },
+                        onFrequencyChange: function() {
+                            // clear irrelevant fields
+                        }
+                    };
+                });
+            });
         </script>
     </th:block>
 </body>

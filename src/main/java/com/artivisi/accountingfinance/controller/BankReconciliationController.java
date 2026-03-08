@@ -19,8 +19,15 @@ import com.artivisi.accountingfinance.service.BankStatementParserConfigService;
 import com.artivisi.accountingfinance.service.CompanyBankAccountService;
 import com.artivisi.accountingfinance.service.SecurityAuditService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -38,7 +45,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
@@ -61,6 +67,74 @@ public class BankReconciliationController {
     private final CompanyBankAccountService bankAccountService;
     private final BankStatementItemRepository statementItemRepository;
     private final SecurityAuditService securityAuditService;
+
+    // ==================== Form DTO ====================
+
+    @Getter
+    @Setter
+    static class ParserConfigForm {
+        private UUID id;
+
+        @NotNull(message = "Tipe bank wajib diisi")
+        private BankStatementParserType bankType;
+
+        @NotBlank(message = "Nama konfigurasi wajib diisi")
+        @Size(max = 100, message = "Nama konfigurasi maksimal 100 karakter")
+        private String configName;
+
+        @Size(max = 500, message = "Deskripsi maksimal 500 karakter")
+        private String description;
+
+        @NotNull(message = "Kolom tanggal wajib diisi")
+        @Min(value = 0, message = "Kolom tanggal minimal 0")
+        private Integer dateColumn;
+
+        @NotNull(message = "Kolom deskripsi wajib diisi")
+        @Min(value = 0, message = "Kolom deskripsi minimal 0")
+        private Integer descriptionColumn;
+
+        @Min(value = 0, message = "Kolom debit minimal 0")
+        private Integer debitColumn;
+
+        @Min(value = 0, message = "Kolom kredit minimal 0")
+        private Integer creditColumn;
+
+        @Min(value = 0, message = "Kolom saldo minimal 0")
+        private Integer balanceColumn;
+
+        @NotBlank(message = "Format tanggal wajib diisi")
+        @Size(max = 50, message = "Format tanggal maksimal 50 karakter")
+        private String dateFormat;
+
+        @NotBlank(message = "Delimiter wajib diisi")
+        @Size(max = 5, message = "Delimiter maksimal 5 karakter")
+        private String delimiter = ",";
+
+        @NotNull(message = "Jumlah baris header wajib diisi")
+        @Min(value = 0, message = "Jumlah baris header minimal 0")
+        private Integer skipHeaderRows = 1;
+
+        @Size(max = 20, message = "Encoding maksimal 20 karakter")
+        private String encoding = "UTF-8";
+
+        @Size(max = 5, message = "Pemisah desimal maksimal 5 karakter")
+        private String decimalSeparator = ".";
+
+        @Size(max = 5, message = "Pemisah ribuan maksimal 5 karakter")
+        private String thousandSeparator = ",";
+    }
+
+    private BankStatementParserConfig toEntity(ParserConfigForm form) {
+        BankStatementParserConfig entity = new BankStatementParserConfig();
+        BeanUtils.copyProperties(form, entity, "id");
+        return entity;
+    }
+
+    private ParserConfigForm toForm(BankStatementParserConfig entity) {
+        ParserConfigForm form = new ParserConfigForm();
+        BeanUtils.copyProperties(entity, form);
+        return form;
+    }
 
     // ==================== Landing Page ====================
 
@@ -85,7 +159,7 @@ public class BankReconciliationController {
     @PreAuthorize("hasAuthority('" + Permission.BANK_RECONCILIATION_CONFIG + "')")
     public String newParserConfigForm(Model model) {
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
-        model.addAttribute("config", new BankStatementParserConfig());
+        model.addAttribute("config", new ParserConfigForm());
         model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
         model.addAttribute(ATTR_IS_EDIT, false);
         return "bank-reconciliation/parser-configs/form";
@@ -94,7 +168,7 @@ public class BankReconciliationController {
     @PostMapping("/parser-configs/new")
     @PreAuthorize("hasAuthority('" + Permission.BANK_RECONCILIATION_CONFIG + "')")
     public String createParserConfig(
-            @Valid @ModelAttribute("config") BankStatementParserConfig config,
+            @Valid @ModelAttribute("config") ParserConfigForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -107,6 +181,7 @@ public class BankReconciliationController {
         }
 
         try {
+            BankStatementParserConfig config = toEntity(form);
             parserConfigService.create(config);
             securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                     "Bank parser config created: " + config.getConfigName());
@@ -125,7 +200,7 @@ public class BankReconciliationController {
     @PreAuthorize("hasAuthority('" + Permission.BANK_RECONCILIATION_CONFIG + "')")
     public String editParserConfigForm(@PathVariable UUID id, Model model) {
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
-        model.addAttribute("config", parserConfigService.findById(id));
+        model.addAttribute("config", toForm(parserConfigService.findById(id)));
         model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
         model.addAttribute(ATTR_IS_EDIT, true);
         return "bank-reconciliation/parser-configs/form";
@@ -135,13 +210,13 @@ public class BankReconciliationController {
     @PreAuthorize("hasAuthority('" + Permission.BANK_RECONCILIATION_CONFIG + "')")
     public String updateParserConfig(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("config") BankStatementParserConfig config,
+            @Valid @ModelAttribute("config") ParserConfigForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            config.setId(id);
+            form.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
             model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, true);
@@ -149,6 +224,7 @@ public class BankReconciliationController {
         }
 
         try {
+            BankStatementParserConfig config = toEntity(form);
             parserConfigService.update(id, config);
             securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                     "Bank parser config updated: " + config.getConfigName());
@@ -156,7 +232,7 @@ public class BankReconciliationController {
             return REDIRECT_BANK_RECON_PARSER_CONFIGS;
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("configName", "duplicate", e.getMessage());
-            config.setId(id);
+            form.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
             model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, true);

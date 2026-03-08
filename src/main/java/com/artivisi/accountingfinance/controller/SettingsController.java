@@ -1,6 +1,5 @@
 package com.artivisi.accountingfinance.controller;
 
-import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.CompanyBankAccount;
 import com.artivisi.accountingfinance.entity.CompanyConfig;
 import com.artivisi.accountingfinance.entity.DeviceToken;
@@ -20,8 +19,15 @@ import com.artivisi.accountingfinance.service.TelegramBotService;
 import com.artivisi.accountingfinance.service.VersionInfoService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -87,6 +93,92 @@ public class SettingsController {
     private final VersionInfoService versionInfoService;
     private final SecurityAuditService securityAuditService;
 
+    // ==================== Form DTOs ====================
+
+    @Getter
+    @Setter
+    static class CompanyConfigForm {
+        private UUID id;
+
+        @NotBlank(message = "Company name is required")
+        @Size(max = 255, message = "Company name must not exceed 255 characters")
+        private String companyName;
+
+        private String companyAddress;
+
+        @Size(max = 50, message = "Company phone must not exceed 50 characters")
+        private String companyPhone;
+
+        @Size(max = 255, message = "Company email must not exceed 255 characters")
+        private String companyEmail;
+
+        @Size(max = 50, message = "Tax ID must not exceed 50 characters")
+        private String taxId;
+
+        @Size(max = 20, message = "NPWP must not exceed 20 characters")
+        private String npwp;
+
+        @Size(max = 22, message = "NITKU must not exceed 22 characters")
+        private String nitku;
+
+        @Min(value = 1, message = "Fiscal year start month must be between 1 and 12")
+        @Max(value = 12, message = "Fiscal year start month must be between 1 and 12")
+        private Integer fiscalYearStartMonth;
+
+        @Size(max = 10, message = "Currency code must not exceed 10 characters")
+        private String currencyCode;
+
+        @Size(max = 255, message = "Signing officer name must not exceed 255 characters")
+        private String signingOfficerName;
+
+        @Size(max = 100, message = "Signing officer title must not exceed 100 characters")
+        private String signingOfficerTitle;
+
+        @Size(max = 500, message = "Company logo path must not exceed 500 characters")
+        private String companyLogoPath;
+
+        @Size(max = 50, message = "Industry must not exceed 50 characters")
+        private String industry;
+    }
+
+    @Getter
+    @Setter
+    static class BankAccountForm {
+        private UUID id;
+
+        @NotBlank(message = "Nama bank wajib diisi")
+        @Size(max = 100, message = "Nama bank maksimal 100 karakter")
+        private String bankName;
+
+        @Size(max = 100, message = "Cabang bank maksimal 100 karakter")
+        private String bankBranch;
+
+        @NotBlank(message = "Nomor rekening wajib diisi")
+        @Size(max = 50, message = "Nomor rekening maksimal 50 karakter")
+        private String accountNumber;
+
+        @NotBlank(message = "Nama pemilik rekening wajib diisi")
+        @Size(max = 255, message = "Nama pemilik rekening maksimal 255 karakter")
+        private String accountName;
+
+        @Size(max = 10, message = "Kode mata uang maksimal 10 karakter")
+        private String currencyCode;
+
+        private Boolean isDefault;
+    }
+
+    private CompanyConfig toEntity(CompanyConfigForm form) {
+        CompanyConfig entity = new CompanyConfig();
+        BeanUtils.copyProperties(form, entity);
+        return entity;
+    }
+
+    private CompanyBankAccount toEntity(BankAccountForm form) {
+        CompanyBankAccount entity = new CompanyBankAccount();
+        BeanUtils.copyProperties(form, entity, "id");
+        return entity;
+    }
+
     // ==================== Company Settings ====================
 
     @GetMapping
@@ -104,7 +196,7 @@ public class SettingsController {
     @PostMapping("/company")
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('" + com.artivisi.accountingfinance.security.Permission.SETTINGS_EDIT + "')")
     public String updateCompany(
-            @Valid @ModelAttribute("config") CompanyConfig config,
+            @Valid @ModelAttribute("config") CompanyConfigForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -116,6 +208,7 @@ public class SettingsController {
             return "settings/company";
         }
 
+        CompanyConfig config = toEntity(form);
         companyConfigService.update(config.getId(), config);
         securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                 "Company settings updated: " + config.getCompanyName());
@@ -268,15 +361,11 @@ public class SettingsController {
     @PostMapping("/bank-accounts/new")
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('" + com.artivisi.accountingfinance.security.Permission.SETTINGS_EDIT + "')")
     public String createBankAccount(
-            @Valid @ModelAttribute("bankAccount") CompanyBankAccount bankAccount,
+            @Valid @ModelAttribute("bankAccount") BankAccountForm form,
             BindingResult bindingResult,
             @RequestParam(value = "glAccountId", required = false) UUID glAccountId,
             Model model,
             RedirectAttributes redirectAttributes) {
-
-        if (glAccountId != null) {
-            bankAccount.setGlAccount(chartOfAccountService.findById(glAccountId));
-        }
 
         if (bindingResult.hasErrors()) {
             model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
@@ -285,6 +374,10 @@ public class SettingsController {
         }
 
         try {
+            CompanyBankAccount bankAccount = toEntity(form);
+            if (glAccountId != null) {
+                bankAccount.setGlAccount(chartOfAccountService.findById(glAccountId));
+            }
             bankAccountService.create(bankAccount);
             securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                     "Bank account created: " + bankAccount.getBankName() + " - " + maskAccountNumber(bankAccount.getAccountNumber()));
@@ -311,26 +404,26 @@ public class SettingsController {
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('" + com.artivisi.accountingfinance.security.Permission.SETTINGS_EDIT + "')")
     public String updateBankAccount(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("bankAccount") CompanyBankAccount bankAccount,
+            @Valid @ModelAttribute("bankAccount") BankAccountForm form,
             BindingResult bindingResult,
             @RequestParam(value = "glAccountId", required = false) UUID glAccountId,
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        if (glAccountId != null) {
-            bankAccount.setGlAccount(chartOfAccountService.findById(glAccountId));
-        } else {
-            bankAccount.setGlAccount(null);
-        }
-
         if (bindingResult.hasErrors()) {
-            bankAccount.setId(id);
+            form.setId(id);
             model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return VIEW_BANK_FORM;
         }
 
         try {
+            CompanyBankAccount bankAccount = toEntity(form);
+            if (glAccountId != null) {
+                bankAccount.setGlAccount(chartOfAccountService.findById(glAccountId));
+            } else {
+                bankAccount.setGlAccount(null);
+            }
             bankAccountService.update(id, bankAccount);
             securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                     "Bank account updated: " + bankAccount.getBankName() + " - " + maskAccountNumber(bankAccount.getAccountNumber()));
@@ -338,7 +431,7 @@ public class SettingsController {
             return REDIRECT_SETTINGS;
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountNumber", "duplicate", e.getMessage());
-            bankAccount.setId(id);
+            form.setId(id);
             model.addAttribute(ATTR_GL_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SETTINGS);
             return VIEW_BANK_FORM;

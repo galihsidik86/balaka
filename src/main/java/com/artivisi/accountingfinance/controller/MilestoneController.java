@@ -2,10 +2,17 @@ package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.entity.Project;
 import com.artivisi.accountingfinance.entity.ProjectMilestone;
+import com.artivisi.accountingfinance.enums.MilestoneStatus;
 import com.artivisi.accountingfinance.service.ProjectMilestoneService;
 import com.artivisi.accountingfinance.service.ProjectService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
@@ -35,13 +43,45 @@ public class MilestoneController {
     private final ProjectMilestoneService milestoneService;
     private final ProjectService projectService;
 
+    @Getter
+    @Setter
+    static class MilestoneForm {
+        private UUID id;
+
+        @Min(value = 1, message = "Urutan minimal 1")
+        private Integer sequence;
+
+        @NotBlank(message = "Nama milestone wajib diisi")
+        @Size(max = 255, message = "Nama milestone maksimal 255 karakter")
+        private String name;
+
+        private String description;
+
+        @Min(value = 0, message = "Bobot minimal 0")
+        private Integer weightPercent;
+
+        private LocalDate targetDate;
+        private MilestoneStatus status;
+    }
+
+    private ProjectMilestone toEntity(MilestoneForm form) {
+        ProjectMilestone entity = new ProjectMilestone();
+        BeanUtils.copyProperties(form, entity, "id");
+        return entity;
+    }
+
+    private MilestoneForm toForm(ProjectMilestone entity) {
+        MilestoneForm form = new MilestoneForm();
+        BeanUtils.copyProperties(entity, form);
+        return form;
+    }
+
     @GetMapping("/new")
     public String newForm(@PathVariable String projectCode, Model model) {
         Project project = projectService.findByCode(projectCode);
-        ProjectMilestone milestone = new ProjectMilestone();
 
         model.addAttribute(ATTR_PROJECT, project);
-        model.addAttribute("milestone", milestone);
+        model.addAttribute("milestone", new MilestoneForm());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
         return VIEW_FORM;
     }
@@ -49,7 +89,7 @@ public class MilestoneController {
     @PostMapping("/new")
     public String create(
             @PathVariable String projectCode,
-            @Valid @ModelAttribute("milestone") ProjectMilestone milestone,
+            @Valid @ModelAttribute("milestone") MilestoneForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -63,6 +103,7 @@ public class MilestoneController {
 
         try {
             Project project = projectService.findByCode(projectCode);
+            ProjectMilestone milestone = toEntity(form);
             milestoneService.create(project.getId(), milestone);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Milestone berhasil ditambahkan");
             return REDIRECT_PROJECT_PREFIX + projectCode;
@@ -82,10 +123,10 @@ public class MilestoneController {
             Model model) {
 
         Project project = projectService.findByCode(projectCode);
-        ProjectMilestone milestone = milestoneService.findById(id);
+        ProjectMilestone existing = milestoneService.findById(id);
 
         model.addAttribute(ATTR_PROJECT, project);
-        model.addAttribute("milestone", milestone);
+        model.addAttribute("milestone", toForm(existing));
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
         return VIEW_FORM;
     }
@@ -94,27 +135,28 @@ public class MilestoneController {
     public String update(
             @PathVariable String projectCode,
             @PathVariable UUID id,
-            @Valid @ModelAttribute("milestone") ProjectMilestone milestone,
+            @Valid @ModelAttribute("milestone") MilestoneForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
             Project project = projectService.findByCode(projectCode);
-            milestone.setId(id);
+            form.setId(id);
             model.addAttribute(ATTR_PROJECT, project);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
             return VIEW_FORM;
         }
 
         try {
-            milestoneService.update(id, milestone);
+            ProjectMilestone updated = toEntity(form);
+            milestoneService.update(id, updated);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Milestone berhasil diperbarui");
             return REDIRECT_PROJECT_PREFIX + projectCode;
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("sequence", "duplicate", e.getMessage());
             Project project = projectService.findByCode(projectCode);
-            milestone.setId(id);
+            form.setId(id);
             model.addAttribute(ATTR_PROJECT, project);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
             return VIEW_FORM;

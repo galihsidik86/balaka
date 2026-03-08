@@ -8,8 +8,15 @@ import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.DeviceAuthService;
 import com.artivisi.accountingfinance.service.SecurityAuditService;
 import com.artivisi.accountingfinance.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,7 +28,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.validation.Valid;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,6 +57,38 @@ public class UserController {
     private final SecurityAuditService securityAuditService;
     private final DeviceAuthService deviceAuthService;
 
+    @Getter
+    @Setter
+    static class UserForm {
+        private UUID id;
+
+        @NotBlank(message = "Username is required")
+        @Size(min = 3, max = 100, message = "Username must be between 3 and 100 characters")
+        private String username;
+
+        @NotBlank(message = "Full name is required")
+        @Size(max = 255, message = "Full name must not exceed 255 characters")
+        private String fullName;
+
+        @Email(message = "Email must be valid")
+        @Size(max = 255, message = "Email must not exceed 255 characters")
+        private String email;
+
+        private Boolean active;
+    }
+
+    private User toEntity(UserForm form) {
+        User entity = new User();
+        BeanUtils.copyProperties(form, entity, "id");
+        return entity;
+    }
+
+    private UserForm toForm(User entity) {
+        UserForm form = new UserForm();
+        BeanUtils.copyProperties(entity, form);
+        return form;
+    }
+
     @GetMapping
     public String list(
             @RequestParam(defaultValue = "0") int page,
@@ -71,7 +109,7 @@ public class UserController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.USER_CREATE + "')")
     public String newForm(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new UserForm());
         model.addAttribute(ATTR_ROLES, Role.values());
         model.addAttribute(ATTR_SELECTED_ROLES, new HashSet<>());
         return VIEW_FORM;
@@ -80,7 +118,7 @@ public class UserController {
     @PostMapping
     @PreAuthorize("hasAuthority('" + Permission.USER_CREATE + "')")
     public String create(
-            @Valid @ModelAttribute User user,
+            @Valid @ModelAttribute("user") UserForm form,
             BindingResult bindingResult,
             @RequestParam(value = "selectedRoles", required = false) String[] selectedRoleNames,
             @RequestParam String password,
@@ -115,6 +153,7 @@ public class UserController {
                 return VIEW_FORM;
             }
 
+            User user = toEntity(form);
             user.setPassword(password);
             userService.create(user, roles);
             securityAuditService.log(AuditEventType.USER_CREATED,
@@ -147,7 +186,7 @@ public class UserController {
         User user = userService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND + id));
 
-        model.addAttribute("user", user);
+        model.addAttribute("user", toForm(user));
         model.addAttribute(ATTR_ROLES, Role.values());
         model.addAttribute(ATTR_SELECTED_ROLES, user.getRoles());
         return VIEW_FORM;
@@ -157,7 +196,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('" + Permission.USER_EDIT + "')")
     public String update(
             @PathVariable UUID id,
-            @Valid @ModelAttribute User user,
+            @Valid @ModelAttribute("user") UserForm form,
             BindingResult bindingResult,
             @RequestParam(value = "selectedRoles", required = false) String[] selectedRoleNames,
             RedirectAttributes redirectAttributes,
@@ -183,6 +222,7 @@ public class UserController {
                 return VIEW_FORM;
             }
 
+            User user = toEntity(form);
             userService.update(id, user, roles);
             securityAuditService.log(AuditEventType.USER_UPDATED,
                     "Updated user: " + user.getUsername() + AUDIT_ID_SUFFIX + id + ") with roles: " + roles);

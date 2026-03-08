@@ -9,7 +9,15 @@ import com.artivisi.accountingfinance.repository.UserRepository;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.EmployeeService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -26,7 +34,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 
@@ -45,6 +54,98 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
     private final UserRepository userRepository;
+
+    @Getter
+    @Setter
+    static class EmployeeForm {
+        private UUID id;
+
+        @NotBlank(message = "NIK karyawan wajib diisi")
+        @Size(max = 20, message = "NIK karyawan maksimal 20 karakter")
+        private String employeeId;
+
+        @NotBlank(message = "Nama karyawan wajib diisi")
+        @Size(max = 255, message = "Nama karyawan maksimal 255 karakter")
+        private String name;
+
+        @Email(message = "Format email tidak valid")
+        @Size(max = 255, message = "Email maksimal 255 karakter")
+        private String email;
+
+        @Size(max = 50, message = "Nomor telepon maksimal 50 karakter")
+        private String phone;
+
+        private String address;
+
+        private UUID user;
+
+        @Size(max = 20, message = "NPWP maksimal 20 karakter")
+        @Pattern(regexp = "^$|^[0-9.\\-]{15,20}$", message = "NPWP harus 15-20 digit")
+        private String npwp;
+
+        @Size(max = 16, message = "NIK KTP maksimal 16 karakter")
+        @Pattern(regexp = "^$|^\\d{16}$", message = "NIK KTP harus 16 digit angka")
+        private String nikKtp;
+
+        @NotNull(message = "Status PTKP wajib diisi")
+        private PtkpStatus ptkpStatus;
+
+        @NotNull(message = "Tanggal mulai kerja wajib diisi")
+        private LocalDate hireDate;
+
+        private LocalDate resignDate;
+
+        @NotNull(message = "Tipe kepegawaian wajib diisi")
+        private EmploymentType employmentType;
+
+        @NotNull(message = "Status kepegawaian wajib diisi")
+        private EmploymentStatus employmentStatus;
+
+        @Size(max = 100, message = "Jabatan maksimal 100 karakter")
+        private String jobTitle;
+
+        @Size(max = 100, message = "Departemen maksimal 100 karakter")
+        private String department;
+
+        @Size(max = 100, message = "Nama bank maksimal 100 karakter")
+        private String bankName;
+
+        @Size(max = 50, message = "Nomor rekening maksimal 50 karakter")
+        private String bankAccountNumber;
+
+        @Size(max = 255, message = "Nama pemilik rekening maksimal 255 karakter")
+        private String bankAccountName;
+
+        @Size(max = 20, message = "Nomor BPJS Kesehatan maksimal 20 karakter")
+        private String bpjsKesehatanNumber;
+
+        @Size(max = 20, message = "Nomor BPJS Ketenagakerjaan maksimal 20 karakter")
+        private String bpjsKetenagakerjaanNumber;
+
+        private String notes;
+
+        private Boolean active;
+    }
+
+    private Employee toEntity(EmployeeForm form) {
+        Employee entity = new Employee();
+        BeanUtils.copyProperties(form, entity, "id", "user");
+        if (form.getUser() != null) {
+            User u = userRepository.findById(form.getUser())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + form.getUser()));
+            entity.setUser(u);
+        }
+        return entity;
+    }
+
+    private EmployeeForm toForm(Employee entity) {
+        EmployeeForm form = new EmployeeForm();
+        BeanUtils.copyProperties(entity, form, "user");
+        if (entity.getUser() != null) {
+            form.setUser(entity.getUser().getId());
+        }
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -74,12 +175,12 @@ public class EmployeeController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.EMPLOYEE_CREATE + "')")
     public String newForm(Model model) {
-        Employee employee = new Employee();
-        employee.setEmploymentStatus(EmploymentStatus.ACTIVE);
-        employee.setEmploymentType(EmploymentType.PERMANENT);
-        employee.setPtkpStatus(PtkpStatus.TK_0);
+        EmployeeForm form = new EmployeeForm();
+        form.setEmploymentStatus(EmploymentStatus.ACTIVE);
+        form.setEmploymentType(EmploymentType.PERMANENT);
+        form.setPtkpStatus(PtkpStatus.TK_0);
 
-        model.addAttribute(ATTR_EMPLOYEE, employee);
+        model.addAttribute(ATTR_EMPLOYEE, form);
         model.addAttribute("ptkpStatuses", PtkpStatus.values());
         model.addAttribute("employmentTypes", EmploymentType.values());
         model.addAttribute(ATTR_EMPLOYMENT_STATUSES, EmploymentStatus.values());
@@ -90,7 +191,7 @@ public class EmployeeController {
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.EMPLOYEE_CREATE + "')")
     public String create(
-            @Valid @ModelAttribute("employee") Employee employee,
+            @Valid @ModelAttribute("employee") EmployeeForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -101,6 +202,7 @@ public class EmployeeController {
         }
 
         try {
+            Employee employee = toEntity(form);
             Employee saved = employeeService.create(employee);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Karyawan berhasil ditambahkan");
             return REDIRECT_EMPLOYEES + "/" + saved.getEmployeeId();
@@ -129,7 +231,7 @@ public class EmployeeController {
     @PreAuthorize("hasAuthority('" + Permission.EMPLOYEE_EDIT + "')")
     public String editForm(@PathVariable String employeeId, Model model) {
         Employee employee = employeeService.findByEmployeeId(employeeId);
-        model.addAttribute(ATTR_EMPLOYEE, employee);
+        model.addAttribute(ATTR_EMPLOYEE, toForm(employee));
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -138,23 +240,24 @@ public class EmployeeController {
     @PreAuthorize("hasAuthority('" + Permission.EMPLOYEE_EDIT + "')")
     public String update(
             @PathVariable String employeeId,
-            @Valid @ModelAttribute("employee") Employee employee,
+            @Valid @ModelAttribute("employee") EmployeeForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
             Employee existing = employeeService.findByEmployeeId(employeeId);
-            employee.setId(existing.getId());
+            form.setId(existing.getId());
             addFormAttributes(model);
             return VIEW_FORM;
         }
 
         try {
             Employee existing = employeeService.findByEmployeeId(employeeId);
+            Employee employee = toEntity(form);
             employeeService.update(existing.getId(), employee);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Karyawan berhasil diperbarui");
-            return REDIRECT_EMPLOYEES + "/" + employee.getEmployeeId();
+            return REDIRECT_EMPLOYEES + "/" + form.getEmployeeId();
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("NIK")) {
                 bindingResult.rejectValue("employeeId", ERR_DUPLICATE, e.getMessage());
@@ -164,7 +267,7 @@ public class EmployeeController {
                 bindingResult.reject("error", e.getMessage());
             }
             Employee existing = employeeService.findByEmployeeId(employeeId);
-            employee.setId(existing.getId());
+            form.setId(existing.getId());
             addFormAttributes(model);
             return VIEW_FORM;
         }

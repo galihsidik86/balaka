@@ -2,10 +2,16 @@ package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.enums.AccountType;
+import com.artivisi.accountingfinance.enums.NormalBalance;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.ChartOfAccountService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,6 +45,53 @@ public class ChartOfAccountsController {
 
     private final ChartOfAccountService chartOfAccountService;
 
+    @Getter
+    @Setter
+    static class ParentRef {
+        private UUID id;
+    }
+
+    @Getter
+    @Setter
+    static class AccountForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode akun harus diisi")
+        @Size(max = 20, message = "Kode akun maksimal 20 karakter")
+        private String accountCode;
+
+        @NotBlank(message = "Nama akun harus diisi")
+        @Size(max = 255, message = "Nama akun maksimal 255 karakter")
+        private String accountName;
+
+        private AccountType accountType;
+        private NormalBalance normalBalance;
+        private Boolean isHeader;
+        private Boolean permanent;
+        private Boolean active;
+        private String description;
+
+        // Used by Thymeleaf for dropdown pre-selection (account.parent.id)
+        private ParentRef parent;
+    }
+
+    private ChartOfAccount toEntity(AccountForm form) {
+        ChartOfAccount entity = new ChartOfAccount();
+        BeanUtils.copyProperties(form, entity, "id", "parent");
+        return entity;
+    }
+
+    private AccountForm toForm(ChartOfAccount entity) {
+        AccountForm form = new AccountForm();
+        BeanUtils.copyProperties(entity, form, "parent");
+        if (entity.getParent() != null) {
+            ParentRef ref = new ParentRef();
+            ref.setId(entity.getParent().getId());
+            form.setParent(ref);
+        }
+        return form;
+    }
+
     @GetMapping
     public String list(Model model) {
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
@@ -50,7 +103,7 @@ public class ChartOfAccountsController {
     @PreAuthorize("hasAuthority('" + Permission.ACCOUNT_CREATE + "')")
     public String create(Model model) {
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
-        model.addAttribute("account", new ChartOfAccount());
+        model.addAttribute("account", new AccountForm());
         model.addAttribute(ATTR_ACCOUNT_TYPES, AccountType.values());
         model.addAttribute(ATTR_PARENT_ACCOUNTS, chartOfAccountService.findAll());
         model.addAttribute(ATTR_HAS_CHILDREN, false);
@@ -60,17 +113,11 @@ public class ChartOfAccountsController {
 
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.ACCOUNT_CREATE + "')")
-    public String save(@Valid @ModelAttribute("account") ChartOfAccount account,
+    public String save(@Valid @ModelAttribute("account") AccountForm form,
                        BindingResult bindingResult,
                        @RequestParam(required = false) UUID parentId,
                        Model model,
                        RedirectAttributes redirectAttributes) {
-        // Set parent - service will inherit accountType and normalBalance from parent
-        if (parentId != null) {
-            ChartOfAccount parent = chartOfAccountService.findById(parentId);
-            account.setParent(parent);
-        }
-
         if (bindingResult.hasErrors()) {
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
             model.addAttribute(ATTR_ACCOUNT_TYPES, AccountType.values());
@@ -81,6 +128,12 @@ public class ChartOfAccountsController {
         }
 
         try {
+            ChartOfAccount account = toEntity(form);
+            // Set parent - service will inherit accountType and normalBalance from parent
+            if (parentId != null) {
+                ChartOfAccount parent = chartOfAccountService.findById(parentId);
+                account.setParent(parent);
+            }
             chartOfAccountService.create(account);
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountCode", "duplicate", e.getMessage());
@@ -99,20 +152,20 @@ public class ChartOfAccountsController {
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasAuthority('" + Permission.ACCOUNT_EDIT + "')")
     public String edit(@PathVariable UUID id, Model model) {
-        ChartOfAccount account = chartOfAccountService.findById(id);
+        ChartOfAccount existing = chartOfAccountService.findById(id);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
-        model.addAttribute("account", account);
+        model.addAttribute("account", toForm(existing));
         model.addAttribute(ATTR_ACCOUNT_TYPES, AccountType.values());
         model.addAttribute(ATTR_PARENT_ACCOUNTS, chartOfAccountService.findAll());
-        model.addAttribute(ATTR_HAS_CHILDREN, !account.getChildren().isEmpty());
-        model.addAttribute(ATTR_HAS_PARENT, account.getParent() != null);
+        model.addAttribute(ATTR_HAS_CHILDREN, !existing.getChildren().isEmpty());
+        model.addAttribute(ATTR_HAS_PARENT, existing.getParent() != null);
         return VIEW_FORM;
     }
 
     @PostMapping("/{id}/edit")
     @PreAuthorize("hasAuthority('" + Permission.ACCOUNT_EDIT + "')")
     public String update(@PathVariable UUID id,
-                         @Valid @ModelAttribute("account") ChartOfAccount account,
+                         @Valid @ModelAttribute("account") AccountForm form,
                          BindingResult bindingResult,
                          Model model,
                          RedirectAttributes redirectAttributes) {
@@ -120,13 +173,13 @@ public class ChartOfAccountsController {
         boolean hasChildren = !existing.getChildren().isEmpty();
         boolean hasParent = existing.getParent() != null;
 
-        // If account has parent, set parent reference for proper processing
-        // Service will use existing parent's accountType and normalBalance
-        if (hasParent) {
-            account.setParent(existing.getParent());
-        }
-
         if (bindingResult.hasErrors()) {
+            form.setId(id);
+            if (hasParent) {
+                ParentRef ref = new ParentRef();
+                ref.setId(existing.getParent().getId());
+                form.setParent(ref);
+            }
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
             model.addAttribute(ATTR_ACCOUNT_TYPES, AccountType.values());
             model.addAttribute(ATTR_PARENT_ACCOUNTS, chartOfAccountService.findAll());
@@ -136,9 +189,16 @@ public class ChartOfAccountsController {
         }
 
         try {
+            ChartOfAccount account = toEntity(form);
+            // If account has parent, set parent reference for proper processing
+            // Service will use existing parent's accountType and normalBalance
+            if (hasParent) {
+                account.setParent(existing.getParent());
+            }
             chartOfAccountService.update(id, account);
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("accountCode", "duplicate", e.getMessage());
+            form.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
             model.addAttribute(ATTR_ACCOUNT_TYPES, AccountType.values());
             model.addAttribute(ATTR_PARENT_ACCOUNTS, chartOfAccountService.findAll());
@@ -147,6 +207,7 @@ public class ChartOfAccountsController {
             return VIEW_FORM;
         } catch (IllegalStateException e) {
             bindingResult.rejectValue("accountType", "invalid", e.getMessage());
+            form.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_ACCOUNTS);
             model.addAttribute(ATTR_ACCOUNT_TYPES, AccountType.values());
             model.addAttribute(ATTR_PARENT_ACCOUNTS, chartOfAccountService.findAll());

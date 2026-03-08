@@ -4,7 +4,12 @@ import com.artivisi.accountingfinance.entity.ProductCategory;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.ProductCategoryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -38,6 +43,47 @@ public class ProductCategoryController {
 
     private final ProductCategoryService categoryService;
 
+    @Getter
+    @Setter
+    static class ProductCategoryForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode kategori wajib diisi")
+        @Size(max = 20, message = "Kode kategori maksimal 20 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama kategori wajib diisi")
+        @Size(max = 100, message = "Nama kategori maksimal 100 karakter")
+        private String name;
+
+        @Size(max = 255, message = "Deskripsi maksimal 255 karakter")
+        private String description;
+
+        private UUID parent;
+
+        private boolean active;
+    }
+
+    private ProductCategory toEntity(ProductCategoryForm form) {
+        ProductCategory category = new ProductCategory();
+        BeanUtils.copyProperties(form, category, "id", "parent");
+        if (form.getParent() != null) {
+            ProductCategory parentCategory = new ProductCategory();
+            parentCategory.setId(form.getParent());
+            category.setParent(parentCategory);
+        }
+        return category;
+    }
+
+    private ProductCategoryForm toForm(ProductCategory category) {
+        ProductCategoryForm form = new ProductCategoryForm();
+        BeanUtils.copyProperties(category, form, "parent");
+        if (category.getParent() != null) {
+            form.setParent(category.getParent().getId());
+        }
+        return form;
+    }
+
     @GetMapping
     public String list(
             @RequestParam(required = false) String search,
@@ -61,10 +107,10 @@ public class ProductCategoryController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_CREATE + "')")
     public String newForm(Model model) {
-        ProductCategory category = new ProductCategory();
-        category.setActive(true);
+        ProductCategoryForm form = new ProductCategoryForm();
+        form.setActive(true);
 
-        model.addAttribute("category", category);
+        model.addAttribute("category", form);
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -72,7 +118,7 @@ public class ProductCategoryController {
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_CREATE + "')")
     public String create(
-            @Valid @ModelAttribute("category") ProductCategory category,
+            @Valid @ModelAttribute("category") ProductCategoryForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -83,6 +129,7 @@ public class ProductCategoryController {
         }
 
         try {
+            ProductCategory category = toEntity(form);
             categoryService.create(category);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Kategori produk berhasil ditambahkan");
             return REDIRECT_PRODUCT_CATEGORIES;
@@ -103,7 +150,7 @@ public class ProductCategoryController {
         ProductCategory category = categoryService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Kategori produk tidak ditemukan: " + id));
 
-        model.addAttribute("category", category);
+        model.addAttribute("category", toForm(category));
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -112,17 +159,19 @@ public class ProductCategoryController {
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
     public String update(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("category") ProductCategory category,
+            @Valid @ModelAttribute("category") ProductCategoryForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }
 
         try {
+            ProductCategory category = toEntity(form);
             categoryService.update(id, category);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Kategori produk berhasil diubah");
             return REDIRECT_PRODUCT_CATEGORIES;
@@ -132,6 +181,7 @@ public class ProductCategoryController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }

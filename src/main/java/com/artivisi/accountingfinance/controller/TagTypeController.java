@@ -4,7 +4,12 @@ import com.artivisi.accountingfinance.entity.TagType;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.TagTypeService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -37,6 +42,25 @@ public class TagTypeController {
 
     private final TagTypeService tagTypeService;
 
+    @Getter
+    @Setter
+    static class TagTypeForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode tipe label wajib diisi")
+        @Size(max = 20, message = "Kode tipe label maksimal 20 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama tipe label wajib diisi")
+        @Size(max = 100, message = "Nama tipe label maksimal 100 karakter")
+        private String name;
+
+        @Size(max = 255, message = "Deskripsi maksimal 255 karakter")
+        private String description;
+
+        private boolean active;
+    }
+
     @GetMapping
     public String list(
             @RequestParam(required = false) String search,
@@ -60,10 +84,10 @@ public class TagTypeController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.TAG_CREATE + "')")
     public String newForm(Model model) {
-        TagType tagType = new TagType();
-        tagType.setActive(true);
+        TagTypeForm form = new TagTypeForm();
+        form.setActive(true);
 
-        model.addAttribute("tagType", tagType);
+        model.addAttribute("tagType", form);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAG_TYPES);
         return VIEW_FORM;
     }
@@ -71,7 +95,7 @@ public class TagTypeController {
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.TAG_CREATE + "')")
     public String create(
-            @Valid @ModelAttribute("tagType") TagType tagType,
+            @Valid @ModelAttribute("tagType") TagTypeForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -82,6 +106,8 @@ public class TagTypeController {
         }
 
         try {
+            TagType tagType = new TagType();
+            BeanUtils.copyProperties(form, tagType, "id");
             tagTypeService.create(tagType);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Tipe label berhasil ditambahkan");
             return REDIRECT_TAG_TYPES;
@@ -102,7 +128,10 @@ public class TagTypeController {
         TagType tagType = tagTypeService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tipe label tidak ditemukan: " + id));
 
-        model.addAttribute("tagType", tagType);
+        TagTypeForm form = new TagTypeForm();
+        BeanUtils.copyProperties(tagType, form);
+
+        model.addAttribute("tagType", form);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAG_TYPES);
         return VIEW_FORM;
     }
@@ -111,17 +140,20 @@ public class TagTypeController {
     @PreAuthorize("hasAuthority('" + Permission.TAG_EDIT + "')")
     public String update(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("tagType") TagType tagType,
+            @Valid @ModelAttribute("tagType") TagTypeForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
+            form.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAG_TYPES);
             return VIEW_FORM;
         }
 
         try {
+            TagType tagType = new TagType();
+            BeanUtils.copyProperties(form, tagType, "id");
             tagTypeService.update(id, tagType);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Tipe label berhasil diubah");
             return REDIRECT_TAG_TYPES;
@@ -131,6 +163,7 @@ public class TagTypeController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
+            form.setId(id);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAG_TYPES);
             return VIEW_FORM;
         }

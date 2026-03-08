@@ -1,10 +1,12 @@
 package com.artivisi.accountingfinance.controller;
 
+import com.artivisi.accountingfinance.entity.Client;
 import com.artivisi.accountingfinance.entity.CompanyBankAccount;
 import com.artivisi.accountingfinance.entity.CompanyConfig;
 import com.artivisi.accountingfinance.entity.Invoice;
 import com.artivisi.accountingfinance.entity.InvoiceLine;
 import com.artivisi.accountingfinance.entity.InvoicePayment;
+import com.artivisi.accountingfinance.entity.Project;
 import com.artivisi.accountingfinance.enums.InvoiceStatus;
 import com.artivisi.accountingfinance.enums.PaymentMethod;
 import com.artivisi.accountingfinance.service.ClientService;
@@ -15,10 +17,16 @@ import com.artivisi.accountingfinance.service.ProductService;
 import com.artivisi.accountingfinance.service.ProjectService;
 import com.artivisi.accountingfinance.util.AmountToWordsUtil;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -58,6 +66,70 @@ public class InvoiceController {
     private final ProductService productService;
     private final CompanyConfigService companyConfigService;
     private final CompanyBankAccountService bankAccountService;
+
+    @Getter
+    @Setter
+    static class EntityRef {
+        private UUID id;
+    }
+
+    @Getter
+    @Setter
+    static class InvoiceForm {
+        private UUID id;
+
+        @Size(max = 50, message = "Nomor invoice maksimal 50 karakter")
+        private String invoiceNumber;
+
+        private EntityRef client = new EntityRef();
+
+        private EntityRef project = new EntityRef();
+
+        @NotNull(message = "Tanggal invoice wajib diisi")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private LocalDate invoiceDate;
+
+        @NotNull(message = "Tanggal jatuh tempo wajib diisi")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private LocalDate dueDate;
+
+        @NotNull(message = "Jumlah wajib diisi")
+        private BigDecimal amount;
+
+        private String notes;
+    }
+
+    private Invoice toEntity(InvoiceForm form) {
+        Invoice entity = new Invoice();
+        BeanUtils.copyProperties(form, entity, "id", "client", "project");
+        if (form.getClient() != null && form.getClient().getId() != null) {
+            Client c = new Client();
+            c.setId(form.getClient().getId());
+            entity.setClient(c);
+        }
+        if (form.getProject() != null && form.getProject().getId() != null) {
+            Project p = new Project();
+            p.setId(form.getProject().getId());
+            entity.setProject(p);
+        }
+        return entity;
+    }
+
+    private InvoiceForm toForm(Invoice entity) {
+        InvoiceForm form = new InvoiceForm();
+        BeanUtils.copyProperties(entity, form, "client", "project");
+        if (entity.getClient() != null) {
+            EntityRef clientRef = new EntityRef();
+            clientRef.setId(entity.getClient().getId());
+            form.setClient(clientRef);
+        }
+        if (entity.getProject() != null) {
+            EntityRef projectRef = new EntityRef();
+            projectRef.setId(entity.getProject().getId());
+            form.setProject(projectRef);
+        }
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -110,7 +182,7 @@ public class InvoiceController {
 
     @PostMapping("/new")
     public String create(
-            @Valid @ModelAttribute(ATTR_INVOICE) Invoice invoice,
+            @Valid @ModelAttribute(ATTR_INVOICE) InvoiceForm form,
             BindingResult bindingResult,
             @RequestParam(value = "lineDescription", required = false) List<String> descriptions,
             @RequestParam(value = "lineQuantity", required = false) List<BigDecimal> quantities,
@@ -125,6 +197,7 @@ public class InvoiceController {
         }
 
         try {
+            Invoice invoice = toEntity(form);
             List<InvoiceLine> lines = buildInvoiceLines(descriptions, quantities, unitPrices, taxRates);
             Invoice saved = invoiceService.create(invoice, lines);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Invoice berhasil dibuat");
@@ -163,7 +236,7 @@ public class InvoiceController {
     @PostMapping("/{invoiceNumber}")
     public String update(
             @PathVariable String invoiceNumber,
-            @Valid @ModelAttribute(ATTR_INVOICE) Invoice invoice,
+            @Valid @ModelAttribute(ATTR_INVOICE) InvoiceForm form,
             BindingResult bindingResult,
             @RequestParam(value = "lineDescription", required = false) List<String> descriptions,
             @RequestParam(value = "lineQuantity", required = false) List<BigDecimal> quantities,
@@ -174,17 +247,18 @@ public class InvoiceController {
 
         if (bindingResult.hasErrors()) {
             Invoice existing = invoiceService.findByInvoiceNumber(invoiceNumber);
-            invoice.setId(existing.getId());
+            form.setId(existing.getId());
             populateFormModel(model);
             return VIEW_FORM;
         }
 
         try {
             Invoice existing = invoiceService.findByInvoiceNumber(invoiceNumber);
+            Invoice invoice = toEntity(form);
             List<InvoiceLine> lines = buildInvoiceLines(descriptions, quantities, unitPrices, taxRates);
             invoiceService.update(existing.getId(), invoice, lines);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Invoice berhasil diperbarui");
-            return REDIRECT_INVOICES_PREFIX + invoice.getInvoiceNumber();
+            return REDIRECT_INVOICES_PREFIX + form.getInvoiceNumber();
         } catch (IllegalArgumentException | IllegalStateException e) {
             if (e.getMessage().contains("already exists")) {
                 bindingResult.rejectValue("invoiceNumber", "duplicate", e.getMessage());
@@ -192,7 +266,7 @@ public class InvoiceController {
                 bindingResult.reject("error", e.getMessage());
             }
             Invoice existing = invoiceService.findByInvoiceNumber(invoiceNumber);
-            invoice.setId(existing.getId());
+            form.setId(existing.getId());
             populateFormModel(model);
             return VIEW_FORM;
         }

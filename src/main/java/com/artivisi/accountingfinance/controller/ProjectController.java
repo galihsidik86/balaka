@@ -5,7 +5,12 @@ import com.artivisi.accountingfinance.enums.ProjectStatus;
 import com.artivisi.accountingfinance.service.ClientService;
 import com.artivisi.accountingfinance.service.ProjectService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -21,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
@@ -39,6 +46,53 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final ClientService clientService;
+
+    @Getter
+    @Setter
+    static class EntityRef {
+        private UUID id;
+    }
+
+    @Getter
+    @Setter
+    static class ProjectForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode proyek wajib diisi")
+        @Size(max = 50, message = "Kode proyek maksimal 50 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama proyek wajib diisi")
+        @Size(max = 255, message = "Nama proyek maksimal 255 karakter")
+        private String name;
+
+        private String description;
+        private ProjectStatus status;
+        private BigDecimal contractValue;
+        private BigDecimal budgetAmount;
+        private LocalDate startDate;
+        private LocalDate endDate;
+
+        // Used by Thymeleaf for dropdown pre-selection (project.client.id)
+        private EntityRef client;
+    }
+
+    private Project toEntity(ProjectForm form) {
+        Project entity = new Project();
+        BeanUtils.copyProperties(form, entity, "id", "client");
+        return entity;
+    }
+
+    private ProjectForm toForm(Project entity) {
+        ProjectForm form = new ProjectForm();
+        BeanUtils.copyProperties(entity, form, "client");
+        if (entity.getClient() != null) {
+            EntityRef ref = new EntityRef();
+            ref.setId(entity.getClient().getId());
+            form.setClient(ref);
+        }
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -68,7 +122,7 @@ public class ProjectController {
 
     @GetMapping("/new")
     public String newForm(Model model) {
-        model.addAttribute(ATTR_PROJECT, new Project());
+        model.addAttribute(ATTR_PROJECT, new ProjectForm());
         model.addAttribute(ATTR_CLIENTS, clientService.findActiveClients());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
         return VIEW_FORM;
@@ -76,7 +130,7 @@ public class ProjectController {
 
     @PostMapping("/new")
     public String create(
-            @Valid @ModelAttribute(ATTR_PROJECT) Project project,
+            @Valid @ModelAttribute(ATTR_PROJECT) ProjectForm form,
             BindingResult bindingResult,
             @RequestParam(required = false) UUID clientId,
             Model model,
@@ -89,6 +143,7 @@ public class ProjectController {
         }
 
         try {
+            Project project = toEntity(form);
             Project saved = projectService.create(project, clientId);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Proyek berhasil ditambahkan");
             return REDIRECT_PROJECTS_PREFIX + saved.getCode();
@@ -110,8 +165,8 @@ public class ProjectController {
 
     @GetMapping("/{code}/edit")
     public String editForm(@PathVariable String code, Model model) {
-        Project project = projectService.findByCode(code);
-        model.addAttribute(ATTR_PROJECT, project);
+        Project existing = projectService.findByCode(code);
+        model.addAttribute(ATTR_PROJECT, toForm(existing));
         model.addAttribute(ATTR_CLIENTS, clientService.findActiveClients());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
         return VIEW_FORM;
@@ -120,7 +175,7 @@ public class ProjectController {
     @PostMapping("/{code}")
     public String update(
             @PathVariable String code,
-            @Valid @ModelAttribute(ATTR_PROJECT) Project project,
+            @Valid @ModelAttribute(ATTR_PROJECT) ProjectForm form,
             BindingResult bindingResult,
             @RequestParam(required = false) UUID clientId,
             Model model,
@@ -128,7 +183,7 @@ public class ProjectController {
 
         if (bindingResult.hasErrors()) {
             Project existing = projectService.findByCode(code);
-            project.setId(existing.getId());
+            form.setId(existing.getId());
             model.addAttribute(ATTR_CLIENTS, clientService.findActiveClients());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
             return VIEW_FORM;
@@ -136,13 +191,14 @@ public class ProjectController {
 
         try {
             Project existing = projectService.findByCode(code);
-            projectService.update(existing.getId(), project, clientId);
+            Project updated = toEntity(form);
+            projectService.update(existing.getId(), updated, clientId);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Proyek berhasil diperbarui");
-            return REDIRECT_PROJECTS_PREFIX + project.getCode();
+            return REDIRECT_PROJECTS_PREFIX + form.getCode();
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("code", "duplicate", e.getMessage());
             Project existing = projectService.findByCode(code);
-            project.setId(existing.getId());
+            form.setId(existing.getId());
             model.addAttribute(ATTR_CLIENTS, clientService.findActiveClients());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_PROJECTS);
             return VIEW_FORM;

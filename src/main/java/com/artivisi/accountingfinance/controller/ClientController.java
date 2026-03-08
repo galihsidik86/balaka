@@ -7,7 +7,14 @@ import com.artivisi.accountingfinance.repository.InvoiceRepository;
 import com.artivisi.accountingfinance.repository.TaxTransactionDetailRepository;
 import com.artivisi.accountingfinance.service.ClientService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -25,6 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 
@@ -42,6 +50,61 @@ public class ClientController {
     private final ClientService clientService;
     private final InvoiceRepository invoiceRepository;
     private final TaxTransactionDetailRepository taxTransactionDetailRepository;
+
+    @Getter
+    @Setter
+    static class ClientForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode klien wajib diisi")
+        @Size(max = 50, message = "Kode klien maksimal 50 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama klien wajib diisi")
+        @Size(max = 255, message = "Nama klien maksimal 255 karakter")
+        private String name;
+
+        @Size(max = 255, message = "Nama kontak maksimal 255 karakter")
+        private String contactPerson;
+
+        @Email(message = "Format email tidak valid")
+        @Size(max = 255, message = "Email maksimal 255 karakter")
+        private String email;
+
+        @Size(max = 50, message = "Nomor telepon maksimal 50 karakter")
+        private String phone;
+
+        private String address;
+        private String notes;
+
+        @Size(max = 10, message = "Tipe ID maksimal 10 karakter")
+        private String idType;
+
+        @Pattern(regexp = "^$|^\\d{2}\\.\\d{3}\\.\\d{3}\\.\\d-\\d{3}\\.\\d{3}$|^\\d{16}$",
+                message = "Format NPWP tidak valid (XX.XXX.XXX.X-XXX.XXX atau 16 digit)")
+        @Size(max = 20, message = "NPWP maksimal 20 karakter")
+        private String npwp;
+
+        @Size(max = 22, message = "NITKU maksimal 22 karakter")
+        private String nitku;
+
+        @Size(max = 16, message = "NIK maksimal 16 karakter")
+        private String nik;
+
+        private Boolean active;
+    }
+
+    private Client toEntity(ClientForm form) {
+        Client entity = new Client();
+        BeanUtils.copyProperties(form, entity, "id");
+        return entity;
+    }
+
+    private ClientForm toForm(Client entity) {
+        ClientForm form = new ClientForm();
+        BeanUtils.copyProperties(entity, form);
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -67,14 +130,14 @@ public class ClientController {
 
     @GetMapping("/new")
     public String newForm(Model model) {
-        model.addAttribute(ATTR_CLIENT, new Client());
+        model.addAttribute(ATTR_CLIENT, new ClientForm());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_CLIENTS);
         return VIEW_FORM;
     }
 
     @PostMapping("/new")
     public String create(
-            @Valid @ModelAttribute(ATTR_CLIENT) Client client,
+            @Valid @ModelAttribute(ATTR_CLIENT) ClientForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -85,6 +148,7 @@ public class ClientController {
         }
 
         try {
+            Client client = toEntity(form);
             Client saved = clientService.create(client);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Klien berhasil ditambahkan");
             return REDIRECT_CLIENTS_PREFIX + saved.getCode();
@@ -133,8 +197,8 @@ public class ClientController {
 
     @GetMapping("/{code}/edit")
     public String editForm(@PathVariable String code, Model model) {
-        Client client = clientService.findByCode(code);
-        model.addAttribute(ATTR_CLIENT, client);
+        Client existing = clientService.findByCode(code);
+        model.addAttribute(ATTR_CLIENT, toForm(existing));
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_CLIENTS);
         return VIEW_FORM;
     }
@@ -142,27 +206,28 @@ public class ClientController {
     @PostMapping("/{code}")
     public String update(
             @PathVariable String code,
-            @Valid Client client,
+            @Valid @ModelAttribute(ATTR_CLIENT) ClientForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
             Client existing = clientService.findByCode(code);
-            client.setId(existing.getId());
+            form.setId(existing.getId());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_CLIENTS);
             return VIEW_FORM;
         }
 
         try {
             Client existing = clientService.findByCode(code);
-            clientService.update(existing.getId(), client);
+            Client updated = toEntity(form);
+            clientService.update(existing.getId(), updated);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Klien berhasil diperbarui");
-            return REDIRECT_CLIENTS_PREFIX + client.getCode();
+            return REDIRECT_CLIENTS_PREFIX + form.getCode();
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("code", "duplicate", e.getMessage());
             Client existing = clientService.findByCode(code);
-            client.setId(existing.getId());
+            form.setId(existing.getId());
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_CLIENTS);
             return VIEW_FORM;
         }

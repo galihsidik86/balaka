@@ -4,7 +4,13 @@ import com.artivisi.accountingfinance.entity.SalaryComponent;
 import com.artivisi.accountingfinance.entity.SalaryComponentType;
 import com.artivisi.accountingfinance.service.SalaryComponentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
@@ -37,6 +44,39 @@ public class SalaryComponentController {
     private static final String VIEW_FORM = "salary-components/form";
 
     private final SalaryComponentService salaryComponentService;
+
+    @Getter
+    @Setter
+    static class SalaryComponentForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode komponen wajib diisi")
+        @Size(max = 20, message = "Kode komponen maksimal 20 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama komponen wajib diisi")
+        @Size(max = 100, message = "Nama komponen maksimal 100 karakter")
+        private String name;
+
+        @Size(max = 255, message = "Deskripsi maksimal 255 karakter")
+        private String description;
+
+        @NotNull(message = "Tipe komponen wajib diisi")
+        private SalaryComponentType componentType;
+
+        private Boolean isPercentage;
+
+        private BigDecimal defaultRate;
+
+        private BigDecimal defaultAmount;
+
+        private Integer displayOrder;
+
+        private Boolean isTaxable;
+
+        @Size(max = 50, message = "Kategori BPJS maksimal 50 karakter")
+        private String bpjsCategory;
+    }
 
     @GetMapping
     public String list(
@@ -65,12 +105,12 @@ public class SalaryComponentController {
 
     @GetMapping("/new")
     public String newForm(Model model) {
-        SalaryComponent component = new SalaryComponent();
-        component.setComponentType(SalaryComponentType.EARNING);
-        component.setIsPercentage(false);
-        component.setIsTaxable(true);
+        SalaryComponentForm form = new SalaryComponentForm();
+        form.setComponentType(SalaryComponentType.EARNING);
+        form.setIsPercentage(false);
+        form.setIsTaxable(true);
 
-        model.addAttribute(ATTR_COMPONENT, component);
+        model.addAttribute(ATTR_COMPONENT, form);
         model.addAttribute(ATTR_COMPONENT_TYPES, SalaryComponentType.values());
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_SALARY_COMPONENTS);
         return VIEW_FORM;
@@ -78,7 +118,7 @@ public class SalaryComponentController {
 
     @PostMapping("/new")
     public String create(
-            @Valid @ModelAttribute("component") SalaryComponent component,
+            @Valid @ModelAttribute("component") SalaryComponentForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -89,6 +129,8 @@ public class SalaryComponentController {
         }
 
         try {
+            SalaryComponent component = new SalaryComponent();
+            BeanUtils.copyProperties(form, component, "id");
             SalaryComponent saved = salaryComponentService.create(component);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Komponen gaji berhasil ditambahkan");
             return REDIRECT_SALARY_COMPONENTS + "/" + saved.getId();
@@ -114,7 +156,11 @@ public class SalaryComponentController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable UUID id, Model model) {
         SalaryComponent component = salaryComponentService.findById(id);
-        model.addAttribute(ATTR_COMPONENT, component);
+
+        SalaryComponentForm form = new SalaryComponentForm();
+        BeanUtils.copyProperties(component, form);
+
+        model.addAttribute(ATTR_COMPONENT, form);
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -122,18 +168,20 @@ public class SalaryComponentController {
     @PostMapping("/{id}")
     public String update(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("component") SalaryComponent component,
+            @Valid @ModelAttribute("component") SalaryComponentForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            component.setId(id);
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }
 
         try {
+            SalaryComponent component = new SalaryComponent();
+            BeanUtils.copyProperties(form, component, "id");
             salaryComponentService.update(id, component);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Komponen gaji berhasil diperbarui");
             return REDIRECT_SALARY_COMPONENTS + "/" + id;
@@ -143,7 +191,7 @@ public class SalaryComponentController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
-            component.setId(id);
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }

@@ -10,7 +10,15 @@ import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.AssetCategoryService;
 import com.artivisi.accountingfinance.service.FixedAssetService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -54,6 +62,82 @@ public class FixedAssetController {
     private final FixedAssetService fixedAssetService;
     private final AssetCategoryService assetCategoryService;
 
+    @Getter
+    @Setter
+    static class FixedAssetForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode aset wajib diisi")
+        @Size(max = 30, message = "Kode aset maksimal 30 karakter")
+        private String assetCode;
+
+        @NotBlank(message = "Nama aset wajib diisi")
+        @Size(max = 255, message = "Nama aset maksimal 255 karakter")
+        private String name;
+
+        @Size(max = 500, message = "Deskripsi maksimal 500 karakter")
+        private String description;
+
+        @NotNull(message = "Kategori aset wajib diisi")
+        private UUID category;
+
+        @NotNull(message = "Tanggal pembelian wajib diisi")
+        private LocalDate purchaseDate;
+
+        @NotNull(message = "Nilai perolehan wajib diisi")
+        private BigDecimal purchaseCost;
+
+        @Size(max = 100, message = "Supplier maksimal 100 karakter")
+        private String supplier;
+
+        @Size(max = 100, message = "Nomor faktur maksimal 100 karakter")
+        private String invoiceNumber;
+
+        @NotNull(message = "Metode penyusutan wajib diisi")
+        private DepreciationMethod depreciationMethod;
+
+        @NotNull(message = "Umur ekonomis (bulan) wajib diisi")
+        @Min(value = 1, message = "Umur ekonomis minimal 1 bulan")
+        @Max(value = 600, message = "Umur ekonomis maksimal 600 bulan (50 tahun)")
+        private Integer usefulLifeMonths;
+
+        @NotNull(message = "Nilai residu wajib diisi")
+        private BigDecimal residualValue;
+
+        private BigDecimal depreciationRate;
+
+        @NotNull(message = "Tanggal mulai penyusutan wajib diisi")
+        private LocalDate depreciationStartDate;
+
+        @Size(max = 100, message = "Lokasi maksimal 100 karakter")
+        private String location;
+
+        @Size(max = 100, message = "Nomor seri maksimal 100 karakter")
+        private String serialNumber;
+
+        private String notes;
+    }
+
+    private FixedAsset toEntity(FixedAssetForm form) {
+        FixedAsset entity = new FixedAsset();
+        BeanUtils.copyProperties(form, entity, "id", "category");
+        if (form.getCategory() != null) {
+            AssetCategory cat = new AssetCategory();
+            cat.setId(form.getCategory());
+            entity.setCategory(cat);
+        }
+        return entity;
+    }
+
+    private FixedAssetForm toForm(FixedAsset entity) {
+        FixedAssetForm form = new FixedAssetForm();
+        BeanUtils.copyProperties(entity, form, "category");
+        if (entity.getCategory() != null) {
+            form.setCategory(entity.getCategory().getId());
+        }
+        return form;
+    }
+
     @GetMapping
     public String list(
             @RequestParam(required = false) String search,
@@ -89,13 +173,13 @@ public class FixedAssetController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.ASSET_CREATE + "')")
     public String newForm(Model model) {
-        FixedAsset asset = new FixedAsset();
-        asset.setDepreciationMethod(DepreciationMethod.STRAIGHT_LINE);
-        asset.setResidualValue(BigDecimal.ZERO);
-        asset.setPurchaseDate(LocalDate.now());
-        asset.setDepreciationStartDate(LocalDate.now().withDayOfMonth(1));
+        FixedAssetForm form = new FixedAssetForm();
+        form.setDepreciationMethod(DepreciationMethod.STRAIGHT_LINE);
+        form.setResidualValue(BigDecimal.ZERO);
+        form.setPurchaseDate(LocalDate.now());
+        form.setDepreciationStartDate(LocalDate.now().withDayOfMonth(1));
 
-        model.addAttribute(ATTR_ASSET, asset);
+        model.addAttribute(ATTR_ASSET, form);
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -103,7 +187,7 @@ public class FixedAssetController {
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.ASSET_CREATE + "')")
     public String create(
-            @Valid @ModelAttribute("asset") FixedAsset asset,
+            @Valid @ModelAttribute("asset") FixedAssetForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -114,6 +198,7 @@ public class FixedAssetController {
         }
 
         try {
+            FixedAsset asset = toEntity(form);
             FixedAsset saved = fixedAssetService.create(asset);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Aset berhasil ditambahkan");
             return REDIRECT_ASSETS + "/" + saved.getId();
@@ -144,7 +229,7 @@ public class FixedAssetController {
     @PreAuthorize("hasAuthority('" + Permission.ASSET_EDIT + "')")
     public String editForm(@PathVariable UUID id, Model model) {
         FixedAsset asset = fixedAssetService.findByIdWithDetails(id);
-        model.addAttribute(ATTR_ASSET, asset);
+        model.addAttribute(ATTR_ASSET, toForm(asset));
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -153,24 +238,25 @@ public class FixedAssetController {
     @PreAuthorize("hasAuthority('" + Permission.ASSET_EDIT + "')")
     public String update(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("asset") FixedAsset asset,
+            @Valid @ModelAttribute("asset") FixedAssetForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            asset.setId(id);
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }
 
         try {
+            FixedAsset asset = toEntity(form);
             fixedAssetService.update(id, asset);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Aset berhasil diperbarui");
             return REDIRECT_ASSETS + "/" + id;
         } catch (IllegalArgumentException | IllegalStateException e) {
             bindingResult.reject("error", e.getMessage());
-            asset.setId(id);
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }

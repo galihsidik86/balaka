@@ -1,5 +1,6 @@
 package com.artivisi.accountingfinance.controller;
 
+import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.CostingMethod;
 import com.artivisi.accountingfinance.entity.Product;
 import com.artivisi.accountingfinance.entity.ProductCategory;
@@ -8,7 +9,13 @@ import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.ProductCategoryService;
 import com.artivisi.accountingfinance.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -25,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +53,77 @@ public class ProductController {
     private final ProductService productService;
     private final ProductCategoryService categoryService;
     private final ChartOfAccountRepository chartOfAccountRepository;
+
+    @Getter
+    @Setter
+    static class ProductForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode produk wajib diisi")
+        @Size(max = 50, message = "Kode produk maksimal 50 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama produk wajib diisi")
+        @Size(max = 200, message = "Nama produk maksimal 200 karakter")
+        private String name;
+
+        @Size(max = 500, message = "Deskripsi maksimal 500 karakter")
+        private String description;
+
+        @NotBlank(message = "Satuan wajib diisi")
+        @Size(max = 20, message = "Satuan maksimal 20 karakter")
+        private String unit;
+
+        @NotNull(message = "Metode perhitungan biaya wajib diisi")
+        private CostingMethod costingMethod;
+
+        private boolean trackInventory;
+        private BigDecimal minimumStock;
+        private BigDecimal sellingPrice;
+        private boolean active;
+
+        // Dropdown references — Thymeleaf uses th:field="*{category}" with th:value="${cat.id}"
+        private UUID category;
+        private UUID inventoryAccount;
+        private UUID cogsAccount;
+        private UUID salesAccount;
+    }
+
+    private Product toEntity(ProductForm form) {
+        Product entity = new Product();
+        BeanUtils.copyProperties(form, entity, "id", "category", "inventoryAccount", "cogsAccount", "salesAccount");
+        if (form.getCategory() != null) {
+            entity.setCategory(categoryService.findById(form.getCategory()).orElse(null));
+        }
+        if (form.getInventoryAccount() != null) {
+            entity.setInventoryAccount(chartOfAccountRepository.findById(form.getInventoryAccount()).orElse(null));
+        }
+        if (form.getCogsAccount() != null) {
+            entity.setCogsAccount(chartOfAccountRepository.findById(form.getCogsAccount()).orElse(null));
+        }
+        if (form.getSalesAccount() != null) {
+            entity.setSalesAccount(chartOfAccountRepository.findById(form.getSalesAccount()).orElse(null));
+        }
+        return entity;
+    }
+
+    private ProductForm toForm(Product entity) {
+        ProductForm form = new ProductForm();
+        BeanUtils.copyProperties(entity, form, "category", "inventoryAccount", "cogsAccount", "salesAccount");
+        if (entity.getCategory() != null) {
+            form.setCategory(entity.getCategory().getId());
+        }
+        if (entity.getInventoryAccount() != null) {
+            form.setInventoryAccount(entity.getInventoryAccount().getId());
+        }
+        if (entity.getCogsAccount() != null) {
+            form.setCogsAccount(entity.getCogsAccount().getId());
+        }
+        if (entity.getSalesAccount() != null) {
+            form.setSalesAccount(entity.getSalesAccount().getId());
+        }
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -74,12 +153,12 @@ public class ProductController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_CREATE + "')")
     public String newForm(Model model) {
-        Product product = new Product();
-        product.setCostingMethod(CostingMethod.WEIGHTED_AVERAGE);
-        product.setTrackInventory(true);
-        product.setActive(true);
+        ProductForm form = new ProductForm();
+        form.setCostingMethod(CostingMethod.WEIGHTED_AVERAGE);
+        form.setTrackInventory(true);
+        form.setActive(true);
 
-        model.addAttribute(ATTR_PRODUCT, product);
+        model.addAttribute(ATTR_PRODUCT, form);
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -87,7 +166,7 @@ public class ProductController {
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_CREATE + "')")
     public String create(
-            @Valid @ModelAttribute("product") Product product,
+            @Valid @ModelAttribute("product") ProductForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -98,6 +177,7 @@ public class ProductController {
         }
 
         try {
+            Product product = toEntity(form);
             productService.create(product);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Produk berhasil ditambahkan");
             return REDIRECT_PRODUCTS;
@@ -125,10 +205,10 @@ public class ProductController {
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
     public String editForm(@PathVariable UUID id, Model model) {
-        Product product = productService.findByIdWithDetails(id)
+        Product existing = productService.findByIdWithDetails(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produk tidak ditemukan: " + id));
 
-        model.addAttribute(ATTR_PRODUCT, product);
+        model.addAttribute(ATTR_PRODUCT, toForm(existing));
         addFormAttributes(model);
         return VIEW_FORM;
     }
@@ -137,17 +217,19 @@ public class ProductController {
     @PreAuthorize("hasAuthority('" + Permission.PRODUCT_EDIT + "')")
     public String update(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("product") Product product,
+            @Valid @ModelAttribute("product") ProductForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }
 
         try {
+            Product product = toEntity(form);
             productService.update(id, product);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Produk berhasil diubah");
             return REDIRECT_PRODUCTS;
@@ -157,6 +239,7 @@ public class ProductController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
+            form.setId(id);
             addFormAttributes(model);
             return VIEW_FORM;
         }

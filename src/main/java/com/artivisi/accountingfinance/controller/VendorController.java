@@ -1,11 +1,18 @@
 package com.artivisi.accountingfinance.controller;
 
+import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.Vendor;
 import com.artivisi.accountingfinance.enums.AccountType;
 import com.artivisi.accountingfinance.service.ChartOfAccountService;
 import com.artivisi.accountingfinance.service.VendorService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,6 +27,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 import static com.artivisi.accountingfinance.security.Permission.VENDOR_VIEW;
@@ -37,6 +46,86 @@ public class VendorController {
 
     private final VendorService vendorService;
     private final ChartOfAccountService chartOfAccountService;
+
+    @Getter
+    @Setter
+    static class DefaultExpenseAccountRef {
+        private UUID id;
+    }
+
+    @Getter
+    @Setter
+    static class VendorForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode vendor wajib diisi")
+        @Size(max = 50, message = "Kode vendor maksimal 50 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama vendor wajib diisi")
+        @Size(max = 255, message = "Nama vendor maksimal 255 karakter")
+        private String name;
+
+        @Size(max = 255, message = "Nama kontak maksimal 255 karakter")
+        private String contactPerson;
+
+        @Email(message = "Format email tidak valid")
+        @Size(max = 255, message = "Email maksimal 255 karakter")
+        private String email;
+
+        @Size(max = 50, message = "Nomor telepon maksimal 50 karakter")
+        private String phone;
+
+        private String address;
+        private String notes;
+
+        @Size(max = 20, message = "NPWP maksimal 20 karakter")
+        private String npwp;
+
+        @Size(max = 22, message = "NITKU maksimal 22 karakter")
+        private String nitku;
+
+        @Size(max = 16, message = "NIK maksimal 16 karakter")
+        private String nik;
+
+        @Size(max = 10, message = "Tipe ID maksimal 10 karakter")
+        private String idType;
+
+        private Integer paymentTermDays;
+
+        @Size(max = 100, message = "Nama bank maksimal 100 karakter")
+        private String bankName;
+
+        @Size(max = 50, message = "Nomor rekening maksimal 50 karakter")
+        private String bankAccountNumber;
+
+        @Size(max = 255, message = "Nama pemilik rekening maksimal 255 karakter")
+        private String bankAccountName;
+
+        private DefaultExpenseAccountRef defaultExpenseAccount = new DefaultExpenseAccountRef();
+    }
+
+    private Vendor toEntity(VendorForm form) {
+        Vendor vendor = new Vendor();
+        BeanUtils.copyProperties(form, vendor, "id", "defaultExpenseAccount");
+        if (form.getDefaultExpenseAccount() != null && form.getDefaultExpenseAccount().getId() != null) {
+            ChartOfAccount account = new ChartOfAccount();
+            account.setId(form.getDefaultExpenseAccount().getId());
+            vendor.setDefaultExpenseAccount(account);
+        }
+        return vendor;
+    }
+
+    private VendorForm toForm(Vendor vendor) {
+        VendorForm form = new VendorForm();
+        BeanUtils.copyProperties(vendor, form, "defaultExpenseAccount");
+        if (vendor.getDefaultExpenseAccount() != null) {
+            DefaultExpenseAccountRef ref = new DefaultExpenseAccountRef();
+            ref.setId(vendor.getDefaultExpenseAccount().getId());
+            form.setDefaultExpenseAccount(ref);
+        }
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -57,7 +146,7 @@ public class VendorController {
 
     @GetMapping("/new")
     public String newForm(Model model) {
-        model.addAttribute(ATTR_VENDOR, new Vendor());
+        model.addAttribute(ATTR_VENDOR, new VendorForm());
         model.addAttribute(ATTR_EXPENSE_ACCOUNTS, chartOfAccountService.findByAccountType(AccountType.EXPENSE));
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_VENDORS);
         return VIEW_VENDORS_FORM;
@@ -65,7 +154,7 @@ public class VendorController {
 
     @PostMapping("/new")
     public String create(
-            @Valid @ModelAttribute(ATTR_VENDOR) Vendor vendor,
+            @Valid @ModelAttribute(ATTR_VENDOR) VendorForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -77,6 +166,7 @@ public class VendorController {
         }
 
         try {
+            Vendor vendor = toEntity(form);
             Vendor saved = vendorService.create(vendor);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Vendor berhasil dibuat");
             return REDIRECT_VENDORS + saved.getCode();
@@ -101,7 +191,7 @@ public class VendorController {
     public String editForm(@PathVariable String code, Model model) {
         Vendor vendor = vendorService.findByCode(code);
 
-        model.addAttribute(ATTR_VENDOR, vendor);
+        model.addAttribute(ATTR_VENDOR, toForm(vendor));
         model.addAttribute(ATTR_EXPENSE_ACCOUNTS, chartOfAccountService.findByAccountType(AccountType.EXPENSE));
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_VENDORS);
         model.addAttribute(ATTR_IS_EDIT, true);
@@ -111,14 +201,14 @@ public class VendorController {
     @PostMapping("/{code}")
     public String update(
             @PathVariable String code,
-            @Valid @ModelAttribute(ATTR_VENDOR) Vendor vendor,
+            @Valid @ModelAttribute(ATTR_VENDOR) VendorForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
             Vendor existing = vendorService.findByCode(code);
-            vendor.setId(existing.getId());
+            form.setId(existing.getId());
             model.addAttribute(ATTR_EXPENSE_ACCOUNTS, chartOfAccountService.findByAccountType(AccountType.EXPENSE));
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_VENDORS);
             model.addAttribute(ATTR_IS_EDIT, true);
@@ -127,13 +217,14 @@ public class VendorController {
 
         try {
             Vendor existing = vendorService.findByCode(code);
+            Vendor vendor = toEntity(form);
             vendorService.update(existing.getId(), vendor);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Vendor berhasil diperbarui");
-            return REDIRECT_VENDORS + vendor.getCode();
+            return REDIRECT_VENDORS + form.getCode();
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("code", "duplicate", e.getMessage());
             Vendor existing = vendorService.findByCode(code);
-            vendor.setId(existing.getId());
+            form.setId(existing.getId());
             model.addAttribute(ATTR_EXPENSE_ACCOUNTS, chartOfAccountService.findByAccountType(AccountType.EXPENSE));
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_VENDORS);
             model.addAttribute(ATTR_IS_EDIT, true);

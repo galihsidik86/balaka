@@ -5,7 +5,13 @@ import com.artivisi.accountingfinance.entity.TagType;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.TagService;
 import com.artivisi.accountingfinance.service.TagTypeService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -40,6 +46,25 @@ public class TagController {
     private final TagService tagService;
     private final TagTypeService tagTypeService;
 
+    @Getter
+    @Setter
+    static class TagForm {
+        private UUID id;
+
+        @NotBlank(message = "Kode label wajib diisi")
+        @Size(max = 20, message = "Kode label maksimal 20 karakter")
+        private String code;
+
+        @NotBlank(message = "Nama label wajib diisi")
+        @Size(max = 100, message = "Nama label maksimal 100 karakter")
+        private String name;
+
+        @Size(max = 255, message = "Deskripsi maksimal 255 karakter")
+        private String description;
+
+        private boolean active;
+    }
+
     @GetMapping
     public String list(
             @PathVariable UUID tagTypeId,
@@ -71,12 +96,11 @@ public class TagController {
         TagType tagType = tagTypeService.findById(tagTypeId)
                 .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
-        Tag tag = new Tag();
-        tag.setTagType(tagType);
-        tag.setActive(true);
+        TagForm form = new TagForm();
+        form.setActive(true);
 
         model.addAttribute(ATTR_TAG_TYPE, tagType);
-        model.addAttribute("tag", tag);
+        model.addAttribute("tag", form);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
         return VIEW_FORM;
     }
@@ -85,23 +109,13 @@ public class TagController {
     @PreAuthorize("hasAuthority('" + Permission.TAG_CREATE + "')")
     public String create(
             @PathVariable UUID tagTypeId,
-            @ModelAttribute("tag") Tag tag,
+            @Valid @ModelAttribute("tag") TagForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         TagType tagType = tagTypeService.findById(tagTypeId)
                 .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
-
-        tag.setTagType(tagType);
-
-        // Validate code and name manually since @Valid would fail on tagType before we set it
-        if (tag.getCode() == null || tag.getCode().isBlank()) {
-            bindingResult.rejectValue("code", "NotBlank", "Kode label wajib diisi");
-        }
-        if (tag.getName() == null || tag.getName().isBlank()) {
-            bindingResult.rejectValue("name", "NotBlank", "Nama label wajib diisi");
-        }
 
         if (bindingResult.hasErrors()) {
             model.addAttribute(ATTR_TAG_TYPE, tagType);
@@ -110,6 +124,9 @@ public class TagController {
         }
 
         try {
+            Tag tag = new Tag();
+            BeanUtils.copyProperties(form, tag, "id");
+            tag.setTagType(tagType);
             tagService.create(tag);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Label berhasil ditambahkan");
             return "redirect:/tags/types/" + tagTypeId + "/tags";
@@ -134,8 +151,11 @@ public class TagController {
         Tag tag = tagService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Label tidak ditemukan: " + id));
 
+        TagForm form = new TagForm();
+        BeanUtils.copyProperties(tag, form);
+
         model.addAttribute(ATTR_TAG_TYPE, tagType);
-        model.addAttribute("tag", tag);
+        model.addAttribute("tag", form);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
         return VIEW_FORM;
     }
@@ -145,7 +165,7 @@ public class TagController {
     public String update(
             @PathVariable UUID tagTypeId,
             @PathVariable UUID id,
-            @ModelAttribute("tag") Tag tag,
+            @Valid @ModelAttribute("tag") TagForm form,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -153,21 +173,17 @@ public class TagController {
         TagType tagType = tagTypeService.findById(tagTypeId)
                 .orElseThrow(() -> new IllegalArgumentException(ERR_TAG_TYPE_NOT_FOUND + tagTypeId));
 
-        // Validate manually
-        if (tag.getCode() == null || tag.getCode().isBlank()) {
-            bindingResult.rejectValue("code", "NotBlank", "Kode label wajib diisi");
-        }
-        if (tag.getName() == null || tag.getName().isBlank()) {
-            bindingResult.rejectValue("name", "NotBlank", "Nama label wajib diisi");
-        }
-
         if (bindingResult.hasErrors()) {
+            form.setId(id);
             model.addAttribute(ATTR_TAG_TYPE, tagType);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
             return VIEW_FORM;
         }
 
         try {
+            Tag tag = new Tag();
+            BeanUtils.copyProperties(form, tag, "id");
+            tag.setTagType(tagType);
             tagService.update(id, tag);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Label berhasil diubah");
             return "redirect:/tags/types/" + tagTypeId + "/tags";
@@ -177,6 +193,7 @@ public class TagController {
             } else {
                 bindingResult.reject("error", e.getMessage());
             }
+            form.setId(id);
             model.addAttribute(ATTR_TAG_TYPE, tagType);
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TAGS);
             return VIEW_FORM;

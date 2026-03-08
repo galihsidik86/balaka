@@ -3,7 +3,8 @@ package com.artivisi.accountingfinance.controller;
 import com.artivisi.accountingfinance.entity.Bill;
 import com.artivisi.accountingfinance.entity.BillLine;
 import com.artivisi.accountingfinance.entity.BillPayment;
-import com.artivisi.accountingfinance.enums.AccountType;
+import com.artivisi.accountingfinance.entity.ChartOfAccount;
+import com.artivisi.accountingfinance.entity.Vendor;
 import com.artivisi.accountingfinance.enums.BillStatus;
 import com.artivisi.accountingfinance.enums.PaymentMethod;
 import com.artivisi.accountingfinance.service.BillService;
@@ -11,10 +12,16 @@ import com.artivisi.accountingfinance.service.ChartOfAccountService;
 import com.artivisi.accountingfinance.service.ProductService;
 import com.artivisi.accountingfinance.service.VendorService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,6 +43,8 @@ import java.util.UUID;
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 import static com.artivisi.accountingfinance.security.Permission.BILL_VIEW;
 
+import com.artivisi.accountingfinance.enums.AccountType;
+
 @Controller
 @RequestMapping("/bills")
 @RequiredArgsConstructor
@@ -53,6 +62,61 @@ public class BillController {
     private final VendorService vendorService;
     private final ChartOfAccountService chartOfAccountService;
     private final ProductService productService;
+
+    @Getter
+    @Setter
+    static class EntityRef {
+        private UUID id;
+    }
+
+    @Getter
+    @Setter
+    static class BillForm {
+        private UUID id;
+
+        @Size(max = 50, message = "Nomor tagihan maksimal 50 karakter")
+        private String billNumber;
+
+        private EntityRef vendor = new EntityRef();
+
+        @Size(max = 100, message = "Nomor faktur vendor maksimal 100 karakter")
+        private String vendorInvoiceNumber;
+
+        @NotNull(message = "Tanggal tagihan wajib diisi")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private LocalDate billDate;
+
+        @NotNull(message = "Tanggal jatuh tempo wajib diisi")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private LocalDate dueDate;
+
+        private String notes;
+
+        // Used by Alpine.js template: /*[[${bill.lines}]]*/
+        private List<BillLine> lines = new ArrayList<>();
+    }
+
+    private Bill toEntity(BillForm form) {
+        Bill entity = new Bill();
+        BeanUtils.copyProperties(form, entity, "id", "vendor");
+        if (form.getVendor() != null && form.getVendor().getId() != null) {
+            Vendor v = new Vendor();
+            v.setId(form.getVendor().getId());
+            entity.setVendor(v);
+        }
+        return entity;
+    }
+
+    private BillForm toForm(Bill entity) {
+        BillForm form = new BillForm();
+        BeanUtils.copyProperties(entity, form, "vendor");
+        if (entity.getVendor() != null) {
+            EntityRef vendorRef = new EntityRef();
+            vendorRef.setId(entity.getVendor().getId());
+            form.setVendor(vendorRef);
+        }
+        return form;
+    }
 
     @GetMapping
     public String list(
@@ -83,19 +147,21 @@ public class BillController {
             @RequestParam(required = false) UUID vendorId,
             Model model) {
 
-        Bill bill = new Bill();
+        BillForm form = new BillForm();
         if (vendorId != null) {
-            bill.setVendor(vendorService.findById(vendorId));
+            EntityRef vendorRef = new EntityRef();
+            vendorRef.setId(vendorId);
+            form.setVendor(vendorRef);
         }
 
-        model.addAttribute(ATTR_BILL, bill);
+        model.addAttribute(ATTR_BILL, form);
         populateFormModel(model);
         return VIEW_FORM;
     }
 
     @PostMapping("/new")
     public String create(
-            @Valid @ModelAttribute(ATTR_BILL) Bill bill,
+            @Valid @ModelAttribute(ATTR_BILL) BillForm form,
             BindingResult bindingResult,
             @RequestParam(value = "lineDescription", required = false) List<String> descriptions,
             @RequestParam(value = "lineQuantity", required = false) List<BigDecimal> quantities,
@@ -111,6 +177,7 @@ public class BillController {
         }
 
         try {
+            Bill bill = toEntity(form);
             List<BillLine> lines = buildLines(descriptions, quantities, unitPrices, taxRates, expenseAccountIds);
             Bill saved = billService.create(bill, lines);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Tagihan berhasil dibuat");
@@ -149,7 +216,7 @@ public class BillController {
     @PostMapping("/{billNumber}")
     public String update(
             @PathVariable String billNumber,
-            @Valid @ModelAttribute(ATTR_BILL) Bill bill,
+            @Valid @ModelAttribute(ATTR_BILL) BillForm form,
             BindingResult bindingResult,
             @RequestParam(value = "lineDescription", required = false) List<String> descriptions,
             @RequestParam(value = "lineQuantity", required = false) List<BigDecimal> quantities,
@@ -161,17 +228,18 @@ public class BillController {
 
         if (bindingResult.hasErrors()) {
             Bill existing = billService.findByBillNumber(billNumber);
-            bill.setId(existing.getId());
+            form.setId(existing.getId());
             populateFormModel(model);
             return VIEW_FORM;
         }
 
         try {
             Bill existing = billService.findByBillNumber(billNumber);
+            Bill bill = toEntity(form);
             List<BillLine> lines = buildLines(descriptions, quantities, unitPrices, taxRates, expenseAccountIds);
             billService.update(existing.getId(), bill, lines);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Tagihan berhasil diperbarui");
-            return REDIRECT_BILLS + bill.getBillNumber();
+            return REDIRECT_BILLS + form.getBillNumber();
         } catch (IllegalArgumentException | IllegalStateException e) {
             if (e.getMessage().contains("sudah digunakan")) {
                 bindingResult.rejectValue("billNumber", "duplicate", e.getMessage());
@@ -179,7 +247,7 @@ public class BillController {
                 bindingResult.reject("error", e.getMessage());
             }
             Bill existing = billService.findByBillNumber(billNumber);
-            bill.setId(existing.getId());
+            form.setId(existing.getId());
             populateFormModel(model);
             return VIEW_FORM;
         }
@@ -306,7 +374,7 @@ public class BillController {
     private void setExpenseAccount(BillLine line, List<UUID> expenseAccountIds, int index) {
         UUID accountId = getListValue(expenseAccountIds, index, null);
         if (accountId != null) {
-            com.artivisi.accountingfinance.entity.ChartOfAccount account = new com.artivisi.accountingfinance.entity.ChartOfAccount();
+            ChartOfAccount account = new ChartOfAccount();
             account.setId(accountId);
             line.setExpenseAccount(account);
         }

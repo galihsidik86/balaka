@@ -91,9 +91,12 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>3.0.1</version>
 		</dependency>
+		<!-- TODO: remove version override when Spring Boot upgrades to 4.0.0 (PR: spring-projects/spring-boot#49361) -->
+		<!-- Fixes Groovy 5.0.4 NPE in DecorateProcessor (GROOVY-11841, layout-dialect#251) -->
 		<dependency>
 			<groupId>nz.net.ultraq.thymeleaf</groupId>
 			<artifactId>thymeleaf-layout-dialect</artifactId>
+			<version>4.0.0</version>
 		</dependency>
 		<!-- Google Cloud Vision for Receipt OCR -->
 		<dependency>
