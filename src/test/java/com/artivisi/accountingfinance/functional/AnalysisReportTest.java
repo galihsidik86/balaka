@@ -14,10 +14,13 @@ import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * IT Service industry analysis report test.
@@ -56,8 +59,8 @@ class AnalysisReportTest extends PlaywrightTestBase {
 
     @Test
     @Order(1)
-    @DisplayName("Read financial data, compute IT-service KPIs, publish and verify in web UI")
-    void testPublishAndViewReportFromRealData() throws Exception {
+    @DisplayName("Read financial data, compute IT-service KPIs, and publish report via API")
+    void testPublishReportFromRealData() throws Exception {
         // Step 1: Read company info
         JsonNode companyBody = getApi("/api/analysis/company");
         JsonNode companyData = companyBody.get("data");
@@ -92,96 +95,10 @@ class AnalysisReportTest extends PlaywrightTestBase {
                 ? expense.multiply(BigDecimal.valueOf(100)).divide(revenue, 1, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
-        List<Map<String, String>> metrics = List.of(
-                Map.of("name", "Pendapatan Bulanan", "value", formatCurrency(revenue), "status", "info"),
-                Map.of("name", "Beban Operasional", "value", formatCurrency(expense), "status", "info"),
-                Map.of("name", "Laba Bersih", "value", formatCurrency(netProfit),
-                        "status", netProfit.compareTo(BigDecimal.ZERO) > 0 ? "positive" : "negative"),
-                Map.of("name", "Margin Laba", "value", profitMargin.setScale(1, RoundingMode.HALF_UP) + "%",
-                        "status", profitMargin.compareTo(BigDecimal.valueOf(15)) >= 0 ? "positive" : "warning"),
-                Map.of("name", "Saldo Kas", "value", formatCurrency(cashBalance), "status", "info"),
-                Map.of("name", "Rasio Beban/Pendapatan", "value", expenseRatio + "%",
-                        "status", expenseRatio.compareTo(BigDecimal.valueOf(70)) <= 0 ? "positive" : "warning")
-        );
+        Map<String, Object> request = buildReportRequest(companyName, industry, revenue, expense,
+                netProfit, profitMargin, cashBalance, expenseRatio, revenueItems, expenseItems);
 
-        // Step 5: Generate findings from real income statement data
-        List<Map<String, String>> findings = new ArrayList<>();
-        if (revenueItems.size() > 0) {
-            StringBuilder revDetail = new StringBuilder();
-            for (JsonNode item : revenueItems) {
-                revDetail.append(item.get("accountName").asText())
-                        .append(": ").append(formatCurrency(item.get("balance").decimalValue())).append(". ");
-            }
-            findings.add(Map.of("category", "pendapatan", "severity", revenueItems.size() <= 2 ? "warning" : "info",
-                    "description", "Sumber pendapatan: " + revDetail.toString().trim()
-                            + " Diversifikasi " + (revenueItems.size() <= 2 ? "masih rendah." : "cukup baik.")));
-        }
-        if (expenseItems.size() > 0) {
-            StringBuilder expDetail = new StringBuilder();
-            for (JsonNode item : expenseItems) {
-                expDetail.append(item.get("accountName").asText())
-                        .append(": ").append(formatCurrency(item.get("balance").decimalValue())).append(". ");
-            }
-            findings.add(Map.of("category", "beban-operasional", "severity", "info",
-                    "description", "Rincian beban operasional: " + expDetail.toString().trim()
-                            + " Rasio beban terhadap pendapatan: " + expenseRatio + "%."));
-        }
-        findings.add(Map.of("category", "profitabilitas", "severity", "info",
-                "description", "Margin laba bersih " + profitMargin.setScale(1, RoundingMode.HALF_UP) + "%. "
-                        + (profitMargin.compareTo(BigDecimal.valueOf(20)) >= 0
-                        ? "Di atas benchmark industri jasa IT (15-25%)."
-                        : "Perlu perhatian, benchmark industri jasa IT 15-25%.")));
-
-        // Step 6: Generate recommendations
-        List<Map<String, String>> recommendations = new ArrayList<>();
-        if (revenueItems.size() <= 2) {
-            recommendations.add(Map.of("priority", "high",
-                    "description", "Diversifikasi sumber pendapatan. Saat ini hanya " + revenueItems.size()
-                            + " jenis pendapatan aktif. Target: minimal 3 sumber pendapatan berbeda.",
-                    "impact", "Mengurangi risiko konsentrasi pendapatan"));
-        }
-        recommendations.add(Map.of("priority", "medium",
-                "description", "Pertahankan rasio beban operasional di bawah 70%. "
-                        + "Rasio saat ini: " + expenseRatio + "% (" + formatCurrency(expense) + " dari " + formatCurrency(revenue) + ").",
-                "impact", "Menjaga margin laba tetap sehat"));
-        recommendations.add(Map.of("priority", "medium",
-                "description", "Dengan saldo kas " + formatCurrency(cashBalance)
-                        + ", pertimbangkan investasi untuk pengembangan kapasitas atau pelatihan tim.",
-                "impact", "Utilisasi kas idle untuk pertumbuhan bisnis"));
-
-        // Step 7: Identify risks
-        List<Map<String, String>> risks = new ArrayList<>();
-        if (revenueItems.size() <= 2) {
-            risks.add(Map.of("severity", "high",
-                    "description", "Konsentrasi pendapatan tinggi: hanya " + revenueItems.size()
-                            + " sumber pendapatan aktif. Kehilangan satu klien/proyek berdampak signifikan.",
-                    "mitigation", "Perluas basis klien dan jenis layanan. Target 3+ sumber pendapatan aktif."));
-        }
-        risks.add(Map.of("severity", "medium",
-                "description", "Beban operasional didominasi biaya infrastruktur IT (" + formatCurrency(expense)
-                        + "). Kenaikan harga cloud services dapat menekan margin.",
-                "mitigation", "Evaluasi kontrak cloud services tahunan, pertimbangkan reserved instances."));
-
-        // Step 8: Publish the report
-        Map<String, Object> request = new HashMap<>();
-        request.put("title", "Review Keuangan Januari 2024 - " + companyName);
-        request.put("reportType", "monthly-review");
-        request.put("industry", industry);
-        request.put("periodStart", "2024-01-01");
-        request.put("periodEnd", "2024-01-31");
-        request.put("aiSource", "claude-code");
-        request.put("aiModel", "claude-opus-4-6");
-        request.put("executiveSummary",
-                "Review keuangan bulanan " + companyName + " periode Januari 2024. "
-                + "Pendapatan " + formatCurrency(revenue) + " dengan laba bersih " + formatCurrency(netProfit)
-                + " (margin " + profitMargin.setScale(1, RoundingMode.HALF_UP) + "%). "
-                + "Beban operasional " + formatCurrency(expense) + " (rasio " + expenseRatio + "% terhadap pendapatan). "
-                + "Saldo kas akhir bulan " + formatCurrency(cashBalance) + ".");
-        request.put("metrics", metrics);
-        request.put("findings", findings);
-        request.put("recommendations", recommendations);
-        request.put("risks", risks);
-
+        // Publish the report
         APIResponse publishResponse = apiContext.post("/api/analysis/reports",
                 RequestOptions.create()
                         .setHeader("Authorization", "Bearer " + accessToken)
@@ -200,7 +117,7 @@ class AnalysisReportTest extends PlaywrightTestBase {
         assertThat(reportData.get("risks").size()).isGreaterThanOrEqualTo(1);
         log.info("Published report: {} (id: {})", reportData.get("title").asText(), reportData.get("id").asText());
 
-        // Step 9: Verify report in API list
+        // Verify report in API list
         APIResponse listResponse = apiContext.get("/api/analysis/reports",
                 RequestOptions.create().setHeader("Authorization", "Bearer " + accessToken));
         assertThat(listResponse.status()).isEqualTo(200);
@@ -209,7 +126,42 @@ class AnalysisReportTest extends PlaywrightTestBase {
         assertThat(reports.isArray()).isTrue();
         assertThat(reports.size()).isGreaterThanOrEqualTo(1);
 
-        // Step 10: Verify in web UI - list page
+        log.info("Publish report via API test passed");
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("Verify published report in web UI list and detail pages")
+    void testViewReportInWebUi() throws Exception {
+        // First publish a report so there is data to view
+        JsonNode companyBody = getApi("/api/analysis/company");
+        String companyName = companyBody.get("data").get("companyName").asText();
+        String industry = companyBody.get("data").get("industry").asText();
+
+        JsonNode snapshotBody = getApi("/api/analysis/snapshot?month=2024-01");
+        JsonNode snapshot = snapshotBody.get("data");
+        JsonNode incomeBody = getApi("/api/analysis/income-statement?startDate=2024-01-01&endDate=2024-01-31");
+        JsonNode incomeData = incomeBody.get("data");
+
+        BigDecimal revenue = snapshot.get("revenue").decimalValue();
+        BigDecimal expense = snapshot.get("expense").decimalValue();
+        BigDecimal expenseRatio = revenue.compareTo(BigDecimal.ZERO) > 0
+                ? expense.multiply(BigDecimal.valueOf(100)).divide(revenue, 1, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
+        Map<String, Object> request = buildReportRequest(companyName, industry, revenue, expense,
+                snapshot.get("netProfit").decimalValue(), snapshot.get("profitMargin").decimalValue(),
+                snapshot.get("cashBalance").decimalValue(), expenseRatio,
+                incomeData.get("revenueItems"), incomeData.get("expenseItems"));
+
+        APIResponse publishResponse = apiContext.post("/api/analysis/reports",
+                RequestOptions.create()
+                        .setHeader("Authorization", "Bearer " + accessToken)
+                        .setHeader("Content-Type", "application/json")
+                        .setData(request));
+        assertThat(publishResponse.status()).isEqualTo(201);
+
+        // Verify in web UI - list page
         loginAsAdmin();
         navigateTo("/analysis-reports");
         waitForPageLoad();
@@ -218,7 +170,7 @@ class AnalysisReportTest extends PlaywrightTestBase {
         assertThat(page.locator("[data-testid='report-industry']").first()).containsText("Jasa IT");
         takeManualScreenshot("analysis-reports/list");
 
-        // Step 11: Verify in web UI - detail page
+        // Verify in web UI - detail page
         page.locator("[data-testid='report-title']").first().click();
         waitForPageLoad();
         assertThat(page.locator("[data-testid='detail-title']")).containsText(companyName);
@@ -235,11 +187,11 @@ class AnalysisReportTest extends PlaywrightTestBase {
         page.waitForTimeout(300);
         takeManualScreenshot("analysis-reports/detail-bottom");
 
-        log.info("IT Service analysis report test passed");
+        log.info("Web UI report view test passed");
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     @DisplayName("Web UI - delete report removes it from list")
     void testDeleteReport() throws Exception {
         Map<String, Object> request = new HashMap<>();
@@ -272,7 +224,7 @@ class AnalysisReportTest extends PlaywrightTestBase {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     @DisplayName("POST /api/analysis/reports without auth returns 401")
     void testPublishWithoutAuth() {
         Map<String, Object> request = new HashMap<>();
@@ -289,7 +241,7 @@ class AnalysisReportTest extends PlaywrightTestBase {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     @DisplayName("POST /api/analysis/reports without required title returns 400")
     void testPublishMissingTitle() {
         Map<String, Object> request = new HashMap<>();
@@ -306,6 +258,99 @@ class AnalysisReportTest extends PlaywrightTestBase {
     }
 
     // --- Helpers ---
+
+    private Map<String, Object> buildReportRequest(String companyName, String industry,
+            BigDecimal revenue, BigDecimal expense, BigDecimal netProfit,
+            BigDecimal profitMargin, BigDecimal cashBalance, BigDecimal expenseRatio,
+            JsonNode revenueItems, JsonNode expenseItems) {
+
+        List<Map<String, String>> metrics = List.of(
+                Map.of("name", "Pendapatan Bulanan", "value", formatCurrency(revenue), "status", "info"),
+                Map.of("name", "Beban Operasional", "value", formatCurrency(expense), "status", "info"),
+                Map.of("name", "Laba Bersih", "value", formatCurrency(netProfit),
+                        "status", netProfit.compareTo(BigDecimal.ZERO) > 0 ? "positive" : "negative"),
+                Map.of("name", "Margin Laba", "value", profitMargin.setScale(1, RoundingMode.HALF_UP) + "%",
+                        "status", profitMargin.compareTo(BigDecimal.valueOf(15)) >= 0 ? "positive" : "warning"),
+                Map.of("name", "Saldo Kas", "value", formatCurrency(cashBalance), "status", "info"),
+                Map.of("name", "Rasio Beban/Pendapatan", "value", expenseRatio + "%",
+                        "status", expenseRatio.compareTo(BigDecimal.valueOf(70)) <= 0 ? "positive" : "warning")
+        );
+
+        List<Map<String, String>> findings = new ArrayList<>();
+        if (revenueItems.size() > 0) {
+            StringBuilder revDetail = new StringBuilder();
+            for (JsonNode item : revenueItems) {
+                revDetail.append(item.get("accountName").asText())
+                        .append(": ").append(formatCurrency(item.get("balance").decimalValue())).append(". ");
+            }
+            findings.add(Map.of("category", "pendapatan", "severity", revenueItems.size() <= 2 ? "warning" : "info",
+                    "description", "Sumber pendapatan: " + revDetail.toString().trim()
+                            + " Diversifikasi " + (revenueItems.size() <= 2 ? "masih rendah." : "cukup baik.")));
+        }
+        if (expenseItems.size() > 0) {
+            StringBuilder expDetail = new StringBuilder();
+            for (JsonNode item : expenseItems) {
+                expDetail.append(item.get("accountName").asText())
+                        .append(": ").append(formatCurrency(item.get("balance").decimalValue())).append(". ");
+            }
+            findings.add(Map.of("category", "beban-operasional", "severity", "info",
+                    "description", "Rincian beban operasional: " + expDetail.toString().trim()
+                            + " Rasio beban terhadap pendapatan: " + expenseRatio + "%."));
+        }
+        findings.add(Map.of("category", "profitabilitas", "severity", "info",
+                "description", "Margin laba bersih " + profitMargin.setScale(1, RoundingMode.HALF_UP) + "%. "
+                        + (profitMargin.compareTo(BigDecimal.valueOf(20)) >= 0
+                        ? "Di atas benchmark industri jasa IT (15-25%)."
+                        : "Perlu perhatian, benchmark industri jasa IT 15-25%.")));
+
+        List<Map<String, String>> recommendations = new ArrayList<>();
+        if (revenueItems.size() <= 2) {
+            recommendations.add(Map.of("priority", "high",
+                    "description", "Diversifikasi sumber pendapatan. Saat ini hanya " + revenueItems.size()
+                            + " jenis pendapatan aktif. Target: minimal 3 sumber pendapatan berbeda.",
+                    "impact", "Mengurangi risiko konsentrasi pendapatan"));
+        }
+        recommendations.add(Map.of("priority", "medium",
+                "description", "Pertahankan rasio beban operasional di bawah 70%. "
+                        + "Rasio saat ini: " + expenseRatio + "% (" + formatCurrency(expense) + " dari " + formatCurrency(revenue) + ").",
+                "impact", "Menjaga margin laba tetap sehat"));
+        recommendations.add(Map.of("priority", "medium",
+                "description", "Dengan saldo kas " + formatCurrency(cashBalance)
+                        + ", pertimbangkan investasi untuk pengembangan kapasitas atau pelatihan tim.",
+                "impact", "Utilisasi kas idle untuk pertumbuhan bisnis"));
+
+        List<Map<String, String>> risks = new ArrayList<>();
+        if (revenueItems.size() <= 2) {
+            risks.add(Map.of("severity", "high",
+                    "description", "Konsentrasi pendapatan tinggi: hanya " + revenueItems.size()
+                            + " sumber pendapatan aktif. Kehilangan satu klien/proyek berdampak signifikan.",
+                    "mitigation", "Perluas basis klien dan jenis layanan. Target 3+ sumber pendapatan aktif."));
+        }
+        risks.add(Map.of("severity", "medium",
+                "description", "Beban operasional didominasi biaya infrastruktur IT (" + formatCurrency(expense)
+                        + "). Kenaikan harga cloud services dapat menekan margin.",
+                "mitigation", "Evaluasi kontrak cloud services tahunan, pertimbangkan reserved instances."));
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("title", "Review Keuangan Januari 2024 - " + companyName);
+        request.put("reportType", "monthly-review");
+        request.put("industry", industry);
+        request.put("periodStart", "2024-01-01");
+        request.put("periodEnd", "2024-01-31");
+        request.put("aiSource", "claude-code");
+        request.put("aiModel", "claude-opus-4-6");
+        request.put("executiveSummary",
+                "Review keuangan bulanan " + companyName + " periode Januari 2024. "
+                + "Pendapatan " + formatCurrency(revenue) + " dengan laba bersih " + formatCurrency(netProfit)
+                + " (margin " + profitMargin.setScale(1, RoundingMode.HALF_UP) + "%). "
+                + "Beban operasional " + formatCurrency(expense) + " (rasio " + expenseRatio + "% terhadap pendapatan). "
+                + "Saldo kas akhir bulan " + formatCurrency(cashBalance) + ".");
+        request.put("metrics", metrics);
+        request.put("findings", findings);
+        request.put("recommendations", recommendations);
+        request.put("risks", risks);
+        return request;
+    }
 
     private JsonNode getApi(String path) throws Exception {
         APIResponse response = apiContext.get(path,
@@ -344,20 +389,20 @@ class AnalysisReportTest extends PlaywrightTestBase {
         Map<String, String> tokenRequest = new HashMap<>();
         tokenRequest.put("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
-
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
-
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                return tokenData.get("accessToken").asText();
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
-        throw new RuntimeException("Failed to get access token");
+        return tokenRef.get();
     }
 }

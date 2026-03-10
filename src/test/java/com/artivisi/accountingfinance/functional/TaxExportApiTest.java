@@ -15,11 +15,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @DisplayName("Tax Export API - Functional Tests")
@@ -83,7 +86,7 @@ class TaxExportApiTest extends PlaywrightTestBase {
         assertThat(response.status()).isEqualTo(200);
         assertThat(response.headers().get("content-type")).contains("spreadsheetml.sheet");
         assertThat(response.headers().get("content-disposition")).contains("attachment");
-        assertThat(response.body().length).isGreaterThan(0);
+        assertThat(response.body()).hasSizeGreaterThan(0);
 
         log.info("e-Faktur Keluaran export test passed - size={}", response.body().length);
     }
@@ -95,7 +98,7 @@ class TaxExportApiTest extends PlaywrightTestBase {
         assertThat(response.status()).isEqualTo(200);
         assertThat(response.headers().get("content-type")).contains("spreadsheetml.sheet");
         assertThat(response.headers().get("content-disposition")).contains("attachment");
-        assertThat(response.body().length).isGreaterThan(0);
+        assertThat(response.body()).hasSizeGreaterThan(0);
 
         log.info("e-Faktur Masukan export test passed - size={}", response.body().length);
     }
@@ -107,7 +110,7 @@ class TaxExportApiTest extends PlaywrightTestBase {
         assertThat(response.status()).isEqualTo(200);
         assertThat(response.headers().get("content-type")).contains("spreadsheetml.sheet");
         assertThat(response.headers().get("content-disposition")).contains("attachment");
-        assertThat(response.body().length).isGreaterThan(0);
+        assertThat(response.body()).hasSizeGreaterThan(0);
 
         log.info("Bupot Unifikasi export test passed - size={}", response.body().length);
     }
@@ -218,7 +221,7 @@ class TaxExportApiTest extends PlaywrightTestBase {
         assertThat(response.status()).isEqualTo(200);
         assertThat(response.headers().get("content-type")).contains("spreadsheetml.sheet");
         assertThat(response.headers().get("content-disposition")).contains("attachment");
-        assertThat(response.body().length).isGreaterThan(0);
+        assertThat(response.body()).hasSizeGreaterThan(0);
 
         log.info("PPN detail Excel export test passed - size={}", response.body().length);
     }
@@ -230,7 +233,7 @@ class TaxExportApiTest extends PlaywrightTestBase {
         assertThat(response.status()).isEqualTo(200);
         assertThat(response.headers().get("content-type")).contains("spreadsheetml.sheet");
         assertThat(response.headers().get("content-disposition")).contains("attachment");
-        assertThat(response.body().length).isGreaterThan(0);
+        assertThat(response.body()).hasSizeGreaterThan(0);
 
         log.info("PPh 23 detail Excel export test passed - size={}", response.body().length);
     }
@@ -242,7 +245,7 @@ class TaxExportApiTest extends PlaywrightTestBase {
         assertThat(response.status()).isEqualTo(200);
         assertThat(response.headers().get("content-type")).contains("spreadsheetml.sheet");
         assertThat(response.headers().get("content-disposition")).contains("attachment");
-        assertThat(response.body().length).isGreaterThan(0);
+        assertThat(response.body()).hasSizeGreaterThan(0);
 
         log.info("Rekonsiliasi Fiskal Excel export test passed - size={}", response.body().length);
     }
@@ -331,20 +334,20 @@ class TaxExportApiTest extends PlaywrightTestBase {
         Map<String, String> tokenRequest = new HashMap<>();
         tokenRequest.put("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
-
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
-
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                return tokenData.get("accessToken").asText();
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
-        throw new RuntimeException("Failed to get access token");
+        return tokenRef.get();
     }
 }

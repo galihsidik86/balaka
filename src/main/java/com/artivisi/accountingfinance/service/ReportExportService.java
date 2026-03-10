@@ -1232,51 +1232,10 @@ public class ReportExportService {
             addReportHeader(document, "RINCIAN PPN PER FAKTUR", "VAT Detail Report",
                     LABEL_PERIODE + report.startDate().format(DATE_FORMAT) + " - " + report.endDate().format(DATE_FORMAT));
 
-            // Keluaran section
-            Paragraph keluaranTitle = new Paragraph(COL_PPN_KELUARAN, getBoldFont());
-            keluaranTitle.setSpacingBefore(15);
-            document.add(keluaranTitle);
-
-            PdfPTable keluaranTable = new PdfPTable(7);
-            keluaranTable.setWidthPercentage(100);
-            keluaranTable.setWidths(new float[]{18, 10, 5, 20, 17, 15, 15});
-            keluaranTable.setSpacingBefore(5);
-            addTableHeader(keluaranTable, COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN");
-
-            for (TaxTransactionDetail item : report.keluaranItems()) {
-                addTableCell(keluaranTable, item.getFakturNumber() != null ? item.getFakturNumber() : "-", Element.ALIGN_LEFT);
-                addTableCell(keluaranTable, item.getFakturDate() != null ? item.getFakturDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN_DMY)) : "-", Element.ALIGN_LEFT);
-                addTableCell(keluaranTable, item.getTransactionCode() != null ? item.getTransactionCode() : "-", Element.ALIGN_CENTER);
-                addTableCell(keluaranTable, item.getCounterpartyName() != null ? item.getCounterpartyName() : "-", Element.ALIGN_LEFT);
-                addTableCell(keluaranTable, item.getCounterpartyNpwp() != null ? item.getCounterpartyNpwp() : "-", Element.ALIGN_LEFT);
-                addTableCell(keluaranTable, formatNumber(item.getDpp()), Element.ALIGN_RIGHT);
-                addTableCell(keluaranTable, formatNumber(item.getPpn()), Element.ALIGN_RIGHT);
-            }
-            addPpnTotalRow(keluaranTable, "Total PPN Keluaran", formatNumber(report.totalDppKeluaran()), formatNumber(report.totalPpnKeluaran()));
-            document.add(keluaranTable);
-
-            // Masukan section
-            Paragraph masukanTitle = new Paragraph(COL_PPN_MASUKAN, getBoldFont());
-            masukanTitle.setSpacingBefore(15);
-            document.add(masukanTitle);
-
-            PdfPTable masukanTable = new PdfPTable(7);
-            masukanTable.setWidthPercentage(100);
-            masukanTable.setWidths(new float[]{18, 10, 5, 20, 17, 15, 15});
-            masukanTable.setSpacingBefore(5);
-            addTableHeader(masukanTable, COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN");
-
-            for (TaxTransactionDetail item : report.masukanItems()) {
-                addTableCell(masukanTable, item.getFakturNumber() != null ? item.getFakturNumber() : "-", Element.ALIGN_LEFT);
-                addTableCell(masukanTable, item.getFakturDate() != null ? item.getFakturDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN_DMY)) : "-", Element.ALIGN_LEFT);
-                addTableCell(masukanTable, item.getTransactionCode() != null ? item.getTransactionCode() : "-", Element.ALIGN_CENTER);
-                addTableCell(masukanTable, item.getCounterpartyName() != null ? item.getCounterpartyName() : "-", Element.ALIGN_LEFT);
-                addTableCell(masukanTable, item.getCounterpartyNpwp() != null ? item.getCounterpartyNpwp() : "-", Element.ALIGN_LEFT);
-                addTableCell(masukanTable, formatNumber(item.getDpp()), Element.ALIGN_RIGHT);
-                addTableCell(masukanTable, formatNumber(item.getPpn()), Element.ALIGN_RIGHT);
-            }
-            addPpnTotalRow(masukanTable, "Total PPN Masukan", formatNumber(report.totalDppMasukan()), formatNumber(report.totalPpnMasukan()));
-            document.add(masukanTable);
+            addPpnSectionToPdf(document, COL_PPN_KELUARAN, report.keluaranItems(),
+                    "Total PPN Keluaran", report.totalDppKeluaran(), report.totalPpnKeluaran());
+            addPpnSectionToPdf(document, COL_PPN_MASUKAN, report.masukanItems(),
+                    "Total PPN Masukan", report.totalDppMasukan(), report.totalPpnMasukan());
 
             document.close();
             return baos.toByteArray();
@@ -1284,6 +1243,37 @@ public class ReportExportService {
             log.error("Error generating PPN Detail PDF", e);
             throw new ReportGenerationException(PDF_GENERATION_ERROR + e.getMessage(), e);
         }
+    }
+
+    private void addPpnSectionToPdf(Document document, String sectionTitle,
+                                     java.util.List<TaxTransactionDetail> items,
+                                     String totalLabel, BigDecimal totalDpp, BigDecimal totalPpn)
+            throws DocumentException {
+        Paragraph title = new Paragraph(sectionTitle, getBoldFont());
+        title.setSpacingBefore(15);
+        document.add(title);
+
+        PdfPTable table = new PdfPTable(7);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{18, 10, 5, 20, 17, 15, 15});
+        table.setSpacingBefore(5);
+        addTableHeader(table, COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN");
+
+        for (TaxTransactionDetail item : items) {
+            addPpnItemRowToPdf(table, item);
+        }
+        addPpnTotalRow(table, totalLabel, formatNumber(totalDpp), formatNumber(totalPpn));
+        document.add(table);
+    }
+
+    private void addPpnItemRowToPdf(PdfPTable table, TaxTransactionDetail item) {
+        addTableCell(table, item.getFakturNumber() != null ? item.getFakturNumber() : "-", Element.ALIGN_LEFT);
+        addTableCell(table, item.getFakturDate() != null ? item.getFakturDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN_DMY)) : "-", Element.ALIGN_LEFT);
+        addTableCell(table, item.getTransactionCode() != null ? item.getTransactionCode() : "-", Element.ALIGN_CENTER);
+        addTableCell(table, item.getCounterpartyName() != null ? item.getCounterpartyName() : "-", Element.ALIGN_LEFT);
+        addTableCell(table, item.getCounterpartyNpwp() != null ? item.getCounterpartyNpwp() : "-", Element.ALIGN_LEFT);
+        addTableCell(table, formatNumber(item.getDpp()), Element.ALIGN_RIGHT);
+        addTableCell(table, formatNumber(item.getPpn()), Element.ALIGN_RIGHT);
     }
 
     public byte[] exportPpnDetailToExcel(TaxReportDetailService.PPNDetailReport report) {
@@ -1300,54 +1290,18 @@ public class ReportExportService {
             CellStyle numberStyle = createNumberStyle(workbook);
             CellStyle sectionStyle = createSectionStyle(workbook);
             CellStyle totalStyle = createTotalStyle(workbook);
-
-            // Keluaran
-            Row keluaranHeader = sheet.createRow(rowNum++);
-            createCell(keluaranHeader, 0, COL_PPN_KELUARAN, sectionStyle);
-
-            Row kHdr = sheet.createRow(rowNum++);
             String[] headers = {COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN"};
-            for (int i = 0; i < headers.length; i++) createCell(kHdr, i, headers[i], headerStyle);
 
-            for (TaxTransactionDetail item : report.keluaranItems()) {
-                Row row = sheet.createRow(rowNum++);
-                createCell(row, 0, item.getFakturNumber() != null ? item.getFakturNumber() : "-", textStyle);
-                createCell(row, 1, item.getFakturDate() != null ? item.getFakturDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN_DMY)) : "-", textStyle);
-                createCell(row, 2, item.getTransactionCode() != null ? item.getTransactionCode() : "-", textStyle);
-                createCell(row, 3, item.getCounterpartyName() != null ? item.getCounterpartyName() : "-", textStyle);
-                createCell(row, 4, item.getCounterpartyNpwp() != null ? item.getCounterpartyNpwp() : "-", textStyle);
-                createNumericCell(row, 5, item.getDpp(), numberStyle);
-                createNumericCell(row, 6, item.getPpn(), numberStyle);
-            }
-            Row kTotal = sheet.createRow(rowNum++);
-            createCell(kTotal, 0, "Total PPN Keluaran", totalStyle);
-            for (int i = 1; i < 5; i++) createCell(kTotal, i, "", totalStyle);
-            createNumericCell(kTotal, 5, report.totalDppKeluaran(), totalStyle);
-            createNumericCell(kTotal, 6, report.totalPpnKeluaran(), totalStyle);
+            rowNum = addPpnSectionToExcel(sheet, rowNum, COL_PPN_KELUARAN, headers,
+                    report.keluaranItems(), "Total PPN Keluaran",
+                    report.totalDppKeluaran(), report.totalPpnKeluaran(),
+                    headerStyle, textStyle, numberStyle, sectionStyle, totalStyle);
             rowNum++;
 
-            // Masukan
-            Row masukanHeader = sheet.createRow(rowNum++);
-            createCell(masukanHeader, 0, COL_PPN_MASUKAN, sectionStyle);
-
-            Row mHdr = sheet.createRow(rowNum++);
-            for (int i = 0; i < headers.length; i++) createCell(mHdr, i, headers[i], headerStyle);
-
-            for (TaxTransactionDetail item : report.masukanItems()) {
-                Row row = sheet.createRow(rowNum++);
-                createCell(row, 0, item.getFakturNumber() != null ? item.getFakturNumber() : "-", textStyle);
-                createCell(row, 1, item.getFakturDate() != null ? item.getFakturDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN_DMY)) : "-", textStyle);
-                createCell(row, 2, item.getTransactionCode() != null ? item.getTransactionCode() : "-", textStyle);
-                createCell(row, 3, item.getCounterpartyName() != null ? item.getCounterpartyName() : "-", textStyle);
-                createCell(row, 4, item.getCounterpartyNpwp() != null ? item.getCounterpartyNpwp() : "-", textStyle);
-                createNumericCell(row, 5, item.getDpp(), numberStyle);
-                createNumericCell(row, 6, item.getPpn(), numberStyle);
-            }
-            Row mTotal = sheet.createRow(rowNum);
-            createCell(mTotal, 0, "Total PPN Masukan", totalStyle);
-            for (int i = 1; i < 5; i++) createCell(mTotal, i, "", totalStyle);
-            createNumericCell(mTotal, 5, report.totalDppMasukan(), totalStyle);
-            createNumericCell(mTotal, 6, report.totalPpnMasukan(), totalStyle);
+            addPpnSectionToExcel(sheet, rowNum, COL_PPN_MASUKAN, headers,
+                    report.masukanItems(), "Total PPN Masukan",
+                    report.totalDppMasukan(), report.totalPpnMasukan(),
+                    headerStyle, textStyle, numberStyle, sectionStyle, totalStyle);
 
             autoSizeColumns(sheet, 7);
             workbook.write(baos);
@@ -1356,6 +1310,41 @@ public class ReportExportService {
             log.error("Error generating PPN Detail Excel", e);
             throw new ReportGenerationException(EXCEL_GENERATION_ERROR + e.getMessage(), e);
         }
+    }
+
+    private int addPpnSectionToExcel(Sheet sheet, int rowNum, String sectionTitle, String[] headers,
+                                      java.util.List<TaxTransactionDetail> items, String totalLabel,
+                                      BigDecimal totalDpp, BigDecimal totalPpn,
+                                      CellStyle headerStyle, CellStyle textStyle, CellStyle numberStyle,
+                                      CellStyle sectionStyle, CellStyle totalStyle) {
+        Row sectionRow = sheet.createRow(rowNum++);
+        createCell(sectionRow, 0, sectionTitle, sectionStyle);
+
+        Row hdrRow = sheet.createRow(rowNum++);
+        for (int i = 0; i < headers.length; i++) createCell(hdrRow, i, headers[i], headerStyle);
+
+        for (TaxTransactionDetail item : items) {
+            Row row = sheet.createRow(rowNum++);
+            addPpnItemRowToExcel(row, item, textStyle, numberStyle);
+        }
+
+        Row totalRow = sheet.createRow(rowNum++);
+        createCell(totalRow, 0, totalLabel, totalStyle);
+        for (int i = 1; i < 5; i++) createCell(totalRow, i, "", totalStyle);
+        createNumericCell(totalRow, 5, totalDpp, totalStyle);
+        createNumericCell(totalRow, 6, totalPpn, totalStyle);
+        return rowNum;
+    }
+
+    private void addPpnItemRowToExcel(Row row, TaxTransactionDetail item,
+                                       CellStyle textStyle, CellStyle numberStyle) {
+        createCell(row, 0, item.getFakturNumber() != null ? item.getFakturNumber() : "-", textStyle);
+        createCell(row, 1, item.getFakturDate() != null ? item.getFakturDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN_DMY)) : "-", textStyle);
+        createCell(row, 2, item.getTransactionCode() != null ? item.getTransactionCode() : "-", textStyle);
+        createCell(row, 3, item.getCounterpartyName() != null ? item.getCounterpartyName() : "-", textStyle);
+        createCell(row, 4, item.getCounterpartyNpwp() != null ? item.getCounterpartyNpwp() : "-", textStyle);
+        createNumericCell(row, 5, item.getDpp(), numberStyle);
+        createNumericCell(row, 6, item.getPpn(), numberStyle);
     }
 
     // ==================== PPh 23 DETAIL ====================

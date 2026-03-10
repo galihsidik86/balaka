@@ -299,7 +299,7 @@ function registerFormComponents() {
             const input = e.target
             const rawValue = input.value.replaceAll(/\D/g, '')
             const hiddenInput = input.nextElementSibling
-            if (hiddenInput && hiddenInput.classList.contains('var-value')) {
+            if (hiddenInput?.classList.contains('var-value')) {
                 hiddenInput.value = rawValue
             }
             input.value = rawValue ? idNumberFormat.format(Number.parseInt(rawValue, 10)) : ''

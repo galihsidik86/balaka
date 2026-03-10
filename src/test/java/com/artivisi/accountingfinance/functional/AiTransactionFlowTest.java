@@ -18,10 +18,13 @@ import org.springframework.context.annotation.Import;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Functional test for AI-assisted transaction flow with enhanced template metadata.
@@ -431,23 +434,22 @@ class AiTransactionFlowTest extends PlaywrightTestBase {
         Map<String, String> tokenRequest = new HashMap<>();
         tokenRequest.put("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
-
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
-
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                String token = tokenData.get("accessToken").asText();
-                log.info("✓ Access token received");
-                return token;
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
-        throw new RuntimeException("Failed to get access token");
+        log.info("Access token received");
+        return tokenRef.get();
     }
 
     /**

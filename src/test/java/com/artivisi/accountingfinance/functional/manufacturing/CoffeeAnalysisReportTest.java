@@ -13,10 +13,13 @@ import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Coffee Shop (F&B) industry analysis report test.
@@ -82,7 +85,6 @@ class CoffeeAnalysisReportTest extends PlaywrightTestBase {
         JsonNode incomeBody = getApi("/api/analysis/income-statement?startDate=2024-01-01&endDate=2024-01-31");
         JsonNode incomeData = incomeBody.get("data");
         BigDecimal totalRevenue = incomeData.get("totalRevenue").decimalValue();
-        BigDecimal totalExpense = incomeData.get("totalExpense").decimalValue();
         JsonNode expenseItems = incomeData.get("expenseItems");
 
         // Categorize expenses for F&B analysis
@@ -266,16 +268,19 @@ class CoffeeAnalysisReportTest extends PlaywrightTestBase {
         Map<String, String> tokenRequest = new HashMap<>();
         tokenRequest.put("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
             if (tokenResponse.ok()) {
-                return objectMapper.readTree(tokenResponse.text()).get("accessToken").asText();
+                tokenRef.set(objectMapper.readTree(tokenResponse.text()).get("accessToken").asText());
+                return true;
             }
-        }
-        throw new RuntimeException("Failed to get access token");
+            return false;
+        });
+
+        return tokenRef.get();
     }
 }

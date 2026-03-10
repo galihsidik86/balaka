@@ -75,7 +75,7 @@ class RecurringSchedulerTest extends PlaywrightTestBase {
         recurring.setStatus(RecurringStatus.PAUSED);
         recurringTransactionRepository.save(recurring);
 
-        int processed = recurringTransactionService.processAllDue();
+        recurringTransactionService.processAllDue();
 
         // The paused one should not be processed
         List<RecurringTransactionLog> logs = logRepository
@@ -83,7 +83,7 @@ class RecurringSchedulerTest extends PlaywrightTestBase {
         assertThat(logs).isEmpty();
 
         RecurringTransaction updated = recurringTransactionRepository.findById(recurring.getId()).orElseThrow();
-        assertThat(updated.getTotalRuns()).isEqualTo(0);
+        assertThat(updated.getTotalRuns()).isZero();
     }
 
     @Test

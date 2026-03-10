@@ -59,6 +59,10 @@ public class BankReconciliationController {
     private static final String ATTR_SUCCESS = "successMessage";
     private static final String ATTR_ERROR = "errorMessage";
     private static final String ATTR_BANK_TYPES = "bankTypes";
+    private static final String VIEW_PARSER_CONFIGS_FORM = "bank-reconciliation/parser-configs/form";
+    private static final String ATTR_STATEMENT = "statement";
+    private static final String REDIRECT_RECONCILIATIONS_PREFIX = "redirect:/bank-reconciliation/reconciliations/";
+    private static final String ATTR_RECON = "recon";
 
     private final BankStatementParserConfigService parserConfigService;
     private final BankStatementImportService importService;
@@ -162,7 +166,7 @@ public class BankReconciliationController {
         model.addAttribute("config", new ParserConfigForm());
         model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
         model.addAttribute(ATTR_IS_EDIT, false);
-        return "bank-reconciliation/parser-configs/form";
+        return VIEW_PARSER_CONFIGS_FORM;
     }
 
     @PostMapping("/parser-configs/new")
@@ -177,7 +181,7 @@ public class BankReconciliationController {
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
             model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, false);
-            return "bank-reconciliation/parser-configs/form";
+            return VIEW_PARSER_CONFIGS_FORM;
         }
 
         try {
@@ -192,7 +196,7 @@ public class BankReconciliationController {
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
             model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, false);
-            return "bank-reconciliation/parser-configs/form";
+            return VIEW_PARSER_CONFIGS_FORM;
         }
     }
 
@@ -203,7 +207,7 @@ public class BankReconciliationController {
         model.addAttribute("config", toForm(parserConfigService.findById(id)));
         model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
         model.addAttribute(ATTR_IS_EDIT, true);
-        return "bank-reconciliation/parser-configs/form";
+        return VIEW_PARSER_CONFIGS_FORM;
     }
 
     @PostMapping("/parser-configs/{id}")
@@ -220,7 +224,7 @@ public class BankReconciliationController {
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
             model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, true);
-            return "bank-reconciliation/parser-configs/form";
+            return VIEW_PARSER_CONFIGS_FORM;
         }
 
         try {
@@ -236,7 +240,7 @@ public class BankReconciliationController {
             model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_PARSER_CONFIGS);
             model.addAttribute(ATTR_BANK_TYPES, BankStatementParserType.values());
             model.addAttribute(ATTR_IS_EDIT, true);
-            return "bank-reconciliation/parser-configs/form";
+            return VIEW_PARSER_CONFIGS_FORM;
         }
     }
 
@@ -293,9 +297,10 @@ public class BankReconciliationController {
 
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            BankStatement statement = importService.importStatement(
+            var importParams = new BankStatementImportService.BankStatementImportParams(
                     bankAccountId, parserConfigId, periodStart, periodEnd,
                     openingBalance, closingBalance, file, username);
+            BankStatement statement = importService.importStatement(importParams);
 
             securityAuditService.log(AuditEventType.DATA_IMPORT,
                     "Bank statement imported: " + file.getOriginalFilename()
@@ -331,7 +336,7 @@ public class BankReconciliationController {
         }
 
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_STATEMENTS);
-        model.addAttribute("statement", statement);
+        model.addAttribute(ATTR_STATEMENT, statement);
         model.addAttribute("items", items);
         model.addAttribute("matchStatuses", StatementItemMatchStatus.values());
         model.addAttribute("selectedMatchStatus", matchStatus);
@@ -369,10 +374,10 @@ public class BankReconciliationController {
             securityAuditService.log(AuditEventType.SETTINGS_CHANGE,
                     "Bank reconciliation created for statement: " + bankStatementId);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS, "Rekonsiliasi berhasil dibuat");
-            return "redirect:/bank-reconciliation/reconciliations/" + recon.getId();
+            return REDIRECT_RECONCILIATIONS_PREFIX + recon.getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, "Gagal membuat rekonsiliasi: " + e.getMessage());
-            return "redirect:/bank-reconciliation/reconciliations/new";
+            return REDIRECT_RECONCILIATIONS_PREFIX + "new";
         }
     }
 
@@ -397,7 +402,7 @@ public class BankReconciliationController {
         var unmatchedBookTxns = reconciliationService.findUnmatchedBookTransactions(id);
 
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_RECONCILIATIONS);
-        model.addAttribute("recon", recon);
+        model.addAttribute(ATTR_RECON, recon);
         model.addAttribute("bankItems", bankItems);
         model.addAttribute("unmatchedBankItems", unmatchedBankItems);
         model.addAttribute("matchedBankItems", matchedBankItems);
@@ -422,7 +427,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, "Gagal auto-match: " + e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     @PostMapping("/reconciliations/{id}/match")
@@ -440,7 +445,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, "Gagal mencocokkan: " + e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     @PostMapping("/reconciliations/{id}/mark-bank-only")
@@ -458,7 +463,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     @PostMapping("/reconciliations/{id}/mark-book-only")
@@ -475,7 +480,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     @PostMapping("/reconciliations/{id}/unmatch/{itemId}")
@@ -491,7 +496,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     @PostMapping("/reconciliations/{id}/create-transaction")
@@ -511,7 +516,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, "Gagal membuat transaksi: " + e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     @PostMapping("/reconciliations/{id}/complete")
@@ -526,7 +531,7 @@ public class BankReconciliationController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(ATTR_ERROR, "Gagal menyelesaikan: " + e.getMessage());
         }
-        return "redirect:/bank-reconciliation/reconciliations/" + id;
+        return REDIRECT_RECONCILIATIONS_PREFIX + id;
     }
 
     // ==================== Reports ====================
@@ -535,9 +540,9 @@ public class BankReconciliationController {
     public String reconciliationReport(@PathVariable UUID id, Model model) {
         BankReconciliation recon = reconciliationService.findById(id);
         model.addAttribute(ATTR_CURRENT_PAGE, PAGE_BANK_RECON_RECONCILIATIONS);
-        model.addAttribute("recon", recon);
+        model.addAttribute(ATTR_RECON, recon);
         model.addAttribute("summary", reportService.getSummary(id));
-        model.addAttribute("statement", reportService.getReconciliationStatement(id));
+        model.addAttribute(ATTR_STATEMENT, reportService.getReconciliationStatement(id));
         model.addAttribute("outstanding", reportService.getOutstandingItems(id));
         return "bank-reconciliation/reports/report";
     }
@@ -545,9 +550,9 @@ public class BankReconciliationController {
     @GetMapping("/reconciliations/{id}/report/print")
     public String reconciliationReportPrint(@PathVariable UUID id, Model model) {
         BankReconciliation recon = reconciliationService.findById(id);
-        model.addAttribute("recon", recon);
+        model.addAttribute(ATTR_RECON, recon);
         model.addAttribute("summary", reportService.getSummary(id));
-        model.addAttribute("statement", reportService.getReconciliationStatement(id));
+        model.addAttribute(ATTR_STATEMENT, reportService.getReconciliationStatement(id));
         model.addAttribute("outstanding", reportService.getOutstandingItems(id));
         return "bank-reconciliation/reports/print";
     }

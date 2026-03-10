@@ -166,180 +166,199 @@ public class TaxTransactionDetailService {
         List<TaxDetailSuggestion> suggestions = new ArrayList<>();
         String templateName = transaction.getJournalTemplate() != null
                 ? transaction.getJournalTemplate().getTemplateName() : "";
+        String templateNameUpper = templateName.toUpperCase();
         TemplateCategory category = transaction.getJournalTemplate() != null
                 ? transaction.getJournalTemplate().getCategory() : null;
 
-        // Extract counterparty info from project's client
         Client client = (transaction.getProject() != null) ? transaction.getProject().getClient() : null;
 
-        // Detect PPN
-        if (templateName.toUpperCase().contains("PPN")) {
-            TaxType ppnType = (category == TemplateCategory.INCOME || category == TemplateCategory.RECEIPT)
-                    ? TaxType.PPN_KELUARAN : TaxType.PPN_MASUKAN;
-
-            BigDecimal dpp = BigDecimal.ZERO;
-            BigDecimal ppn = BigDecimal.ZERO;
-            for (JournalEntry entry : transaction.getJournalEntries()) {
-                String accountCode = entry.getAccount() != null ? entry.getAccount().getAccountCode() : "";
-                if (ACCOUNT_HUTANG_PPN.equals(accountCode)) {
-                    ppn = entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
-                } else if (ACCOUNT_PPN_MASUKAN.equals(accountCode)) {
-                    ppn = entry.getDebitAmount() != null ? entry.getDebitAmount() : BigDecimal.ZERO;
-                }
-            }
-            // DPP = transaction amount (Harga Jual) for PPN templates
-            dpp = transaction.getAmount();
-
-            String transactionCode = templateName.toUpperCase().contains("BUMN")
-                    || templateName.toUpperCase().contains("FP 03") ? "03" : "01";
-
-            suggestions.add(new TaxDetailSuggestion(
-                    ppnType, transactionCode,
-                    dpp, ppn, null, null, null,
-                    client != null ? client.getNpwp() : null,
-                    client != null ? client.getNitku() : null,
-                    client != null ? client.getNik() : null,
-                    client != null ? client.getIdType() : "TIN",
-                    client != null ? client.getName() : null,
-                    client != null ? client.getAddress() : null
-            ));
-        }
-
-        // Detect PPh 23
-        if (templateName.toUpperCase().contains("PPH 23") || templateName.toUpperCase().contains("PPH23")) {
-            BigDecimal grossAmount = transaction.getAmount();
-            BigDecimal taxRate = new BigDecimal("2.00");
-            BigDecimal taxAmount = BigDecimal.ZERO;
-
-            for (JournalEntry entry : transaction.getJournalEntries()) {
-                String accountCode = entry.getAccount() != null ? entry.getAccount().getAccountCode() : "";
-                if (ACCOUNT_KREDIT_PPH_23.equals(accountCode)) {
-                    taxAmount = entry.getDebitAmount() != null ? entry.getDebitAmount() : BigDecimal.ZERO;
-                } else if (ACCOUNT_HUTANG_PPH_23.equals(accountCode)) {
-                    taxAmount = entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
-                }
-            }
-
-            suggestions.add(new TaxDetailSuggestion(
-                    TaxType.PPH_23, null,
-                    null, null,
-                    grossAmount, taxRate, taxAmount,
-                    client != null ? client.getNpwp() : null,
-                    client != null ? client.getNitku() : null,
-                    client != null ? client.getNik() : null,
-                    client != null ? client.getIdType() : "TIN",
-                    client != null ? client.getName() : null,
-                    client != null ? client.getAddress() : null
-            ));
-        }
-
-        // Detect PPh 4(2)
-        if (templateName.toUpperCase().contains("PPH 4(2)") || templateName.toUpperCase().contains("PPH 42")
-                || templateName.toUpperCase().contains("PPH4(2)")) {
-            BigDecimal grossAmount = transaction.getAmount();
-            BigDecimal taxRate = new BigDecimal("10.00");
-            BigDecimal taxAmount = BigDecimal.ZERO;
-
-            for (JournalEntry entry : transaction.getJournalEntries()) {
-                String accountCode = entry.getAccount() != null ? entry.getAccount().getAccountCode() : "";
-                if (ACCOUNT_HUTANG_PPH_42.equals(accountCode)) {
-                    taxAmount = entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
-                }
-            }
-
-            suggestions.add(new TaxDetailSuggestion(
-                    TaxType.PPH_42, null,
-                    null, null,
-                    grossAmount, taxRate, taxAmount,
-                    client != null ? client.getNpwp() : null,
-                    client != null ? client.getNitku() : null,
-                    client != null ? client.getNik() : null,
-                    client != null ? client.getIdType() : "TIN",
-                    client != null ? client.getName() : null,
-                    client != null ? client.getAddress() : null
-            ));
-        }
-
-        // Detect PPh 21
-        if (templateName.toUpperCase().contains("PPH 21") || templateName.toUpperCase().contains("PPH21")
-                || templateName.toUpperCase().contains("GAJI")) {
-            BigDecimal taxAmount = BigDecimal.ZERO;
-            for (JournalEntry entry : transaction.getJournalEntries()) {
-                String accountCode = entry.getAccount() != null ? entry.getAccount().getAccountCode() : "";
-                if (ACCOUNT_HUTANG_PPH_21.equals(accountCode)) {
-                    taxAmount = entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
-                }
-            }
-            if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
-                suggestions.add(new TaxDetailSuggestion(
-                        TaxType.PPH_21, null,
-                        null, null,
-                        transaction.getAmount(), null, taxAmount,
-                        client != null ? client.getNpwp() : null,
-                        client != null ? client.getNitku() : null,
-                        client != null ? client.getNik() : null,
-                        client != null ? client.getIdType() : "TIN",
-                        client != null ? client.getName() : null,
-                        client != null ? client.getAddress() : null
-                ));
-            }
-        }
+        suggestPpn(transaction, templateNameUpper, category, client, suggestions);
+        suggestPph23(transaction, templateNameUpper, client, suggestions);
+        suggestPph42(transaction, templateNameUpper, client, suggestions);
+        suggestPph21(transaction, templateNameUpper, client, suggestions);
 
         return suggestions;
     }
 
+    private void suggestPpn(Transaction transaction, String templateNameUpper,
+                            TemplateCategory category, Client client, List<TaxDetailSuggestion> suggestions) {
+        if (!templateNameUpper.contains("PPN")) {
+            return;
+        }
+
+        TaxType ppnType = (category == TemplateCategory.INCOME || category == TemplateCategory.RECEIPT)
+                ? TaxType.PPN_KELUARAN : TaxType.PPN_MASUKAN;
+
+        BigDecimal ppn = findPpnAmountFromEntries(transaction.getJournalEntries());
+        BigDecimal dpp = transaction.getAmount();
+
+        String transactionCode = (templateNameUpper.contains("BUMN")
+                || templateNameUpper.contains("FP 03")) ? "03" : "01";
+
+        suggestions.add(buildSuggestion(ppnType, transactionCode, dpp, ppn, null, null, null, client));
+    }
+
+    private BigDecimal findPpnAmountFromEntries(List<JournalEntry> entries) {
+        for (JournalEntry entry : entries) {
+            String accountCode = getAccountCode(entry);
+            if (ACCOUNT_HUTANG_PPN.equals(accountCode)) {
+                return entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
+            } else if (ACCOUNT_PPN_MASUKAN.equals(accountCode)) {
+                return entry.getDebitAmount() != null ? entry.getDebitAmount() : BigDecimal.ZERO;
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private void suggestPph23(Transaction transaction, String templateNameUpper,
+                              Client client, List<TaxDetailSuggestion> suggestions) {
+        if (!templateNameUpper.contains("PPH 23") && !templateNameUpper.contains("PPH23")) {
+            return;
+        }
+
+        BigDecimal taxAmount = findTaxAmountFromEntries(transaction.getJournalEntries(),
+                ACCOUNT_KREDIT_PPH_23, ACCOUNT_HUTANG_PPH_23);
+
+        suggestions.add(buildSuggestion(TaxType.PPH_23, null,
+                null, null, transaction.getAmount(), new BigDecimal("2.00"), taxAmount, client));
+    }
+
+    private void suggestPph42(Transaction transaction, String templateNameUpper,
+                              Client client, List<TaxDetailSuggestion> suggestions) {
+        if (!templateNameUpper.contains("PPH 4(2)") && !templateNameUpper.contains("PPH 42")
+                && !templateNameUpper.contains("PPH4(2)")) {
+            return;
+        }
+
+        BigDecimal taxAmount = BigDecimal.ZERO;
+        for (JournalEntry entry : transaction.getJournalEntries()) {
+            if (ACCOUNT_HUTANG_PPH_42.equals(getAccountCode(entry))) {
+                taxAmount = entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
+            }
+        }
+
+        suggestions.add(buildSuggestion(TaxType.PPH_42, null,
+                null, null, transaction.getAmount(), new BigDecimal("10.00"), taxAmount, client));
+    }
+
+    private void suggestPph21(Transaction transaction, String templateNameUpper,
+                              Client client, List<TaxDetailSuggestion> suggestions) {
+        if (!templateNameUpper.contains("PPH 21") && !templateNameUpper.contains("PPH21")
+                && !templateNameUpper.contains("GAJI")) {
+            return;
+        }
+
+        BigDecimal taxAmount = BigDecimal.ZERO;
+        for (JournalEntry entry : transaction.getJournalEntries()) {
+            if (ACCOUNT_HUTANG_PPH_21.equals(getAccountCode(entry))) {
+                taxAmount = entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
+            }
+        }
+        if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
+            suggestions.add(buildSuggestion(TaxType.PPH_21, null,
+                    null, null, transaction.getAmount(), null, taxAmount, client));
+        }
+    }
+
+    private BigDecimal findTaxAmountFromEntries(List<JournalEntry> entries,
+                                                 String debitAccount, String creditAccount) {
+        for (JournalEntry entry : entries) {
+            String accountCode = getAccountCode(entry);
+            if (debitAccount.equals(accountCode)) {
+                return entry.getDebitAmount() != null ? entry.getDebitAmount() : BigDecimal.ZERO;
+            } else if (creditAccount.equals(accountCode)) {
+                return entry.getCreditAmount() != null ? entry.getCreditAmount() : BigDecimal.ZERO;
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private String getAccountCode(JournalEntry entry) {
+        return entry.getAccount() != null ? entry.getAccount().getAccountCode() : "";
+    }
+
+    private TaxDetailSuggestion buildSuggestion(TaxType taxType, String transactionCode,
+                                                 BigDecimal dpp, BigDecimal ppn,
+                                                 BigDecimal grossAmount, BigDecimal taxRate, BigDecimal taxAmount,
+                                                 Client client) {
+        return new TaxDetailSuggestion(
+                taxType, transactionCode,
+                dpp, ppn, grossAmount, taxRate, taxAmount,
+                client != null ? client.getNpwp() : null,
+                client != null ? client.getNitku() : null,
+                client != null ? client.getNik() : null,
+                client != null ? client.getIdType() : "TIN",
+                client != null ? client.getName() : null,
+                client != null ? client.getAddress() : null
+        );
+    }
+
     private void validate(TaxTransactionDetail detail, UUID existingId) {
+        validateRequiredFields(detail);
+        validateEFaktur(detail, existingId);
+        validateEBupot(detail, existingId);
+        validateNpwpFormat(detail);
+    }
+
+    private void validateRequiredFields(TaxTransactionDetail detail) {
         if (detail.getTaxType() == null) {
             throw new IllegalArgumentException("Jenis pajak (taxType) wajib diisi");
         }
-
         if (detail.getCounterpartyName() == null || detail.getCounterpartyName().isBlank()) {
             throw new IllegalArgumentException("Nama lawan transaksi wajib diisi");
         }
+    }
 
-        if (detail.isEFaktur()) {
-            if (detail.getDpp() == null) {
-                throw new IllegalArgumentException("DPP wajib diisi untuk e-Faktur");
-            }
-            if (detail.getPpn() == null) {
-                throw new IllegalArgumentException("PPN wajib diisi untuk e-Faktur");
-            }
-            if (detail.getFakturNumber() != null && !detail.getFakturNumber().isBlank()) {
-                boolean duplicate = (existingId == null)
-                        ? taxDetailRepository.existsByFakturNumber(detail.getFakturNumber())
-                        : taxDetailRepository.existsByFakturNumberAndIdNot(detail.getFakturNumber(), existingId);
-                if (duplicate) {
-                    throw new IllegalArgumentException("Nomor faktur sudah digunakan: " + detail.getFakturNumber());
-                }
+    private void validateEFaktur(TaxTransactionDetail detail, UUID existingId) {
+        if (!detail.isEFaktur()) {
+            return;
+        }
+        if (detail.getDpp() == null) {
+            throw new IllegalArgumentException("DPP wajib diisi untuk e-Faktur");
+        }
+        if (detail.getPpn() == null) {
+            throw new IllegalArgumentException("PPN wajib diisi untuk e-Faktur");
+        }
+        if (detail.getFakturNumber() != null && !detail.getFakturNumber().isBlank()) {
+            boolean duplicate = (existingId == null)
+                    ? taxDetailRepository.existsByFakturNumber(detail.getFakturNumber())
+                    : taxDetailRepository.existsByFakturNumberAndIdNot(detail.getFakturNumber(), existingId);
+            if (duplicate) {
+                throw new IllegalArgumentException("Nomor faktur sudah digunakan: " + detail.getFakturNumber());
             }
         }
+    }
 
-        if (detail.isEBupot()) {
-            if (detail.getGrossAmount() == null) {
-                throw new IllegalArgumentException("Jumlah bruto wajib diisi untuk e-Bupot");
-            }
-            if (detail.getTaxRate() == null) {
-                throw new IllegalArgumentException("Tarif pajak wajib diisi untuk e-Bupot");
-            }
-            if (detail.getTaxAmount() == null) {
-                throw new IllegalArgumentException("Jumlah pajak wajib diisi untuk e-Bupot");
-            }
-            if (detail.getBupotNumber() != null && !detail.getBupotNumber().isBlank()) {
-                boolean duplicate = (existingId == null)
-                        ? taxDetailRepository.existsByBupotNumber(detail.getBupotNumber())
-                        : taxDetailRepository.existsByBupotNumberAndIdNot(detail.getBupotNumber(), existingId);
-                if (duplicate) {
-                    throw new IllegalArgumentException("Nomor bukti potong sudah digunakan: " + detail.getBupotNumber());
-                }
+    private void validateEBupot(TaxTransactionDetail detail, UUID existingId) {
+        if (!detail.isEBupot()) {
+            return;
+        }
+        if (detail.getGrossAmount() == null) {
+            throw new IllegalArgumentException("Jumlah bruto wajib diisi untuk e-Bupot");
+        }
+        if (detail.getTaxRate() == null) {
+            throw new IllegalArgumentException("Tarif pajak wajib diisi untuk e-Bupot");
+        }
+        if (detail.getTaxAmount() == null) {
+            throw new IllegalArgumentException("Jumlah pajak wajib diisi untuk e-Bupot");
+        }
+        if (detail.getBupotNumber() != null && !detail.getBupotNumber().isBlank()) {
+            boolean duplicate = (existingId == null)
+                    ? taxDetailRepository.existsByBupotNumber(detail.getBupotNumber())
+                    : taxDetailRepository.existsByBupotNumberAndIdNot(detail.getBupotNumber(), existingId);
+            if (duplicate) {
+                throw new IllegalArgumentException("Nomor bukti potong sudah digunakan: " + detail.getBupotNumber());
             }
         }
+    }
 
-        // NPWP format validation
-        if (detail.getCounterpartyNpwp() != null && !detail.getCounterpartyNpwp().isBlank()) {
-            String npwp = detail.getCounterpartyNpwp().replaceAll("[^0-9]", "");
-            if (npwp.length() != 15 && npwp.length() != 16) {
-                throw new IllegalArgumentException("NPWP harus 15 atau 16 digit");
-            }
+    private void validateNpwpFormat(TaxTransactionDetail detail) {
+        if (detail.getCounterpartyNpwp() == null || detail.getCounterpartyNpwp().isBlank()) {
+            return;
+        }
+        String npwp = detail.getCounterpartyNpwp().replaceAll("[^0-9]", "");
+        if (npwp.length() != 15 && npwp.length() != 16) {
+            throw new IllegalArgumentException("NPWP harus 15 atau 16 digit");
         }
     }
 

@@ -364,7 +364,7 @@ class BillOfMaterialControllerFunctionalTest extends PlaywrightTestBase {
     }
 
     @Test
-    @DisplayName("Should handle BOM detail page with lines")
+    @DisplayName("Should display component lines table on BOM detail page")
     void shouldHandleBOMDetailPageWithLines() {
         var bom = ensureActiveBomExists();
 
@@ -372,6 +372,9 @@ class BillOfMaterialControllerFunctionalTest extends PlaywrightTestBase {
         waitForPageLoad();
 
         assertThat(page).hasURL(java.util.regex.Pattern.compile(".*\\/inventory\\/bom\\/.*"));
+
+        // Verify the component lines table is present on the detail page
+        assertThat(page.locator("table").first()).isVisible();
     }
 
     // ==================== MORE COVERAGE TESTS ====================

@@ -17,10 +17,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Reproduction tests for known bugs.
@@ -291,7 +294,6 @@ class BugReproductionTest extends PlaywrightTestBase {
             APIResponse templateResponse = get("/api/templates/" + templateId);
             assertThat(templateResponse.ok()).isTrue();
             JsonNode template = parse(templateResponse);
-            JsonNode lines = template.get("lines");
 
             // Verify all lines produce balanced debit/credit
             // Use amount 11,111,250 which gives 11,111,250 × 11% = 1,222,237.5
@@ -442,20 +444,20 @@ class BugReproductionTest extends PlaywrightTestBase {
 
         Map<String, String> tokenRequest = Map.of("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
-
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
-
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                return tokenData.get("accessToken").asText();
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
-        throw new RuntimeException("Failed to get access token");
+        return tokenRef.get();
     }
 }

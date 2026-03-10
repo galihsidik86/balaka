@@ -262,30 +262,36 @@ public class TransactionService {
         // Check if transaction already has journal entries (created via TemplateExecutionEngine)
         // In this case, we just need to validate, assign journal numbers, and update status
         if (!transaction.getJournalEntries().isEmpty()) {
-            validateJournalBalance(transaction.getJournalEntries());
-
-            // Assign journal numbers to entries that don't have them yet
-            // Journal numbers are assigned at posting time, not at draft creation
-            boolean needsJournalNumber = transaction.getJournalEntries().stream()
-                    .anyMatch(e -> e.getJournalNumber() == null);
-            if (needsJournalNumber) {
-                String journalNumber = generateJournalNumber();
-                int lineIndex = 0;
-                for (JournalEntry entry : transaction.getJournalEntries()) {
-                    entry.setJournalNumber(journalNumber + "-" + String.format("%02d", ++lineIndex));
-                }
-            }
-
-            transaction.setStatus(TransactionStatus.POSTED);
-            transaction.setPostedAt(LocalDateTime.now());
-            transaction.setPostedBy(postedBy);
-
-            Transaction saved = transactionRepository.save(transaction);
-            taxTransactionDetailService.autoPopulateFromTransaction(saved);
-            return saved;
+            assignJournalNumbersIfNeeded(transaction);
+        } else {
+            // No existing journal entries - create them from template (traditional flow)
+            createJournalEntriesFromTemplate(transaction, context);
         }
 
-        // No existing journal entries - create them from template (traditional flow)
+        validateJournalBalance(transaction.getJournalEntries());
+
+        transaction.setStatus(TransactionStatus.POSTED);
+        transaction.setPostedAt(LocalDateTime.now());
+        transaction.setPostedBy(postedBy);
+
+        Transaction saved = transactionRepository.save(transaction);
+        taxTransactionDetailService.autoPopulateFromTransaction(saved);
+        return saved;
+    }
+
+    private void assignJournalNumbersIfNeeded(Transaction transaction) {
+        boolean needsJournalNumber = transaction.getJournalEntries().stream()
+                .anyMatch(e -> e.getJournalNumber() == null);
+        if (needsJournalNumber) {
+            String journalNumber = generateJournalNumber();
+            int lineIndex = 0;
+            for (JournalEntry entry : transaction.getJournalEntries()) {
+                entry.setJournalNumber(journalNumber + "-" + String.format("%02d", ++lineIndex));
+            }
+        }
+    }
+
+    private void createJournalEntriesFromTemplate(Transaction transaction, FormulaContext context) {
         JournalTemplate template = journalTemplateService.findByIdWithLines(transaction.getJournalTemplate().getId());
         Map<UUID, ChartOfAccount> accountOverrides = new HashMap<>();
         for (TransactionAccountMapping mapping : transaction.getAccountMappings()) {
@@ -307,7 +313,6 @@ public class TransactionService {
             entry.setJournalNumber(journalNumber + "-" + String.format("%02d", ++lineIndex));
             entry.setAccount(account);
 
-            // Assign project from transaction to journal entry
             if (transaction.getProject() != null) {
                 entry.setProject(transaction.getProject());
             }
@@ -322,16 +327,6 @@ public class TransactionService {
 
             transaction.addJournalEntry(entry);
         }
-
-        validateJournalBalance(transaction.getJournalEntries());
-
-        transaction.setStatus(TransactionStatus.POSTED);
-        transaction.setPostedAt(LocalDateTime.now());
-        transaction.setPostedBy(postedBy);
-
-        Transaction saved = transactionRepository.save(transaction);
-        taxTransactionDetailService.autoPopulateFromTransaction(saved);
-        return saved;
     }
 
     @Transactional

@@ -75,29 +75,9 @@ public class TaxDetailController {
 
     @PostMapping
     public String create(@PathVariable UUID transactionId,
-                         @RequestParam TaxType taxType,
-                         @RequestParam(required = false) String fakturNumber,
-                         @RequestParam(required = false) LocalDate fakturDate,
-                         @RequestParam(required = false) String transactionCode,
-                         @RequestParam(required = false) BigDecimal dpp,
-                         @RequestParam(required = false) BigDecimal ppn,
-                         @RequestParam(required = false) BigDecimal ppnbm,
-                         @RequestParam(required = false) String bupotNumber,
-                         @RequestParam(required = false) String taxObjectCode,
-                         @RequestParam(required = false) BigDecimal grossAmount,
-                         @RequestParam(required = false) BigDecimal taxRate,
-                         @RequestParam(required = false) BigDecimal taxAmount,
-                         @RequestParam(required = false) String counterpartyIdType,
-                         @RequestParam(required = false) String counterpartyNpwp,
-                         @RequestParam(required = false) String counterpartyNik,
-                         @RequestParam(required = false) String counterpartyNitku,
-                         @RequestParam String counterpartyName,
-                         @RequestParam(required = false) String counterpartyAddress,
+                         TaxDetailFormData form,
                          Model model) {
-        TaxTransactionDetail detail = buildDetail(taxType, fakturNumber, fakturDate, transactionCode,
-                dpp, ppn, ppnbm, bupotNumber, taxObjectCode, grossAmount, taxRate, taxAmount,
-                counterpartyIdType, counterpartyNpwp, counterpartyNik, counterpartyNitku,
-                counterpartyName, counterpartyAddress);
+        TaxTransactionDetail detail = form.toEntity();
 
         try {
             taxDetailService.save(transactionId, detail);
@@ -119,29 +99,9 @@ public class TaxDetailController {
     @PostMapping("/{detailId}")
     public String update(@PathVariable UUID transactionId,
                          @PathVariable UUID detailId,
-                         @RequestParam TaxType taxType,
-                         @RequestParam(required = false) String fakturNumber,
-                         @RequestParam(required = false) LocalDate fakturDate,
-                         @RequestParam(required = false) String transactionCode,
-                         @RequestParam(required = false) BigDecimal dpp,
-                         @RequestParam(required = false) BigDecimal ppn,
-                         @RequestParam(required = false) BigDecimal ppnbm,
-                         @RequestParam(required = false) String bupotNumber,
-                         @RequestParam(required = false) String taxObjectCode,
-                         @RequestParam(required = false) BigDecimal grossAmount,
-                         @RequestParam(required = false) BigDecimal taxRate,
-                         @RequestParam(required = false) BigDecimal taxAmount,
-                         @RequestParam(required = false) String counterpartyIdType,
-                         @RequestParam(required = false) String counterpartyNpwp,
-                         @RequestParam(required = false) String counterpartyNik,
-                         @RequestParam(required = false) String counterpartyNitku,
-                         @RequestParam String counterpartyName,
-                         @RequestParam(required = false) String counterpartyAddress,
+                         TaxDetailFormData form,
                          Model model) {
-        TaxTransactionDetail detail = buildDetail(taxType, fakturNumber, fakturDate, transactionCode,
-                dpp, ppn, ppnbm, bupotNumber, taxObjectCode, grossAmount, taxRate, taxAmount,
-                counterpartyIdType, counterpartyNpwp, counterpartyNik, counterpartyNitku,
-                counterpartyName, counterpartyAddress);
+        TaxTransactionDetail detail = form.toEntity();
 
         try {
             taxDetailService.update(detailId, detail);
@@ -174,32 +134,51 @@ public class TaxDetailController {
         return FRAGMENT_PREFIX + ATTR_TAX_DETAIL_SECTION;
     }
 
-    private TaxTransactionDetail buildDetail(TaxType taxType, String fakturNumber, LocalDate fakturDate,
-                                              String transactionCode, BigDecimal dpp, BigDecimal ppn,
-                                              BigDecimal ppnbm, String bupotNumber, String taxObjectCode,
-                                              BigDecimal grossAmount, BigDecimal taxRate, BigDecimal taxAmount,
-                                              String counterpartyIdType, String counterpartyNpwp,
-                                              String counterpartyNik, String counterpartyNitku,
-                                              String counterpartyName, String counterpartyAddress) {
-        TaxTransactionDetail detail = new TaxTransactionDetail();
-        detail.setTaxType(taxType);
-        detail.setFakturNumber(fakturNumber);
-        detail.setFakturDate(fakturDate);
-        detail.setTransactionCode(transactionCode);
-        detail.setDpp(dpp);
-        detail.setPpn(ppn);
-        detail.setPpnbm(ppnbm != null ? ppnbm : BigDecimal.ZERO);
-        detail.setBupotNumber(bupotNumber);
-        detail.setTaxObjectCode(taxObjectCode);
-        detail.setGrossAmount(grossAmount);
-        detail.setTaxRate(taxRate);
-        detail.setTaxAmount(taxAmount);
-        detail.setCounterpartyIdType(counterpartyIdType != null ? counterpartyIdType : "TIN");
-        detail.setCounterpartyNpwp(counterpartyNpwp);
-        detail.setCounterpartyNik(counterpartyNik);
-        detail.setCounterpartyNitku(counterpartyNitku);
-        detail.setCounterpartyName(counterpartyName);
-        detail.setCounterpartyAddress(counterpartyAddress);
-        return detail;
+    /**
+     * Form-binding object for tax detail create/update to reduce controller parameter count.
+     * Spring MVC binds request parameters to fields automatically.
+     */
+    public record TaxDetailFormData(
+            TaxType taxType,
+            String fakturNumber,
+            LocalDate fakturDate,
+            String transactionCode,
+            BigDecimal dpp,
+            BigDecimal ppn,
+            BigDecimal ppnbm,
+            String bupotNumber,
+            String taxObjectCode,
+            BigDecimal grossAmount,
+            BigDecimal taxRate,
+            BigDecimal taxAmount,
+            String counterpartyIdType,
+            String counterpartyNpwp,
+            String counterpartyNik,
+            String counterpartyNitku,
+            String counterpartyName,
+            String counterpartyAddress
+    ) {
+        public TaxTransactionDetail toEntity() {
+            TaxTransactionDetail detail = new TaxTransactionDetail();
+            detail.setTaxType(taxType);
+            detail.setFakturNumber(fakturNumber);
+            detail.setFakturDate(fakturDate);
+            detail.setTransactionCode(transactionCode);
+            detail.setDpp(dpp);
+            detail.setPpn(ppn);
+            detail.setPpnbm(ppnbm != null ? ppnbm : BigDecimal.ZERO);
+            detail.setBupotNumber(bupotNumber);
+            detail.setTaxObjectCode(taxObjectCode);
+            detail.setGrossAmount(grossAmount);
+            detail.setTaxRate(taxRate);
+            detail.setTaxAmount(taxAmount);
+            detail.setCounterpartyIdType(counterpartyIdType != null ? counterpartyIdType : "TIN");
+            detail.setCounterpartyNpwp(counterpartyNpwp);
+            detail.setCounterpartyNik(counterpartyNik);
+            detail.setCounterpartyNitku(counterpartyNitku);
+            detail.setCounterpartyName(counterpartyName);
+            detail.setCounterpartyAddress(counterpartyAddress);
+            return detail;
+        }
     }
 }

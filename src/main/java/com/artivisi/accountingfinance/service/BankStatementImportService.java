@@ -51,34 +51,26 @@ public class BankStatementImportService {
     }
 
     @Transactional
-    public BankStatement importStatement(
-            UUID bankAccountId,
-            UUID parserConfigId,
-            LocalDate periodStart,
-            LocalDate periodEnd,
-            BigDecimal openingBalance,
-            BigDecimal closingBalance,
-            MultipartFile file,
-            String username) {
+    public BankStatement importStatement(BankStatementImportParams params) {
 
-        CompanyBankAccount bankAccount = bankAccountService.findById(bankAccountId);
-        BankStatementParserConfig config = parserConfigService.findById(parserConfigId);
+        CompanyBankAccount bankAccount = bankAccountService.findById(params.bankAccountId());
+        BankStatementParserConfig config = parserConfigService.findById(params.parserConfigId());
 
         // Parse CSV
-        List<BankStatementItem> items = parseCSV(file, config);
+        List<BankStatementItem> items = parseCSV(params.file(), config);
 
         // Create statement
         BankStatement statement = new BankStatement();
         statement.setBankAccount(bankAccount);
         statement.setParserConfig(config);
-        statement.setStatementPeriodStart(periodStart);
-        statement.setStatementPeriodEnd(periodEnd);
-        statement.setOpeningBalance(openingBalance);
-        statement.setClosingBalance(closingBalance);
-        statement.setOriginalFilename(file.getOriginalFilename());
+        statement.setStatementPeriodStart(params.periodStart());
+        statement.setStatementPeriodEnd(params.periodEnd());
+        statement.setOpeningBalance(params.openingBalance());
+        statement.setClosingBalance(params.closingBalance());
+        statement.setOriginalFilename(params.file().getOriginalFilename());
         statement.setTotalItems(items.size());
         statement.setImportedAt(LocalDateTime.now());
-        statement.setImportedBy(username);
+        statement.setImportedBy(params.username());
 
         // Compute totals
         BigDecimal totalDebit = BigDecimal.ZERO;
@@ -103,7 +95,7 @@ public class BankStatementImportService {
         }
 
         log.info("Imported bank statement: {} items from {}", items.size(),
-                LogSanitizer.sanitize(file.getOriginalFilename()));
+                LogSanitizer.sanitize(params.file().getOriginalFilename()));
         return statement;
     }
 
@@ -131,25 +123,14 @@ public class BankStatementImportService {
             int lineNumber = 0;
             int skipRows = config.getSkipHeaderRows();
 
-            for (CSVRecord record : parser) {
+            for (CSVRecord csvRecord : parser) {
                 lineNumber++;
-                if (lineNumber <= skipRows) {
+                if (lineNumber <= skipRows || csvRecord.size() == 0 || isEmptyRecord(csvRecord)) {
                     continue;
                 }
 
-                // Skip empty rows
-                if (record.size() == 0 || isEmptyRecord(record)) {
-                    continue;
-                }
-
-                try {
-                    BankStatementItem item = parseRecord(record, config, dateFormatter, lineNumber);
-                    items.add(item);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(
-                            "Gagal parsing baris " + lineNumber + ": " + e.getMessage()
-                                    + " (data: " + record.toString() + ")");
-                }
+                BankStatementItem item = parseSingleRecord(csvRecord, config, dateFormatter, lineNumber);
+                items.add(item);
             }
         } catch (IllegalArgumentException e) {
             throw e;
@@ -164,35 +145,50 @@ public class BankStatementImportService {
         return items;
     }
 
-    private BankStatementItem parseRecord(CSVRecord record, BankStatementParserConfig config,
+    /**
+     * Parse a single CSV record into a BankStatementItem.
+     * Extracted from the loop in parseCSV to satisfy S1141 (no nested try) and S135 (single continue).
+     */
+    private BankStatementItem parseSingleRecord(CSVRecord csvRecord, BankStatementParserConfig config,
+                                                 DateTimeFormatter dateFormatter, int lineNumber) {
+        try {
+            return parseRecord(csvRecord, config, dateFormatter, lineNumber);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Gagal parsing baris " + lineNumber + ": " + e.getMessage()
+                            + " (data: " + csvRecord.toString() + ")");
+        }
+    }
+
+    private BankStatementItem parseRecord(CSVRecord csvRecord, BankStatementParserConfig config,
                                           DateTimeFormatter dateFormatter, int lineNumber) {
         BankStatementItem item = new BankStatementItem();
         item.setLineNumber(lineNumber);
         item.setMatchStatus(StatementItemMatchStatus.UNMATCHED);
-        item.setRawLine(record.toString());
+        item.setRawLine(csvRecord.toString());
 
         // Parse date
-        String dateStr = getColumn(record, config.getDateColumn()).trim();
+        String dateStr = getColumn(csvRecord, config.getDateColumn()).trim();
         try {
             item.setTransactionDate(LocalDate.parse(dateStr, dateFormatter));
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException _) {
             throw new IllegalArgumentException("Format tanggal tidak valid: '" + dateStr
                     + "' (expected: " + config.getDateFormat() + ")");
         }
 
         // Parse description
-        item.setDescription(getColumn(record, config.getDescriptionColumn()).trim());
+        item.setDescription(getColumn(csvRecord, config.getDescriptionColumn()).trim());
 
         // Parse amounts
         if (config.getDebitColumn() != null) {
-            String debitStr = getColumn(record, config.getDebitColumn()).trim();
+            String debitStr = getColumn(csvRecord, config.getDebitColumn()).trim();
             if (!debitStr.isEmpty()) {
                 item.setDebitAmount(parseAmount(debitStr, config));
             }
         }
 
         if (config.getCreditColumn() != null) {
-            String creditStr = getColumn(record, config.getCreditColumn()).trim();
+            String creditStr = getColumn(csvRecord, config.getCreditColumn()).trim();
             if (!creditStr.isEmpty()) {
                 item.setCreditAmount(parseAmount(creditStr, config));
             }
@@ -200,7 +196,7 @@ public class BankStatementImportService {
 
         // Parse balance
         if (config.getBalanceColumn() != null) {
-            String balanceStr = getColumn(record, config.getBalanceColumn()).trim();
+            String balanceStr = getColumn(csvRecord, config.getBalanceColumn()).trim();
             if (!balanceStr.isEmpty()) {
                 item.setBalance(parseAmount(balanceStr, config));
             }
@@ -209,11 +205,11 @@ public class BankStatementImportService {
         return item;
     }
 
-    private String getColumn(CSVRecord record, int column) {
-        if (column >= record.size()) {
-            throw new IllegalArgumentException("Kolom " + column + " tidak ditemukan (total kolom: " + record.size() + ")");
+    private String getColumn(CSVRecord csvRecord, int column) {
+        if (column >= csvRecord.size()) {
+            throw new IllegalArgumentException("Kolom " + column + " tidak ditemukan (total kolom: " + csvRecord.size() + ")");
         }
-        return record.get(column);
+        return csvRecord.get(column);
     }
 
     private BigDecimal parseAmount(String amountStr, BankStatementParserConfig config) {
@@ -243,12 +239,26 @@ public class BankStatementImportService {
         return new BigDecimal(amountStr).abs();
     }
 
-    private boolean isEmptyRecord(CSVRecord record) {
-        for (int i = 0; i < record.size(); i++) {
-            if (record.get(i) != null && !record.get(i).trim().isEmpty()) {
+    private boolean isEmptyRecord(CSVRecord csvRecord) {
+        for (int i = 0; i < csvRecord.size(); i++) {
+            if (csvRecord.get(i) != null && !csvRecord.get(i).trim().isEmpty()) {
                 return false;
             }
         }
         return true;
     }
+
+    /**
+     * Parameter object for bank statement import to reduce method parameter count.
+     */
+    public record BankStatementImportParams(
+            UUID bankAccountId,
+            UUID parserConfigId,
+            LocalDate periodStart,
+            LocalDate periodEnd,
+            BigDecimal openingBalance,
+            BigDecimal closingBalance,
+            MultipartFile file,
+            String username
+    ) {}
 }

@@ -268,7 +268,7 @@ public class TaxExportApiController {
             YearMonth start = YearMonth.parse(startMonth);
             YearMonth end = YearMonth.parse(endMonth);
             return new LocalDate[]{start.atDay(1), end.atEndOfMonth()};
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException _) {
             throw new IllegalArgumentException(
                     "Invalid month format. Expected yyyy-MM, got: " + startMonth + ", " + endMonth);
         }
@@ -277,7 +277,7 @@ public class TaxExportApiController {
     private LocalDate parseDate(String date) {
         try {
             return LocalDate.parse(date);
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException _) {
             throw new IllegalArgumentException(
                     "Invalid date format. Expected yyyy-MM-dd, got: " + date);
         }

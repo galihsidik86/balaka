@@ -123,7 +123,7 @@
                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm" step="0.01" min="0">
                                 </div>
                                 <div class="col-span-1">
-                                    <label class="block text-xs text-gray-500 mb-1">Jumlah</label>
+                                    <span class="block text-xs text-gray-500 mb-1">Jumlah</span>
                                     <p class="px-3 py-2 text-sm font-medium" x-text="formatRp(line.amount)">0</p>
                                 </div>
                                 <div class="col-span-1 flex items-end pb-2">
@@ -211,17 +211,17 @@
                             this.lines.splice(index, 1);
                         },
                         calcLine: function(line) {
-                            var qty = parseFloat(line.quantity) || 0;
-                            var price = parseFloat(line.unitPrice) || 0;
+                            var qty = Number.parseFloat(line.quantity) || 0;
+                            var price = Number.parseFloat(line.unitPrice) || 0;
                             line.amount = qty * price;
                         },
                         subtotal: function() {
-                            return this.lines.reduce(function(sum, l) { return sum + (parseFloat(l.amount) || 0); }, 0);
+                            return this.lines.reduce(function(sum, l) { return sum + (Number.parseFloat(l.amount) || 0); }, 0);
                         },
                         totalTax: function() {
                             return this.lines.reduce(function(sum, l) {
-                                var rate = parseFloat(l.taxRate) || 0;
-                                return sum + ((parseFloat(l.amount) || 0) * rate / 100);
+                                var rate = Number.parseFloat(l.taxRate) || 0;
+                                return sum + ((Number.parseFloat(l.amount) || 0) * rate / 100);
                             }, 0);
                         },
                         grandTotal: function() {

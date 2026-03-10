@@ -127,7 +127,7 @@ public class BankReconTestDataInitializer {
                 "file", "bca-statement-202401.csv", "text/csv", csvContent);
 
         // Import the statement
-        BankStatement statement = importService.importStatement(
+        var importParams = new BankStatementImportService.BankStatementImportParams(
                 bankAccount.getId(),
                 bcaConfig.getId(),
                 LocalDate.of(2024, 1, 1),
@@ -136,6 +136,7 @@ public class BankReconTestDataInitializer {
                 new BigDecimal("687305000"),
                 csvFile,
                 "admin");
+        BankStatement statement = importService.importStatement(importParams);
 
         log.info("Imported bank statement with {} items, id: {}", statement.getTotalItems(), statement.getId());
     }

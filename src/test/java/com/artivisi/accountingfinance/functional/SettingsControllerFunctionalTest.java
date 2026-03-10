@@ -364,8 +364,14 @@ class SettingsControllerFunctionalTest extends PlaywrightTestBase {
         navigateTo("/settings");
         waitForPageLoad();
 
-        // Just verify the page loads - delete form visibility depends on whether logo exists
-        assertThat(page.locator("#page-title")).isVisible();
+        // Check for delete logo form - visibility depends on whether logo exists
+        var deleteLogoForm = page.locator("form[action*='/company/logo/delete'], form[action*='/logo'][method]").first();
+        if (deleteLogoForm.isVisible()) {
+            assertThat(deleteLogoForm).isVisible();
+        } else {
+            // Logo not set, so delete form is not shown — verify page loaded correctly
+            assertThat(page.locator("#page-title")).isVisible();
+        }
     }
 
     // ==================== TELEGRAM ACTIONS ====================
@@ -568,8 +574,8 @@ class SettingsControllerFunctionalTest extends PlaywrightTestBase {
         navigateTo("/settings");
         waitForPageLoad();
 
-        // The company page should show bank accounts
-        assertThat(page.locator("#page-title")).isVisible();
+        // Verify bank accounts section is present with the add bank account link
+        assertThat(page.locator("a[href*='/bank-accounts/new']").first()).isVisible();
     }
 
     @Test

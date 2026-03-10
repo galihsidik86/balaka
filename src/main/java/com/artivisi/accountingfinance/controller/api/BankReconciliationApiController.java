@@ -104,9 +104,10 @@ public class BankReconciliationApiController {
             @RequestParam("file") MultipartFile file) {
 
         String username = getCurrentUsername();
-        BankStatement stmt = importService.importStatement(
+        var importParams = new BankStatementImportService.BankStatementImportParams(
                 bankAccountId, parserConfigId, periodStart, periodEnd,
                 openingBalance, closingBalance, file, username);
+        BankStatement stmt = importService.importStatement(importParams);
 
         securityAuditService.log(AuditEventType.API_CALL,
                 "API: Bank statement imported: " + file.getOriginalFilename());

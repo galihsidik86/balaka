@@ -104,7 +104,6 @@ public class TaxDetailBulkController {
 
         int savedCount = 0;
 
-        // Extract transaction IDs from form params: taxType_<transactionId>, fakturNumber_<transactionId>, etc.
         Set<String> transactionIds = params.keySet().stream()
                 .filter(k -> k.startsWith(PREFIX_TAX_TYPE))
                 .map(k -> k.substring(PREFIX_TAX_TYPE.length()))
@@ -118,43 +117,7 @@ public class TaxDetailBulkController {
 
             try {
                 UUID txId = UUID.fromString(txIdStr);
-                TaxType taxType = TaxType.valueOf(taxTypeStr);
-
-                TaxTransactionDetail detail = new TaxTransactionDetail();
-                detail.setTaxType(taxType);
-                detail.setFakturNumber(params.getOrDefault("fakturNumber_" + txIdStr, null));
-                detail.setBupotNumber(params.getOrDefault("bupotNumber_" + txIdStr, null));
-                detail.setCounterpartyName(params.getOrDefault("counterpartyName_" + txIdStr, ""));
-
-                // Set amounts from suggestions (passed as hidden fields)
-                String dppStr = params.get("dpp_" + txIdStr);
-                if (dppStr != null && !dppStr.isBlank()) {
-                    detail.setDpp(new java.math.BigDecimal(dppStr));
-                }
-                String ppnStr = params.get("ppn_" + txIdStr);
-                if (ppnStr != null && !ppnStr.isBlank()) {
-                    detail.setPpn(new java.math.BigDecimal(ppnStr));
-                }
-                String grossStr = params.get("grossAmount_" + txIdStr);
-                if (grossStr != null && !grossStr.isBlank()) {
-                    detail.setGrossAmount(new java.math.BigDecimal(grossStr));
-                }
-                String rateStr = params.get("taxRate_" + txIdStr);
-                if (rateStr != null && !rateStr.isBlank()) {
-                    detail.setTaxRate(new java.math.BigDecimal(rateStr));
-                }
-                String amountStr = params.get("taxAmount_" + txIdStr);
-                if (amountStr != null && !amountStr.isBlank()) {
-                    detail.setTaxAmount(new java.math.BigDecimal(amountStr));
-                }
-
-                String npwp = params.get("counterpartyNpwp_" + txIdStr);
-                if (npwp != null && !npwp.isBlank()) {
-                    detail.setCounterpartyNpwp(npwp);
-                }
-                detail.setCounterpartyIdType("TIN");
-                detail.setPpnbm(java.math.BigDecimal.ZERO);
-
+                TaxTransactionDetail detail = buildDetailFromParams(params, txIdStr, taxTypeStr);
                 taxDetailService.save(txId, detail);
                 savedCount++;
             } catch (Exception e) {
@@ -166,5 +129,37 @@ public class TaxDetailBulkController {
         redirectAttributes.addFlashAttribute("successMessage",
                 savedCount + " detail pajak berhasil disimpan");
         return "redirect:/transactions/tax-details/bulk";
+    }
+
+    private TaxTransactionDetail buildDetailFromParams(Map<String, String> params,
+                                                        String txIdStr, String taxTypeStr) {
+        TaxTransactionDetail detail = new TaxTransactionDetail();
+        detail.setTaxType(TaxType.valueOf(taxTypeStr));
+        detail.setFakturNumber(params.getOrDefault("fakturNumber_" + txIdStr, null));
+        detail.setBupotNumber(params.getOrDefault("bupotNumber_" + txIdStr, null));
+        detail.setCounterpartyName(params.getOrDefault("counterpartyName_" + txIdStr, ""));
+
+        setDecimalFieldFromParam(params, "dpp_" + txIdStr, detail::setDpp);
+        setDecimalFieldFromParam(params, "ppn_" + txIdStr, detail::setPpn);
+        setDecimalFieldFromParam(params, "grossAmount_" + txIdStr, detail::setGrossAmount);
+        setDecimalFieldFromParam(params, "taxRate_" + txIdStr, detail::setTaxRate);
+        setDecimalFieldFromParam(params, "taxAmount_" + txIdStr, detail::setTaxAmount);
+
+        String npwp = params.get("counterpartyNpwp_" + txIdStr);
+        if (npwp != null && !npwp.isBlank()) {
+            detail.setCounterpartyNpwp(npwp);
+        }
+        detail.setCounterpartyIdType("TIN");
+        detail.setPpnbm(java.math.BigDecimal.ZERO);
+
+        return detail;
+    }
+
+    private void setDecimalFieldFromParam(Map<String, String> params, String key,
+                                           java.util.function.Consumer<java.math.BigDecimal> setter) {
+        String value = params.get(key);
+        if (value != null && !value.isBlank()) {
+            setter.accept(new java.math.BigDecimal(value));
+        }
     }
 }

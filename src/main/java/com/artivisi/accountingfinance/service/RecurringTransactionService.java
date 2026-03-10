@@ -199,22 +199,14 @@ public class RecurringTransactionService {
     /**
      * Preview the next N occurrence dates for a recurring transaction configuration.
      */
-    public List<LocalDate> previewOccurrences(RecurringFrequency frequency, Integer dayOfMonth,
-                                               Integer dayOfWeek, LocalDate startDate,
-                                               boolean skipWeekends, LocalDate endDate,
-                                               Integer maxOccurrences, int count) {
+    public List<LocalDate> previewOccurrences(PreviewOccurrenceParams params, int count) {
         List<LocalDate> dates = new ArrayList<>();
-        LocalDate current = startDate;
+        LocalDate current = params.startDate();
 
         for (int i = 0; i < count; i++) {
-            LocalDate next = calculateNextRunDate(frequency, dayOfMonth, dayOfWeek, current, skipWeekends);
-            if (next == null) {
-                break;
-            }
-            if (endDate != null && next.isAfter(endDate)) {
-                break;
-            }
-            if (maxOccurrences != null && i >= maxOccurrences) {
+            LocalDate next = calculateNextRunDate(params.frequency(), params.dayOfMonth(),
+                    params.dayOfWeek(), current, params.skipWeekends());
+            if (next == null || isOccurrenceLimitReached(next, i, params)) {
                 break;
             }
             dates.add(next);
@@ -223,6 +215,26 @@ public class RecurringTransactionService {
 
         return dates;
     }
+
+    private static boolean isOccurrenceLimitReached(LocalDate next, int index, PreviewOccurrenceParams params) {
+        if (params.endDate() != null && next.isAfter(params.endDate())) {
+            return true;
+        }
+        return params.maxOccurrences() != null && index >= params.maxOccurrences();
+    }
+
+    /**
+     * Parameter object for preview occurrence calculations.
+     */
+    public record PreviewOccurrenceParams(
+            RecurringFrequency frequency,
+            Integer dayOfMonth,
+            Integer dayOfWeek,
+            LocalDate startDate,
+            boolean skipWeekends,
+            LocalDate endDate,
+            Integer maxOccurrences
+    ) {}
 
     /**
      * Process all due recurring transactions. Called by the scheduler.

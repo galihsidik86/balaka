@@ -12,8 +12,6 @@ import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Generates HTML user manual from Markdown files.
@@ -410,14 +408,6 @@ public class UserManualGenerator {
     private String extractSectionContent(String markdown, String sectionTitle, Set<String> siblingTitles) {
         if (sectionTitle == null || sectionTitle.isEmpty()) {
             return markdown;
-        }
-
-        // Get the H1 title
-        Pattern h1Pattern = Pattern.compile("^#\\s+([^\\n]+)", Pattern.MULTILINE);
-        Matcher h1Matcher = h1Pattern.matcher(markdown);
-        String h1Title = "";
-        if (h1Matcher.find()) {
-            h1Title = h1Matcher.group(1).trim();
         }
 
         // Split by H2 headings to get all sections

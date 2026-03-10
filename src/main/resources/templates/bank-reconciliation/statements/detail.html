@@ -35,8 +35,8 @@
         <!-- Filter -->
         <div class="bg-white rounded-lg shadow p-4 mb-6">
             <form th:action="@{/bank-reconciliation/statements/{id}(id=${statement.id})}" method="get" class="flex items-center gap-4">
-                <label class="text-sm text-gray-700">Filter Status:</label>
-                <select name="matchStatus" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                <label for="matchStatus" class="text-sm text-gray-700">Filter Status:</label>
+                <select id="matchStatus" name="matchStatus" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
                     <option value="">Semua</option>
                     <option th:each="ms : ${matchStatuses}" th:value="${ms}" th:text="${ms.indonesianName}"
                             th:selected="${selectedMatchStatus != null && selectedMatchStatus == ms}">Status</option>

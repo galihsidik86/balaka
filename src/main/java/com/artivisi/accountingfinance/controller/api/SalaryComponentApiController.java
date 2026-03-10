@@ -99,7 +99,7 @@ public class SalaryComponentApiController {
         entity.setIsPercentage(request.isPercentage() != null && request.isPercentage());
         entity.setDefaultRate(request.defaultRate());
         entity.setDefaultAmount(request.defaultAmount());
-        entity.setIsTaxable(request.isTaxable() != null ? request.isTaxable() : true);
+        entity.setIsTaxable(request.isTaxable() == null || request.isTaxable());
         entity.setActive(true);
         return entity;
     }

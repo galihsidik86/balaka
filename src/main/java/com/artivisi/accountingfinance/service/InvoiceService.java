@@ -17,6 +17,8 @@ import com.artivisi.accountingfinance.repository.ProjectPaymentTermRepository;
 import com.artivisi.accountingfinance.repository.ProjectRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,10 @@ public class InvoiceService {
     private final ProjectRepository projectRepository;
     private final ProjectPaymentTermRepository paymentTermRepository;
     private final ProductRepository productRepository;
+
+    @Lazy
+    @Autowired
+    private InvoiceService self;
 
     public Invoice findById(UUID id) {
         return invoiceRepository.findById(id)
@@ -76,7 +82,7 @@ public class InvoiceService {
     }
 
     public Invoice create(Invoice invoice) {
-        return create(invoice, List.of());
+        return self.create(invoice, List.of());
     }
 
     @Transactional
@@ -126,7 +132,7 @@ public class InvoiceService {
     }
 
     public Invoice update(UUID id, Invoice updatedInvoice) {
-        return update(id, updatedInvoice, null);
+        return self.update(id, updatedInvoice, null);
     }
 
     @Transactional

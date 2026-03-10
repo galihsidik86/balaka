@@ -50,6 +50,7 @@ public class TransactionApiService {
 
     private static final BigDecimal CLARIFICATION_THRESHOLD = new BigDecimal("0.85");
     private static final String ERR_DRAFT_NOT_FOUND = "Draft not found: ";
+    private static final String META_CATEGORY = "category";
 
     private final DraftTransactionService draftTransactionService;
     private final TransactionService transactionService;
@@ -107,7 +108,7 @@ public class TransactionApiService {
             metadata.put("items", request.items());
         }
         if (request.category() != null && !request.category().isBlank()) {
-            metadata.put("category", request.category());
+            metadata.put(META_CATEGORY, request.category());
         }
         draft.setMetadata(metadata);
 
@@ -156,7 +157,7 @@ public class TransactionApiService {
         // Store metadata
         Map<String, Object> metadata = new HashMap<>();
         if (request.category() != null && !request.category().isBlank()) {
-            metadata.put("category", request.category());
+            metadata.put(META_CATEGORY, request.category());
         }
         if (request.description() != null && !request.description().isBlank()) {
             metadata.put("description", request.description());
@@ -225,7 +226,7 @@ public class TransactionApiService {
             if (metadata == null) {
                 metadata = new HashMap<>();
             }
-            metadata.put("category", request.category());
+            metadata.put(META_CATEGORY, request.category());
             draft.setMetadata(metadata);
         }
 

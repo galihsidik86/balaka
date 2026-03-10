@@ -39,6 +39,7 @@ import java.util.UUID;
 public class BankReconciliationService {
 
     private static final String ERR_RECON_COMPLETED = "Rekonsiliasi sudah selesai";
+    private static final String ERR_STATEMENT_ITEM_NOT_FOUND = "Statement item not found: ";
 
     private final BankReconciliationRepository reconciliationRepository;
     private final ReconciliationItemRepository reconciliationItemRepository;
@@ -121,16 +122,18 @@ public class BankReconciliationService {
 
         int matchCount = 0;
 
+        var matchCtx = new MatchContext(recon, bookEntries, matchedTransactionIds, username);
+
         // Pass 1: Exact match (same date + same amount)
-        matchCount += matchPass(recon, getUnmatchedItems(recon), bookEntries, matchedTransactionIds,
-                MatchType.EXACT, new BigDecimal("1.00"), 0, username);
+        matchCount += matchPass(matchCtx, getUnmatchedItems(recon),
+                MatchType.EXACT, new BigDecimal("1.00"), 0);
 
         // Pass 2: Fuzzy date (same amount, date +/-1 day)
-        matchCount += matchPass(recon, getUnmatchedItems(recon), bookEntries, matchedTransactionIds,
-                MatchType.FUZZY_DATE, new BigDecimal("0.90"), 1, username);
+        matchCount += matchPass(matchCtx, getUnmatchedItems(recon),
+                MatchType.FUZZY_DATE, new BigDecimal("0.90"), 1);
 
         // Pass 3: Keyword (same amount, description overlap, date +/-3 days)
-        matchCount += keywordMatchPass(recon, getUnmatchedItems(recon), bookEntries, matchedTransactionIds, username);
+        matchCount += keywordMatchPass(matchCtx, getUnmatchedItems(recon));
 
         updateReconciliationCounts(recon);
         reconciliationRepository.save(recon);
@@ -157,9 +160,18 @@ public class BankReconciliationService {
         return ids;
     }
 
-    private int matchPass(BankReconciliation recon, List<BankStatementItem> unmatchedItems,
-                          List<JournalEntry> bookEntries, Set<UUID> matchedTransactionIds,
-                          MatchType matchType, BigDecimal confidence, int dateToleranceDays, String username) {
+    /**
+     * Shared context for matching passes to reduce parameter count.
+     */
+    private record MatchContext(
+            BankReconciliation recon,
+            List<JournalEntry> bookEntries,
+            Set<UUID> matchedTransactionIds,
+            String username
+    ) {}
+
+    private int matchPass(MatchContext ctx, List<BankStatementItem> unmatchedItems,
+                          MatchType matchType, BigDecimal confidence, int dateToleranceDays) {
         int matchCount = 0;
 
         for (BankStatementItem item : unmatchedItems) {
@@ -167,38 +179,40 @@ public class BankReconciliationService {
                 continue;
             }
 
-            BigDecimal itemAmount = item.getNetAmount();
-
-            for (JournalEntry entry : bookEntries) {
-                if (matchedTransactionIds.contains(entry.getTransaction().getId())) {
-                    continue;
-                }
-
-                // Amount check: bank debit = book credit, bank credit = book debit
-                BigDecimal entryAmount = computeEntryNetAmount(entry);
-                if (itemAmount.compareTo(entryAmount) != 0) {
-                    continue;
-                }
-
-                // Date check
-                long daysDiff = Math.abs(
-                        item.getTransactionDate().toEpochDay() - entry.getJournalDate().toEpochDay());
-                if (daysDiff > dateToleranceDays) {
-                    continue;
-                }
-
-                // Match found
-                createMatch(recon, item, entry.getTransaction(), matchType, confidence, username);
-                matchedTransactionIds.add(entry.getTransaction().getId());
+            JournalEntry matchedEntry = findMatchingEntry(item, ctx, dateToleranceDays);
+            if (matchedEntry != null) {
+                createMatch(ctx.recon(), item, matchedEntry.getTransaction(), matchType, confidence, ctx.username());
+                ctx.matchedTransactionIds().add(matchedEntry.getTransaction().getId());
                 matchCount++;
-                break;
             }
         }
         return matchCount;
     }
 
-    private int keywordMatchPass(BankReconciliation recon, List<BankStatementItem> unmatchedItems,
-                                 List<JournalEntry> bookEntries, Set<UUID> matchedTransactionIds, String username) {
+    /**
+     * Find the first book entry that matches the given statement item by amount and date tolerance.
+     */
+    private JournalEntry findMatchingEntry(BankStatementItem item, MatchContext ctx, int dateToleranceDays) {
+        BigDecimal itemAmount = item.getNetAmount();
+
+        for (JournalEntry entry : ctx.bookEntries()) {
+            if (ctx.matchedTransactionIds().contains(entry.getTransaction().getId())) {
+                continue;
+            }
+            BigDecimal entryAmount = computeEntryNetAmount(entry);
+            if (itemAmount.compareTo(entryAmount) != 0) {
+                continue;
+            }
+            long daysDiff = Math.abs(
+                    item.getTransactionDate().toEpochDay() - entry.getJournalDate().toEpochDay());
+            if (daysDiff <= dateToleranceDays) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    private int keywordMatchPass(MatchContext ctx, List<BankStatementItem> unmatchedItems) {
         int matchCount = 0;
 
         for (BankStatementItem item : unmatchedItems) {
@@ -206,38 +220,43 @@ public class BankReconciliationService {
                 continue;
             }
 
-            BigDecimal itemAmount = item.getNetAmount();
-            String itemDesc = item.getDescription() != null ? item.getDescription().toLowerCase() : "";
-
-            for (JournalEntry entry : bookEntries) {
-                if (matchedTransactionIds.contains(entry.getTransaction().getId())) {
-                    continue;
-                }
-
-                BigDecimal entryAmount = computeEntryNetAmount(entry);
-                if (itemAmount.compareTo(entryAmount) != 0) {
-                    continue;
-                }
-
-                // Date within 3 days
-                long daysDiff = Math.abs(
-                        item.getTransactionDate().toEpochDay() - entry.getJournalDate().toEpochDay());
-                if (daysDiff > 3) {
-                    continue;
-                }
-
-                // Description keyword overlap
-                String entryDesc = entry.getDescription() != null ? entry.getDescription().toLowerCase() : "";
-                if (hasKeywordOverlap(itemDesc, entryDesc)) {
-                    createMatch(recon, item, entry.getTransaction(),
-                            MatchType.KEYWORD, new BigDecimal("0.80"), username);
-                    matchedTransactionIds.add(entry.getTransaction().getId());
-                    matchCount++;
-                    break;
-                }
+            JournalEntry matchedEntry = findKeywordMatchingEntry(item, ctx);
+            if (matchedEntry != null) {
+                createMatch(ctx.recon(), item, matchedEntry.getTransaction(),
+                        MatchType.KEYWORD, new BigDecimal("0.80"), ctx.username());
+                ctx.matchedTransactionIds().add(matchedEntry.getTransaction().getId());
+                matchCount++;
             }
         }
         return matchCount;
+    }
+
+    /**
+     * Find a book entry matching by amount, date within 3 days, and keyword overlap.
+     */
+    private JournalEntry findKeywordMatchingEntry(BankStatementItem item, MatchContext ctx) {
+        BigDecimal itemAmount = item.getNetAmount();
+        String itemDesc = item.getDescription() != null ? item.getDescription().toLowerCase() : "";
+
+        for (JournalEntry entry : ctx.bookEntries()) {
+            if (ctx.matchedTransactionIds().contains(entry.getTransaction().getId())) {
+                continue;
+            }
+            BigDecimal entryAmount = computeEntryNetAmount(entry);
+            if (itemAmount.compareTo(entryAmount) != 0) {
+                continue;
+            }
+            long daysDiff = Math.abs(
+                    item.getTransactionDate().toEpochDay() - entry.getJournalDate().toEpochDay());
+            if (daysDiff > 3) {
+                continue;
+            }
+            String entryDesc = entry.getDescription() != null ? entry.getDescription().toLowerCase() : "";
+            if (hasKeywordOverlap(itemDesc, entryDesc)) {
+                return entry;
+            }
+        }
+        return null;
     }
 
     private boolean hasKeywordOverlap(String desc1, String desc2) {
@@ -293,7 +312,7 @@ public class BankReconciliationService {
         }
 
         BankStatementItem item = statementItemRepository.findById(statementItemId)
-                .orElseThrow(() -> new EntityNotFoundException("Statement item not found: " + statementItemId));
+                .orElseThrow(() -> new EntityNotFoundException(ERR_STATEMENT_ITEM_NOT_FOUND + statementItemId));
 
         Transaction transaction = transactionService.findById(transactionId);
 
@@ -311,7 +330,7 @@ public class BankReconciliationService {
         }
 
         BankStatementItem item = statementItemRepository.findById(statementItemId)
-                .orElseThrow(() -> new EntityNotFoundException("Statement item not found: " + statementItemId));
+                .orElseThrow(() -> new EntityNotFoundException(ERR_STATEMENT_ITEM_NOT_FOUND + statementItemId));
 
         item.setMatchStatus(StatementItemMatchStatus.BANK_ONLY);
         item.setMatchedAt(LocalDateTime.now());
@@ -388,7 +407,7 @@ public class BankReconciliationService {
         }
 
         BankStatementItem item = statementItemRepository.findById(statementItemId)
-                .orElseThrow(() -> new EntityNotFoundException("Statement item not found: " + statementItemId));
+                .orElseThrow(() -> new EntityNotFoundException(ERR_STATEMENT_ITEM_NOT_FOUND + statementItemId));
 
         BigDecimal amount = item.getDebitAmount() != null && item.getDebitAmount().compareTo(BigDecimal.ZERO) > 0
                 ? item.getDebitAmount()

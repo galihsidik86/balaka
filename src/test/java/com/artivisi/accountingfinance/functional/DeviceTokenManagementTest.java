@@ -18,11 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @DisplayName("Device Token Management - Self-Service UI")
 @Import(ServiceTestDataInitializer.class)
@@ -198,20 +201,21 @@ class DeviceTokenManagementTest extends PlaywrightTestBase {
         Map<String, String> tokenRequestBody = new HashMap<>();
         tokenRequestBody.put("deviceCode", deviceCode);
 
-        String accessToken = null;
-        for (int attempt = 0; attempt < 10; attempt++) {
-            Thread.sleep(interval * 1000L);
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(interval * 10L)).pollInterval(Duration.ofSeconds(interval)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequestBody));
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                accessToken = tokenData.get("accessToken").asText();
-                break;
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
+        String accessToken = tokenRef.get();
         assertThat(accessToken).isNotNull().isNotEmpty();
         return accessToken;
     }

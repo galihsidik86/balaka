@@ -619,7 +619,7 @@ public class DataImportService {
     }
 
     private String[] parseStringArray(String value) {
-        if (value == null || value.isEmpty()) return null;
+        if (value == null || value.isEmpty()) return new String[0];
         return java.util.Arrays.stream(value.split("\\|"))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())

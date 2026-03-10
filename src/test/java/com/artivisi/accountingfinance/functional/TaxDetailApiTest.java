@@ -18,11 +18,14 @@ import org.springframework.context.annotation.Import;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @DisplayName("Tax Detail & Document API - Functional Tests")
@@ -160,7 +163,7 @@ class TaxDetailApiTest extends PlaywrightTestBase {
         // Verify empty list for that transaction
         APIResponse listResponse = get("/api/transactions/" + txnIdNonTax + "/tax-details");
         JsonNode list = parse(listResponse);
-        assertThat(list.size()).isEqualTo(0);
+        assertThat(list).isEmpty();
 
         log.info("Delete tax detail test passed - id={}", detailId);
     }
@@ -197,7 +200,7 @@ class TaxDetailApiTest extends PlaywrightTestBase {
 
         JsonNode body = parse(response);
         assertThat(body.get("successCount").asInt()).isEqualTo(2);
-        assertThat(body.get("failureCount").asInt()).isEqualTo(0);
+        assertThat(body.get("failureCount").asInt()).isZero();
         assertThat(body.get("results").size()).isEqualTo(2);
 
         for (int i = 0; i < body.get("results").size(); i++) {
@@ -294,7 +297,7 @@ class TaxDetailApiTest extends PlaywrightTestBase {
         assertThat(response.headers().get("content-disposition")).contains("attachment");
 
         byte[] body = response.body();
-        assertThat(body.length).isGreaterThan(0);
+        assertThat(body).hasSizeGreaterThan(0);
 
         // Clean up
         Files.deleteIfExists(tempFile);
@@ -411,20 +414,20 @@ class TaxDetailApiTest extends PlaywrightTestBase {
         Map<String, String> tokenRequest = new HashMap<>();
         tokenRequest.put("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
-
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
-
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                return tokenData.get("accessToken").asText();
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
-        throw new RuntimeException("Failed to get access token");
+        return tokenRef.get();
     }
 }

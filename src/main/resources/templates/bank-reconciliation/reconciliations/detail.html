@@ -157,8 +157,8 @@
             <form th:action="@{/bank-reconciliation/reconciliations/{id}/match(id=${recon.id})}" method="post"
                   class="flex flex-wrap gap-4 items-end">
                 <div class="flex-1 min-w-48">
-                    <label class="block text-xs text-gray-600 mb-1">Item Mutasi Bank</label>
-                    <select name="statementItemId" data-testid="select-statement-item" required
+                    <label for="match-statementItemId" class="block text-xs text-gray-600 mb-1">Item Mutasi Bank</label>
+                    <select id="match-statementItemId" name="statementItemId" data-testid="select-statement-item" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         <option value="">-- Pilih Item --</option>
                         <option th:each="item : ${unmatchedBankItems}" th:value="${item.id}"
@@ -168,8 +168,8 @@
                     </select>
                 </div>
                 <div class="flex-1 min-w-48">
-                    <label class="block text-xs text-gray-600 mb-1">Transaksi Buku</label>
-                    <select name="transactionId" data-testid="select-transaction" required
+                    <label for="match-transactionId" class="block text-xs text-gray-600 mb-1">Transaksi Buku</label>
+                    <select id="match-transactionId" name="transactionId" data-testid="select-transaction" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         <option value="">-- Pilih Transaksi --</option>
                         <option th:each="txn : ${unmatchedBookTxns}" th:value="${txn.id}"
@@ -189,8 +189,8 @@
             <form th:action="@{/bank-reconciliation/reconciliations/{id}/create-transaction(id=${recon.id})}" method="post"
                   class="flex flex-wrap gap-4 items-end">
                 <div class="flex-1 min-w-48">
-                    <label class="block text-xs text-gray-600 mb-1">Item Mutasi Bank</label>
-                    <select name="statementItemId" data-testid="select-create-item" required
+                    <label for="create-statementItemId" class="block text-xs text-gray-600 mb-1">Item Mutasi Bank</label>
+                    <select id="create-statementItemId" name="statementItemId" data-testid="select-create-item" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         <option value="">-- Pilih Item --</option>
                         <option th:each="item : ${unmatchedBankItems}" th:value="${item.id}"
@@ -198,16 +198,16 @@
                     </select>
                 </div>
                 <div class="flex-1 min-w-48">
-                    <label class="block text-xs text-gray-600 mb-1">Template Jurnal</label>
-                    <select name="templateId" data-testid="select-template" required
+                    <label for="create-templateId" class="block text-xs text-gray-600 mb-1">Template Jurnal</label>
+                    <select id="create-templateId" name="templateId" data-testid="select-template" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         <option value="">-- Pilih Template --</option>
                         <option th:each="tpl : ${templates}" th:value="${tpl.id}" th:text="${tpl.templateName}">Template</option>
                     </select>
                 </div>
                 <div class="flex-1 min-w-48">
-                    <label class="block text-xs text-gray-600 mb-1">Deskripsi (opsional)</label>
-                    <input type="text" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    <label for="create-description" class="block text-xs text-gray-600 mb-1">Deskripsi (opsional)</label>
+                    <input type="text" id="create-description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                            placeholder="Deskripsi transaksi">
                 </div>
                 <button type="submit" data-testid="btn-create-transaction"

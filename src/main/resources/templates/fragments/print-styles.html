@@ -3,8 +3,8 @@
 <head><title>Print Styles Fragment</title></head>
 <!--
     Shared print CSS styles for report print templates.
-    Usage: <style th:insert="~{fragments/print-styles :: base}" th:attr="nonce=${cspNonce}"></style>
-    Each template must add its own @page directive and template-specific styles in a separate <style> block.
+    Include the "base" fragment via th:insert in a style element with a CSP nonce attribute.
+    Each template must add its own @page directive and template-specific styles in a separate style block.
 -->
 <th:block th:fragment="base">
         * { margin: 0; padding: 0; box-sizing: border-box; }

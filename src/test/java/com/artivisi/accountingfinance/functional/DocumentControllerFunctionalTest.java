@@ -206,18 +206,21 @@ class DocumentControllerFunctionalTest extends PlaywrightTestBase {
     }
 
     @Test
-    @DisplayName("Should get documents for transaction via API")
+    @DisplayName("Should get documents for transaction via API and return valid JSON")
     void shouldGetDocumentsForTransactionViaApi() {
         var transaction = transactionRepository.findAll().stream().findFirst();
         if (transaction.isEmpty()) {
             return;
         }
 
-        navigateTo("/documents/api/transaction/" + transaction.get().getId());
-        waitForPageLoad();
-
-        // API should return JSON array
-        assertThat(page.locator("body")).isVisible();
+        // Use request API to verify response status and content type
+        var response = page.request().get(baseUrl() + "/documents/api/transaction/" + transaction.get().getId());
+        org.assertj.core.api.Assertions.assertThat(response.status())
+            .as("API endpoint should return 200")
+            .isEqualTo(200);
+        org.assertj.core.api.Assertions.assertThat(response.headers().get("content-type"))
+            .as("API should return JSON content type")
+            .contains("application/json");
     }
 
     @Test
@@ -236,7 +239,7 @@ class DocumentControllerFunctionalTest extends PlaywrightTestBase {
     }
 
     @Test
-    @DisplayName("Should have documents section in transaction form")
+    @DisplayName("Should have document list container in transaction detail")
     void shouldHaveDocumentsSectionInTransactionForm() {
         var transaction = transactionRepository.findAll().stream().findFirst();
         if (transaction.isEmpty()) {
@@ -246,8 +249,9 @@ class DocumentControllerFunctionalTest extends PlaywrightTestBase {
         navigateTo("/transactions/" + transaction.get().getId());
         waitForPageLoad();
 
-        // Page should load with transaction details
-        assertThat(page.locator("body")).isVisible();
+        // Verify the HTMX document list container is present on the page
+        var documentListContainer = page.locator("#document-list-container");
+        assertThat(documentListContainer).isVisible();
     }
 
     // ==================== ADDITIONAL ENDPOINT COVERAGE TESTS ====================

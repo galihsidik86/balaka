@@ -123,11 +123,12 @@ public class RecurringTransactionController {
         // Preview next 5 occurrences
         List<LocalDate> preview = List.of();
         if (recurring.isActive() && recurring.getNextRunDate() != null) {
-            preview = recurringTransactionService.previewOccurrences(
+            var previewParams = new RecurringTransactionService.PreviewOccurrenceParams(
                     recurring.getFrequency(), recurring.getDayOfMonth(), recurring.getDayOfWeek(),
                     recurring.getNextRunDate(), recurring.isSkipWeekends(),
                     recurring.getEndDate(), recurring.getMaxOccurrences() != null
-                            ? recurring.getMaxOccurrences() - recurring.getTotalRuns() : null, 5);
+                            ? recurring.getMaxOccurrences() - recurring.getTotalRuns() : null);
+            preview = recurringTransactionService.previewOccurrences(previewParams, 5);
         }
 
         model.addAttribute(ATTR_RECURRING, recurring);

@@ -42,6 +42,8 @@ public class TagController {
     private static final String ATTR_TAG_TYPE = "tagType";
     private static final String ERR_TAG_TYPE_NOT_FOUND = "Tipe label tidak ditemukan: ";
     private static final String VIEW_FORM = "tags/form";
+    private static final String REDIRECT_TAGS_PREFIX = "redirect:/tags/types/";
+    private static final String REDIRECT_TAGS_SUFFIX = "/tags";
 
     private final TagService tagService;
     private final TagTypeService tagTypeService;
@@ -129,7 +131,7 @@ public class TagController {
             tag.setTagType(tagType);
             tagService.create(tag);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Label berhasil ditambahkan");
-            return "redirect:/tags/types/" + tagTypeId + "/tags";
+            return REDIRECT_TAGS_PREFIX + tagTypeId + REDIRECT_TAGS_SUFFIX;
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Kode")) {
                 bindingResult.rejectValue("code", "duplicate", e.getMessage());
@@ -186,7 +188,7 @@ public class TagController {
             tag.setTagType(tagType);
             tagService.update(id, tag);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Label berhasil diubah");
-            return "redirect:/tags/types/" + tagTypeId + "/tags";
+            return REDIRECT_TAGS_PREFIX + tagTypeId + REDIRECT_TAGS_SUFFIX;
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Kode")) {
                 bindingResult.rejectValue("code", "duplicate", e.getMessage());
@@ -209,6 +211,6 @@ public class TagController {
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/tags/types/" + tagTypeId + "/tags";
+        return REDIRECT_TAGS_PREFIX + tagTypeId + REDIRECT_TAGS_SUFFIX;
     }
 }

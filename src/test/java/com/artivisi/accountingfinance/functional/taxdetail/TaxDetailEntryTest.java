@@ -203,7 +203,6 @@ class TaxDetailEntryTest extends PlaywrightTestBase {
 
         // Counterparty name should be pre-filled from project's client
         Locator nameInput = page.locator("[data-testid='counterparty-name']");
-        String nameValue = nameInput.inputValue();
 
         // If project has client, name should be populated
         // (depends on test data - PRJ-2024-001 belongs to MANDIRI client)
@@ -233,7 +232,6 @@ class TaxDetailEntryTest extends PlaywrightTestBase {
 
         // DPP and PPN inputs should have suggested values
         Locator dppInput = page.locator("[data-testid='dpp']");
-        String dppValue = dppInput.inputValue();
         // DPP should be the transaction amount (10,000,000)
         assertThat(dppInput).not().hasValue("");
 

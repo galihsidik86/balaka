@@ -70,6 +70,10 @@ public class FinancialAnalysisApiController {
     private static final String META_DESCRIPTION = "description";
     private static final String META_ACCOUNTING_BASIS = "accountingBasis";
     private static final String META_ACCRUAL = "accrual";
+    private static final String PARAM_COMPANY = "company";
+    private static final String PARAM_AS_OF_DATE = "asOfDate";
+    private static final String PARAM_START_DATE = "startDate";
+    private static final String PARAM_END_DATE = "endDate";
 
     private final ReportService reportService;
     private final DashboardService dashboardService;
@@ -88,7 +92,7 @@ public class FinancialAnalysisApiController {
         CompanyConfig config = companyConfigRepository.findFirst().orElse(null);
         if (config == null) {
             return ResponseEntity.ok(new AnalysisResponse<>(
-                    "company", LocalDateTime.now(), Map.of(),
+                    PARAM_COMPANY, LocalDateTime.now(), Map.of(),
                     new CompanyDto(null, null, null, null, null, null),
                     Map.of(META_DESCRIPTION, "No company configuration found.")));
         }
@@ -98,10 +102,10 @@ public class FinancialAnalysisApiController {
                 config.getCurrencyCode(), config.getFiscalYearStartMonth(),
                 config.getIsPkp(), config.getNpwp());
 
-        auditAccess("company", Map.of());
+        auditAccess(PARAM_COMPANY, Map.of());
 
         return ResponseEntity.ok(new AnalysisResponse<>(
-                "company", LocalDateTime.now(), Map.of(), data,
+                PARAM_COMPANY, LocalDateTime.now(), Map.of(), data,
                 Map.of(META_DESCRIPTION, "Company configuration. The 'industry' field determines "
                         + "which analysis types and KPIs are relevant for this business.")));
     }
@@ -150,11 +154,11 @@ public class FinancialAnalysisApiController {
 
         TrialBalanceDto data = new TrialBalanceDto(items, report.totalDebit(), report.totalCredit());
 
-        auditAccess("trial-balance", Map.of("asOfDate", asOfDate));
+        auditAccess("trial-balance", Map.of(PARAM_AS_OF_DATE, asOfDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "trial-balance", LocalDateTime.now(),
-                Map.of("asOfDate", asOfDate),
+                Map.of(PARAM_AS_OF_DATE, asOfDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_ACCOUNTING_BASIS, META_ACCRUAL,
@@ -183,11 +187,11 @@ public class FinancialAnalysisApiController {
                 revenueItems, expenseItems,
                 report.totalRevenue(), report.totalExpense(), report.netIncome());
 
-        auditAccess("income-statement", Map.of("startDate", startDate, "endDate", endDate));
+        auditAccess("income-statement", Map.of(PARAM_START_DATE, startDate, PARAM_END_DATE, endDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "income-statement", LocalDateTime.now(),
-                Map.of("startDate", startDate, "endDate", endDate),
+                Map.of(PARAM_START_DATE, startDate, PARAM_END_DATE, endDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_ACCOUNTING_BASIS, META_ACCRUAL,
@@ -217,11 +221,11 @@ public class FinancialAnalysisApiController {
                 report.totalAssets(), report.totalLiabilities(), report.totalEquity(),
                 report.currentYearEarnings());
 
-        auditAccess("balance-sheet", Map.of("asOfDate", asOfDate));
+        auditAccess("balance-sheet", Map.of(PARAM_AS_OF_DATE, asOfDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "balance-sheet", LocalDateTime.now(),
-                Map.of("asOfDate", asOfDate),
+                Map.of(PARAM_AS_OF_DATE, asOfDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_ACCOUNTING_BASIS, META_ACCRUAL,
@@ -257,11 +261,11 @@ public class FinancialAnalysisApiController {
                 report.netCashChange(), report.beginningCashBalance(), report.endingCashBalance(),
                 cashAccountBalances);
 
-        auditAccess("cash-flow", Map.of("startDate", startDate, "endDate", endDate));
+        auditAccess("cash-flow", Map.of(PARAM_START_DATE, startDate, PARAM_END_DATE, endDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "cash-flow", LocalDateTime.now(),
-                Map.of("startDate", startDate, "endDate", endDate),
+                Map.of(PARAM_START_DATE, startDate, PARAM_END_DATE, endDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_ACCOUNTING_BASIS, META_ACCRUAL,
@@ -286,11 +290,11 @@ public class FinancialAnalysisApiController {
 
         TaxSummaryDto data = new TaxSummaryDto(items, report.totalBalance());
 
-        auditAccess("tax-summary", Map.of("startDate", startDate, "endDate", endDate));
+        auditAccess("tax-summary", Map.of(PARAM_START_DATE, startDate, PARAM_END_DATE, endDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "tax-summary", LocalDateTime.now(),
-                Map.of("startDate", startDate, "endDate", endDate),
+                Map.of(PARAM_START_DATE, startDate, PARAM_END_DATE, endDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_DESCRIPTION, "Tax account summary for period " + startDate + " to " + endDate
@@ -318,11 +322,11 @@ public class FinancialAnalysisApiController {
 
         ReceivablesPayablesDto data = new ReceivablesPayablesDto(items, totalBalance);
 
-        auditAccess("receivables", Map.of("asOfDate", asOfDate));
+        auditAccess("receivables", Map.of(PARAM_AS_OF_DATE, asOfDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "receivables", LocalDateTime.now(),
-                Map.of("asOfDate", asOfDate),
+                Map.of(PARAM_AS_OF_DATE, asOfDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_DESCRIPTION, "Accounts receivable (Piutang) as of " + asOfDate
@@ -350,11 +354,11 @@ public class FinancialAnalysisApiController {
 
         ReceivablesPayablesDto data = new ReceivablesPayablesDto(items, totalBalance);
 
-        auditAccess("payables", Map.of("asOfDate", asOfDate));
+        auditAccess("payables", Map.of(PARAM_AS_OF_DATE, asOfDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "payables", LocalDateTime.now(),
-                Map.of("asOfDate", asOfDate),
+                Map.of(PARAM_AS_OF_DATE, asOfDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_DESCRIPTION, "Accounts payable (Hutang Usaha) as of " + asOfDate
@@ -420,11 +424,11 @@ public class FinancialAnalysisApiController {
                 entries);
 
         auditAccess("account-ledger", Map.of("accountId", id.toString(),
-                "startDate", startDate, "endDate", endDate));
+                PARAM_START_DATE, startDate, PARAM_END_DATE, endDate));
 
         return ResponseEntity.ok(new AnalysisResponse<>(
                 "account-ledger", LocalDateTime.now(),
-                Map.of("accountId", id.toString(), "startDate", startDate, "endDate", endDate),
+                Map.of("accountId", id.toString(), PARAM_START_DATE, startDate, PARAM_END_DATE, endDate),
                 data,
                 Map.of(META_CURRENCY, META_CURRENCY_IDR,
                         META_DESCRIPTION, "Account ledger for " + account.getAccountCode()
@@ -563,8 +567,8 @@ public class FinancialAnalysisApiController {
         Map<String, String> params = new HashMap<>();
         if (status != null) params.put("status", status);
         if (category != null) params.put("category", category);
-        if (startDate != null) params.put("startDate", startDate);
-        if (endDate != null) params.put("endDate", endDate);
+        if (startDate != null) params.put(PARAM_START_DATE, startDate);
+        if (endDate != null) params.put(PARAM_END_DATE, endDate);
         if (search != null) params.put("search", search);
         params.put("page", String.valueOf(page));
         params.put("size", String.valueOf(size));

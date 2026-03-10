@@ -13,10 +13,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @DisplayName("Fiscal Adjustments API - Functional Tests")
@@ -128,7 +131,7 @@ class FiscalAdjustmentApiTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("POST with invalid data returns 400")
-    void createWithInvalidData() throws Exception {
+    void createWithInvalidData() {
         // Missing required fields
         Map<String, Object> request = new HashMap<>();
         request.put("year", null);
@@ -140,7 +143,7 @@ class FiscalAdjustmentApiTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("PUT on non-existent ID returns 404")
-    void updateNonExistent() throws Exception {
+    void updateNonExistent() {
         Map<String, Object> request = new HashMap<>();
         request.put("year", 2025);
         request.put("description", "Test");
@@ -160,7 +163,7 @@ class FiscalAdjustmentApiTest extends PlaywrightTestBase {
 
         JsonNode list = parse(response);
         assertThat(list.isArray()).isTrue();
-        assertThat(list.size()).isEqualTo(0);
+        assertThat(list).isEmpty();
     }
 
     // ==================== HELPER METHODS ====================
@@ -223,20 +226,20 @@ class FiscalAdjustmentApiTest extends PlaywrightTestBase {
         Map<String, String> tokenRequest = new HashMap<>();
         tokenRequest.put("deviceCode", deviceCode);
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(2000);
-
+        AtomicReference<String> tokenRef = new AtomicReference<>();
+        await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(2)).until(() -> {
             APIResponse tokenResponse = apiContext.post("/api/device/token",
                     RequestOptions.create()
                             .setHeader("Content-Type", "application/json")
                             .setData(tokenRequest));
-
             if (tokenResponse.ok()) {
                 JsonNode tokenData = objectMapper.readTree(tokenResponse.text());
-                return tokenData.get("accessToken").asText();
+                tokenRef.set(tokenData.get("accessToken").asText());
+                return true;
             }
-        }
+            return false;
+        });
 
-        throw new RuntimeException("Failed to get access token");
+        return tokenRef.get();
     }
 }

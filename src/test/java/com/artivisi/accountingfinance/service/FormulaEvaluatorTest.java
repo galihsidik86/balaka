@@ -229,7 +229,7 @@ class FormulaEvaluatorTest {
 
             BigDecimal result = evaluator.evaluate("amount / 3", context);
 
-            assertThat(result.scale()).isEqualTo(0);
+            assertThat(result.scale()).isZero();
             // 10000.333 / 3 ≈ 3333.444... → floor to 3333
             assertThat(result).isEqualByComparingTo("3333");
         }
