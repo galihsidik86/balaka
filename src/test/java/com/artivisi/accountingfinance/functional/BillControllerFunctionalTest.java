@@ -164,4 +164,13 @@ class BillControllerFunctionalTest extends PlaywrightTestBase {
         // Verify detail page shows bill info
         assertThat(page.locator("[data-testid='bill-detail']")).isVisible();
     }
+
+    @Test
+    @DisplayName("Should filter bills by status")
+    void shouldFilterBillsByStatus() {
+        navigateTo("/bills?status=DRAFT");
+        waitForPageLoad();
+
+        assertThat(page.locator("[data-testid='bill-list']")).isVisible();
+    }
 }

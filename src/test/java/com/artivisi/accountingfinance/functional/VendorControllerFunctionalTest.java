@@ -220,6 +220,75 @@ class VendorControllerFunctionalTest extends PlaywrightTestBase {
     }
 
     @Test
+    @DisplayName("Should update vendor with all fields")
+    void shouldUpdateVendorWithAllFields() {
+        String suffix = String.valueOf(System.currentTimeMillis());
+        String vendorCode = "VND-FULL-" + suffix;
+
+        // Create vendor first
+        navigateTo("/vendors/new");
+        waitForPageLoad();
+        page.locator("input[name='code']").first().fill(vendorCode);
+        page.locator("input[name='name']").first().fill("Full Vendor " + suffix);
+        page.locator("#btn-simpan").click();
+        waitForPageLoad();
+
+        // Navigate to edit form and fill all fields
+        navigateTo("/vendors/" + vendorCode + "/edit");
+        waitForPageLoad();
+
+        page.locator("input[name='name']").first().fill("Updated Full Vendor " + suffix);
+
+        var contactInput = page.locator("input[name='contactPerson']").first();
+        if (contactInput.isVisible()) contactInput.fill("John Doe");
+
+        var emailInput = page.locator("input[name='email']").first();
+        if (emailInput.isVisible()) emailInput.fill("john@example.com");
+
+        var phoneInput = page.locator("input[name='phone']").first();
+        if (phoneInput.isVisible()) phoneInput.fill("08123456789");
+
+        var paymentTermInput = page.locator("input[name='paymentTermDays']").first();
+        if (paymentTermInput.isVisible()) paymentTermInput.fill("30");
+
+        var addressInput = page.locator("textarea[name='address']").first();
+        if (addressInput.isVisible()) addressInput.fill("Jl. Test No. 123");
+
+        var npwpInput = page.locator("input[name='npwp']").first();
+        if (npwpInput.isVisible()) npwpInput.fill("12.345.678.9-012.345");
+
+        var nitkuInput = page.locator("input[name='nitku']").first();
+        if (nitkuInput.isVisible()) nitkuInput.fill("1234567890");
+
+        var bankNameInput = page.locator("input[name='bankName']").first();
+        if (bankNameInput.isVisible()) bankNameInput.fill("Bank BCA");
+
+        var bankAccountInput = page.locator("input[name='bankAccountNumber']").first();
+        if (bankAccountInput.isVisible()) bankAccountInput.fill("1234567890");
+
+        var bankAccountNameInput = page.locator("input[name='bankAccountName']").first();
+        if (bankAccountNameInput.isVisible()) bankAccountNameInput.fill("PT Test Vendor");
+
+        var notesInput = page.locator("textarea[name='notes']").first();
+        if (notesInput.isVisible()) notesInput.fill("Test notes for vendor");
+
+        page.locator("#btn-simpan").click();
+        waitForPageLoad();
+
+        // Should redirect to detail page
+        assertThat(page.locator("[data-testid='vendor-detail']")).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should search and filter vendors simultaneously")
+    void shouldSearchAndFilterVendorsSimultaneously() {
+        navigateTo("/vendors?active=true&search=test");
+        waitForPageLoad();
+
+        assertThat(page.locator("[data-testid='vendor-list']")).isVisible();
+    }
+
+    @Test
     @DisplayName("Should activate vendor")
     void shouldActivateVendor() {
         String suffix = String.valueOf(System.currentTimeMillis());

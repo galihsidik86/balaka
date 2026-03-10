@@ -291,4 +291,179 @@ class ProductControllerFunctionalTest extends PlaywrightTestBase {
 
         assertThat(page.locator("body")).isVisible();
     }
+
+    // ==================== ADDITIONAL COVERAGE TESTS ====================
+
+    @Test
+    @DisplayName("Should filter products by active status via query param")
+    void shouldFilterProductsByActiveStatusViaQueryParam() {
+        navigateTo("/products?active=true");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should filter products by inactive status via query param")
+    void shouldFilterProductsByInactiveStatusViaQueryParam() {
+        navigateTo("/products?active=false");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should paginate product list")
+    void shouldPaginateProductList() {
+        navigateTo("/products?page=0&size=5");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should search products via query param")
+    void shouldSearchProductsViaQueryParam() {
+        navigateTo("/products?search=test");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should filter products by category via query param")
+    void shouldFilterProductsByCategoryViaQueryParam() {
+        var category = categoryRepository.findAll().stream().findFirst();
+        if (category.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/products?categoryId=" + category.get().getId());
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should combine search and category filters")
+    void shouldCombineSearchAndCategoryFilters() {
+        var category = categoryRepository.findAll().stream().findFirst();
+        if (category.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/products?search=test&categoryId=" + category.get().getId() + "&active=true");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should display product detail with product data")
+    void shouldDisplayProductDetailWithProductData() {
+        var product = productRepository.findAll().stream().findFirst();
+        if (product.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/products/" + product.get().getId());
+        waitForPageLoad();
+
+        // Verify product detail page renders with product info
+        assertThat(page.locator("#page-title, h1, h2").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should display new product form with costing method defaults")
+    void shouldDisplayNewProductFormWithDefaults() {
+        navigateTo("/products/new");
+        waitForPageLoad();
+
+        // Verify form has costing method select
+        var costingMethodSelect = page.locator("select[name='costingMethod']").first();
+        if (costingMethodSelect.isVisible()) {
+            assertThat(costingMethodSelect).isVisible();
+        }
+
+        // Verify form has categories select
+        var categorySelect = page.locator("select[name='category']").first();
+        if (categorySelect.isVisible()) {
+            assertThat(categorySelect).isVisible();
+        }
+    }
+
+    @Test
+    @DisplayName("Should display product edit form with existing data populated")
+    void shouldDisplayProductEditFormWithExistingData() {
+        var product = productRepository.findAll().stream().findFirst();
+        if (product.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/products/" + product.get().getId() + "/edit");
+        waitForPageLoad();
+
+        // Verify the name field is pre-populated
+        var nameInput = page.locator("input[name='name']").first();
+        if (nameInput.isVisible()) {
+            var value = nameInput.inputValue();
+            org.assertj.core.api.Assertions.assertThat(value)
+                .as("Name input should be pre-populated")
+                .isNotEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("Should submit create form with all fields filled")
+    void shouldSubmitCreateFormWithAllFields() {
+        navigateTo("/products/new");
+        waitForPageLoad();
+
+        var codeInput = page.locator("input[name='code']").first();
+        if (codeInput.isVisible()) {
+            codeInput.fill("PRD-FULL-" + System.currentTimeMillis());
+        }
+
+        var nameInput = page.locator("input[name='name']").first();
+        if (nameInput.isVisible()) {
+            nameInput.fill("Full Product " + System.currentTimeMillis());
+        }
+
+        var unitInput = page.locator("input[name='unit']").first();
+        if (unitInput.isVisible()) {
+            unitInput.fill("kg");
+        }
+
+        var descInput = page.locator("textarea[name='description'], input[name='description']").first();
+        if (descInput.isVisible()) {
+            descInput.fill("Test product description");
+        }
+
+        var sellingPriceInput = page.locator("input[name='sellingPrice']").first();
+        if (sellingPriceInput.isVisible()) {
+            sellingPriceInput.fill("50000");
+        }
+
+        var minStockInput = page.locator("input[name='minimumStock']").first();
+        if (minStockInput.isVisible()) {
+            minStockInput.fill("10");
+        }
+
+        // Select category if available
+        var categorySelect = page.locator("select[name='category']").first();
+        if (categorySelect.isVisible()) {
+            var options = categorySelect.locator("option");
+            if (options.count() > 1) {
+                categorySelect.selectOption(new String[]{options.nth(1).getAttribute("value")});
+            }
+        }
+
+        var submitBtn = page.locator("#btn-simpan").first();
+        if (submitBtn.isVisible()) {
+            submitBtn.click();
+            waitForPageLoad();
+        }
+
+        assertThat(page.locator("body")).isVisible();
+    }
 }

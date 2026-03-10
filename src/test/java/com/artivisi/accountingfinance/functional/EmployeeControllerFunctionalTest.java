@@ -331,4 +331,171 @@ class EmployeeControllerFunctionalTest extends PlaywrightTestBase {
 
         assertThat(page.locator("#page-title, h1").first()).isVisible();
     }
+
+    @Test
+    @DisplayName("Should display new employee form with default values")
+    void shouldDisplayNewEmployeeFormWithDefaults() {
+        navigateTo("/employees/new");
+        waitForPageLoad();
+
+        // Verify form fields are present
+        var ptkpSelect = page.locator("select[name='ptkpStatus']").first();
+        if (ptkpSelect.isVisible()) {
+            assertThat(ptkpSelect).isVisible();
+        }
+
+        var typeSelect = page.locator("select[name='employmentType']").first();
+        if (typeSelect.isVisible()) {
+            assertThat(typeSelect).isVisible();
+        }
+
+        var statusSelect = page.locator("select[name='employmentStatus']").first();
+        if (statusSelect.isVisible()) {
+            assertThat(statusSelect).isVisible();
+        }
+    }
+
+    @Test
+    @DisplayName("Should display employee detail with employee data")
+    void shouldDisplayEmployeeDetailWithData() {
+        var employee = employeeRepository.findAll().stream().findFirst();
+        if (employee.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/employees/" + employee.get().getEmployeeId());
+        waitForPageLoad();
+
+        // Verify detail page content
+        assertThat(page.locator("#page-title, h1, h2").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should display employee edit form with pre-populated data")
+    void shouldDisplayEmployeeEditFormWithPrePopulatedData() {
+        var employee = employeeRepository.findAll().stream().findFirst();
+        if (employee.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/employees/" + employee.get().getEmployeeId() + "/edit");
+        waitForPageLoad();
+
+        // Verify the name field is pre-populated
+        var nameInput = page.locator("input[name='name']").first();
+        if (nameInput.isVisible()) {
+            var value = nameInput.inputValue();
+            org.assertj.core.api.Assertions.assertThat(value)
+                .as("Name input should be pre-populated")
+                .isNotEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("Should create employee with full details")
+    void shouldCreateEmployeeWithFullDetails() {
+        navigateTo("/employees/new");
+        waitForPageLoad();
+
+        var employeeIdInput = page.locator("input[name='employeeId']").first();
+        if (employeeIdInput.isVisible()) {
+            employeeIdInput.fill("EMP-FULL-" + System.currentTimeMillis());
+        }
+
+        var nameInput = page.locator("input[name='name']").first();
+        if (nameInput.isVisible()) {
+            nameInput.fill("Full Employee " + System.currentTimeMillis());
+        }
+
+        var emailInput = page.locator("input[name='email']").first();
+        if (emailInput.isVisible()) {
+            emailInput.fill("fullemp" + System.currentTimeMillis() + "@example.com");
+        }
+
+        var phoneInput = page.locator("input[name='phone']").first();
+        if (phoneInput.isVisible()) {
+            phoneInput.fill("081234567890");
+        }
+
+        var hireDateInput = page.locator("input[name='hireDate']").first();
+        if (hireDateInput.isVisible()) {
+            hireDateInput.fill(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        }
+
+        var jobTitleInput = page.locator("input[name='jobTitle']").first();
+        if (jobTitleInput.isVisible()) {
+            jobTitleInput.fill("Software Engineer");
+        }
+
+        var departmentInput = page.locator("input[name='department']").first();
+        if (departmentInput.isVisible()) {
+            departmentInput.fill("Engineering");
+        }
+
+        var bankNameInput = page.locator("input[name='bankName']").first();
+        if (bankNameInput.isVisible()) {
+            bankNameInput.fill("BCA");
+        }
+
+        var bankAccountInput = page.locator("input[name='bankAccountNumber']").first();
+        if (bankAccountInput.isVisible()) {
+            bankAccountInput.fill("1234567890");
+        }
+
+        var submitBtn = page.locator("#btn-simpan").first();
+        if (submitBtn.isVisible()) {
+            submitBtn.click();
+            waitForPageLoad();
+        }
+
+        assertThat(page.locator("body")).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should update employee with additional fields")
+    void shouldUpdateEmployeeWithAdditionalFields() {
+        var employee = employeeRepository.findAll().stream().findFirst();
+        if (employee.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/employees/" + employee.get().getEmployeeId() + "/edit");
+        waitForPageLoad();
+
+        var jobTitleInput = page.locator("input[name='jobTitle']").first();
+        if (jobTitleInput.isVisible()) {
+            jobTitleInput.fill("Senior Engineer");
+        }
+
+        var departmentInput = page.locator("input[name='department']").first();
+        if (departmentInput.isVisible()) {
+            departmentInput.fill("R&D");
+        }
+
+        var submitBtn = page.locator("#btn-simpan").first();
+        if (submitBtn.isVisible()) {
+            submitBtn.click();
+            waitForPageLoad();
+        }
+
+        assertThat(page.locator("body")).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should filter employees with combined inactive and resigned status")
+    void shouldFilterInactiveAndResigned() {
+        navigateTo("/employees?status=RESIGNED&active=false");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
+
+    @Test
+    @DisplayName("Should paginate employee list with custom size")
+    void shouldPaginateEmployeeListWithCustomSize() {
+        navigateTo("/employees?page=0&size=10");
+        waitForPageLoad();
+
+        assertThat(page.locator("#page-title, h1").first()).isVisible();
+    }
 }

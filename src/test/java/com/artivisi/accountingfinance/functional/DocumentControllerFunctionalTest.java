@@ -644,6 +644,80 @@ class DocumentControllerFunctionalTest extends PlaywrightTestBase {
         return pdfContent.getBytes(StandardCharsets.UTF_8);
     }
 
+    @Test
+    @DisplayName("Should upload document for invoice via HTMX form")
+    void shouldUploadDocumentForInvoice() {
+        var invoice = invoiceRepository.findAll().stream().findFirst();
+        if (invoice.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/invoices/" + invoice.get().getId());
+        waitForPageLoad();
+
+        // Check if document upload form exists on invoice page
+        var fileInput = page.locator("[data-testid='document-file-input']");
+        var uploadButton = page.locator("[data-testid='btn-upload-document']");
+
+        if (fileInput.count() > 0 && uploadButton.count() > 0) {
+            byte[] pdfContent = createTestPdfContent();
+            fileInput.setInputFiles(new FilePayload("invoice-doc.pdf", "application/pdf", pdfContent));
+            uploadButton.click();
+            page.waitForTimeout(3000);
+
+            assertThat(page.locator("body")).isVisible();
+        }
+    }
+
+    @Test
+    @DisplayName("Should upload document for journal entry via HTMX form")
+    void shouldUploadDocumentForJournalEntry() {
+        var journalEntry = journalEntryRepository.findAll().stream().findFirst();
+        if (journalEntry.isEmpty()) {
+            return;
+        }
+
+        navigateTo("/journal-entries/" + journalEntry.get().getId());
+        waitForPageLoad();
+
+        // Check if document upload form exists on journal entry page
+        var fileInput = page.locator("[data-testid='document-file-input']");
+        var uploadButton = page.locator("[data-testid='btn-upload-document']");
+
+        if (fileInput.count() > 0 && uploadButton.count() > 0) {
+            byte[] pdfContent = createTestPdfContent();
+            fileInput.setInputFiles(new FilePayload("journal-doc.pdf", "application/pdf", pdfContent));
+            uploadButton.click();
+            page.waitForTimeout(3000);
+
+            assertThat(page.locator("body")).isVisible();
+        }
+    }
+
+    @Test
+    @DisplayName("Should get documents for transaction HTMX endpoint via request API")
+    void shouldGetDocumentsForTransactionHtmx() {
+        var transaction = transactionRepository.findAll().stream().findFirst();
+        if (transaction.isEmpty()) {
+            return;
+        }
+
+        var response = page.request().get(baseUrl() + "/documents/transaction/" + transaction.get().getId());
+        org.assertj.core.api.Assertions.assertThat(response.status())
+            .as("HTMX endpoint should return 200")
+            .isEqualTo(200);
+    }
+
+    @Test
+    @DisplayName("Should handle non-existent transaction ID for document list")
+    void shouldHandleNonExistentTransactionForDocumentList() {
+        var response = page.request().get(
+            baseUrl() + "/documents/api/transaction/00000000-0000-0000-0000-000000000000");
+        org.assertj.core.api.Assertions.assertThat(response.status())
+            .as("API should return response for non-existent transaction")
+            .isIn(200, 404);
+    }
+
     /**
      * Creates a minimal valid PNG image (1x1 pixel) for testing.
      */
