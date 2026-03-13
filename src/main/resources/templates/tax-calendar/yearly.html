@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Kalender Pajak - Tahunan', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Kalender Pajak - Tahunan</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Kalender Pajak Tahunan</h1>
+    <h1 id="page-title">Kalender Pajak Tahunan</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Header -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-4">
@@ -65,13 +64,11 @@
                 </a>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('year-select')?.addEventListener('change', function() {
                 globalThis.location.href = '/tax-calendar/yearly?year=' + this.value;
             });
         </script>
-    </th:block>
 </body>
 </html>

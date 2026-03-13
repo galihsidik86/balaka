@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Laporan Persediaan', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Laporan Persediaan</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title">Laporan Persediaan</h1>
+    <h1 id="page-title">Laporan Persediaan</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <p class="text-gray-600 mb-6">Pilih laporan persediaan yang ingin ditampilkan</p>
 
@@ -67,6 +66,6 @@
                 </a>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

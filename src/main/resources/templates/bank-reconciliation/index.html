@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Rekonsiliasi Bank', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Rekonsiliasi Bank</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Rekonsiliasi Bank</h1>
+    <h1 id="page-title">Rekonsiliasi Bank</h1>
 
-    <div layout:fragment="content">
+    <section>
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <a sec:authorize="hasAuthority('BANK_RECONCILIATION_IMPORT')"
@@ -141,6 +140,6 @@
                 </table>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

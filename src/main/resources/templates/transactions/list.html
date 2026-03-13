@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Transaksi', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Transaksi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Transaksi</h1>
+    <h1 id="page-title">Transaksi</h1>
 
-    <div id="transactions-list-content" layout:fragment="content" class="h-full flex flex-col">
+    <section id="transactions-list-content" class="h-full flex flex-col">
         <!-- Header Actions -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 flex-shrink-0">
             <!-- Filters Row -->
@@ -131,10 +130,9 @@
 
         <!-- Transaction Table (loaded via fragment) -->
         <th:block th:insert="~{fragments/transaction-table :: table}"/>
-    </div>
+    </section>
 
     <!-- Page Scripts -->
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             // Auto-reload transaction list when transactions are updated (e.g., from Quick Transaction)
             document.addEventListener('transactionsUpdated', function() {
@@ -188,6 +186,5 @@
                 }
             });
         </script>
-    </th:block>
 </body>
 </html>

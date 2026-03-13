@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(|Label: ${tagType.name}|, ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="|Label: ${tagType.name}|">Label</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="|Label: ${tagType.name}|">Label</h1>
+    <h1 id="page-title" th:text="|Label: ${tagType.name}|">Label</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Breadcrumb -->
         <nav class="flex items-center text-sm text-gray-500">
             <a th:href="@{/tags/types}" class="hover:text-primary-600">Label Transaksi</a>
@@ -65,6 +64,6 @@
         <div class="bg-white rounded-lg shadow">
             <th:block th:insert="~{tags/fragments/tag-table :: table}"/>
         </div>
-    </div>
+    </section>
 </body>
 </html>

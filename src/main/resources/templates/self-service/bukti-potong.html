@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Bukti Potong PPh 21', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Bukti Potong PPh 21</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Bukti Potong PPh 21</h1>
+    <h1 id="page-title">Bukti Potong PPh 21</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- No Employee Linked -->
         <div th:if="${noEmployee}" class="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
             <p>Akun Anda belum terhubung dengan data karyawan. Silakan hubungi administrator.</p>
@@ -82,13 +81,11 @@
                 </div>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.querySelectorAll('.auto-submit').forEach(el => {
                 el.addEventListener('change', function() { this.form.submit(); });
             });
         </script>
-    </th:block>
 </body>
 </html>

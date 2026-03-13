@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Peringatan Aktif', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Peringatan Aktif</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title" id="page-title">Peringatan Aktif</h1>
+    <h1 id="page-title">Peringatan Aktif</h1>
 
-    <div layout:fragment="content">
+    <section>
         <!-- Success message -->
         <div th:if="${successMessage}" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm" th:text="${successMessage}"></div>
 
@@ -55,6 +54,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

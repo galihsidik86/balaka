@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Daftar Klien', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Daftar Klien</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Daftar Klien</h1>
+    <h1 id="page-title">Daftar Klien</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -59,6 +58,6 @@
         <div class="bg-white rounded-lg shadow">
             <th:block th:insert="~{clients/fragments/client-table :: table}"/>
         </div>
-    </div>
+    </section>
 </body>
 </html>

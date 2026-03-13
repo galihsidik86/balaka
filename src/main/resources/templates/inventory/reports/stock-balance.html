@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Laporan Saldo Stok', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Laporan Saldo Stok</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title" th:id="page-title">Laporan Saldo Stok</h1>
+    <h1 id="page-title">Laporan Saldo Stok</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-7xl">
             <!-- Filter and Actions -->
             <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -118,13 +117,11 @@
                 </div>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.querySelectorAll('.auto-submit').forEach(el => {
                 el.addEventListener('change', function() { this.form.submit(); });
             });
         </script>
-    </th:block>
 </body>
 </html>

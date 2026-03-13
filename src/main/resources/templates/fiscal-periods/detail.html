@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Periode Fiskal', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Detail Periode Fiskal</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Periode Fiskal</h1>
+    <h1 id="page-title">Detail Periode Fiskal</h1>
 
-    <div layout:fragment="content" class="space-y-6" data-testid="period-detail">
+    <section class="space-y-6" data-testid="period-detail">
         <!-- Flash Messages -->
         <div th:if="${successMessage}" class="p-4 bg-green-50 border border-green-200 rounded-lg">
             <p class="text-sm text-green-800" th:text="${successMessage}"></p>
@@ -146,8 +145,7 @@
                 </form>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('form-close-month')?.addEventListener('submit', function(e) {
                 if (!confirm('Tutup bulan untuk periode ini? Jurnal tidak bisa diposting ke periode ini setelah ditutup.')) {
@@ -165,6 +163,5 @@
                 }
             });
         </script>
-    </th:block>
 </body>
 </html>

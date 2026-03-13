@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Draft Transaksi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Detail Draft Transaksi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Draft Transaksi</h1>
+    <h1 id="page-title">Detail Draft Transaksi</h1>
 
-    <div id="draft-detail-content" layout:fragment="content">
+    <section id="draft-detail-content">
         <!-- Back Link -->
         <div class="mb-4">
             <a id="link-back-to-list" th:href="@{/drafts}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
@@ -266,6 +265,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

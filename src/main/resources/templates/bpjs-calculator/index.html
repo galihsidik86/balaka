@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Kalkulator BPJS', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Kalkulator BPJS</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Kalkulator BPJS</h1>
+    <h1 id="page-title">Kalkulator BPJS</h1>
 
-    <div layout:fragment="content" class="space-y-6 max-w-4xl">
+    <section class="space-y-6 max-w-4xl">
         <!-- Calculator Form -->
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Hitung Iuran BPJS</h2>
@@ -193,6 +192,6 @@
                 </ul>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

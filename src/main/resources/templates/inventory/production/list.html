@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Production Orders', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Production Orders</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title">Production Orders</h1>
+    <h1 id="page-title">Production Orders</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-6xl">
             <!-- Alerts -->
             <div th:if="${success}" class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
@@ -85,6 +84,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

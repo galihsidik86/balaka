@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Laporan Laba Rugi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Laporan Laba Rugi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Laporan Laba Rugi</h1>
+    <h1 id="page-title">Laporan Laba Rugi</h1>
 
-    <div id="income-statement-content" layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section id="income-statement-content" class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
@@ -170,6 +169,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

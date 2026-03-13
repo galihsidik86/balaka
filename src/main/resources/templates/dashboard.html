@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Dashboard', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Dashboard</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title" id="page-title">Dashboard</h1>
+    <h1 id="page-title">Dashboard</h1>
 
-    <div layout:fragment="content" id="dashboard-content" class="h-full flex flex-col">
+    <section id="dashboard-content" class="h-full flex flex-col">
         <!-- KPI Cards - Loaded via HTMX -->
         <div id="dashboard-kpis-container"
              hx-get="/dashboard/kpis"
@@ -278,6 +277,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

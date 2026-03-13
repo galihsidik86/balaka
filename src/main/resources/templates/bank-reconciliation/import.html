@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Import Mutasi Bank', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Import Mutasi Bank</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Import Mutasi Bank</h1>
+    <h1 id="page-title">Import Mutasi Bank</h1>
 
-    <div layout:fragment="content" class="max-w-2xl">
+    <section class="max-w-2xl">
         <!-- Flash Messages -->
         <div th:if="${successMessage}" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p class="text-sm text-green-600" th:text="${successMessage}">Success</p>
@@ -92,6 +91,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

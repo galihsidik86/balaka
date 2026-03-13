@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${bom.id != null ? 'Edit BOM' : 'Tambah BOM'}, ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title th:text="${bom.id != null ? 'Edit BOM' : 'Tambah BOM'}">Form BOM</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title" th:text="${bom.id != null ? 'Edit Bill of Materials' : 'Tambah Bill of Materials'}">Form BOM</h1>
+    <h1 id="page-title" th:text="${bom.id != null ? 'Edit Bill of Materials' : 'Tambah Bill of Materials'}">Form BOM</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <!-- Alerts -->
             <div th:if="${error}" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -156,9 +155,8 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
         <script th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const tbody = document.getElementById('component-lines');
@@ -204,6 +202,5 @@
                 });
             });
         </script>
-    </th:block>
 </body>
 </html>

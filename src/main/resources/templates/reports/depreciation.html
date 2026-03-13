@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Laporan Penyusutan', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Laporan Penyusutan</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title">Laporan Penyusutan</h1>
+    <h1 id="page-title">Laporan Penyusutan</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-7xl">
             <!-- Page Header with Year Selector -->
             <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -131,13 +130,11 @@
                 <p>Laporan ini sesuai format Lampiran Khusus 1A SPT Tahunan Badan</p>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.querySelectorAll('.auto-submit').forEach(el => {
                 el.addEventListener('change', function() { this.form.submit(); });
             });
         </script>
-    </th:block>
 </body>
 </html>

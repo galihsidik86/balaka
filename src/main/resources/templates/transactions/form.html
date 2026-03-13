@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${isEdit} ? 'Edit Transaksi' : 'Transaksi Baru', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title th:text="${isEdit} ? 'Edit Transaksi' : 'Transaksi Baru'">Transaksi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${isEdit} ? 'Edit Transaksi' : 'Transaksi Baru'">Transaksi</h1>
+    <h1 id="page-title" th:text="${isEdit} ? 'Edit Transaksi' : 'Transaksi Baru'">Transaksi</h1>
 
-    <div id="transaction-form-content" layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section id="transaction-form-content" class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
@@ -432,10 +431,9 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Script for form submission -->
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('form-transaksi');
@@ -618,6 +616,5 @@
                 });
             });
         </script>
-    </th:block>
 </body>
 </html>

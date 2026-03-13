@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Ekspor Data', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Ekspor Data</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Ekspor Data</h1>
+    <h1 id="page-title">Ekspor Data</h1>
 
-    <div id="export-content" layout:fragment="content">
+    <section id="export-content">
         <!-- Back Link -->
         <div class="mb-4">
             <a id="link-back-to-settings" th:href="@{/settings}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
@@ -190,6 +189,6 @@
                 </p>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

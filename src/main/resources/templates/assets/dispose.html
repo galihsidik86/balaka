@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Lepas Aset', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Lepas Aset</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Lepas Aset</h1>
+    <h1 id="page-title">Lepas Aset</h1>
 
-    <div layout:fragment="content" class="max-w-2xl">
+    <section class="max-w-2xl">
         <!-- Asset Summary -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Aset</h3>
@@ -110,9 +109,8 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const bookValue = /*[[${asset.bookValue}]]*/ 0;
@@ -131,6 +129,5 @@
                 updateGainLoss();
             });
         </script>
-    </th:block>
 </body>
 </html>

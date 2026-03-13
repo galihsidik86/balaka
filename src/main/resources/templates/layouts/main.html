@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, pageTitle, content, scripts)"
       lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
-    <title layout:title-pattern="$CONTENT_TITLE - Akunting">Akunting</title>
+    <title th:text="|${title} - Akunting|">Akunting</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <link rel="stylesheet" th:href="@{${theme.themeCssPath}}">
@@ -597,7 +597,7 @@
                 </label>
 
                 <!-- Page Title -->
-                <h1 id="page-title" class="text-lg font-semibold text-gray-800 hidden lg:block" layout:fragment="page-title">Page Title</h1>
+                <th:block th:replace="${pageTitle}"/>
 
                 <!-- Right Side Actions -->
                 <div class="flex items-center space-x-4">
@@ -616,9 +616,7 @@
 
             <!-- Page Content -->
             <main class="flex-1 p-4 lg:p-6">
-                <div layout:fragment="content">
-                    <!-- Page content will be inserted here -->
-                </div>
+                <th:block th:replace="${content}"/>
             </main>
         </div>
     </div>
@@ -677,6 +675,8 @@
     </script>
 
     <!-- Page-specific scripts placeholder -->
-    <th:block layout:fragment="scripts"></th:block>
+    <th:block th:if="${scripts}">
+        <th:block th:replace="${scripts}"/>
+    </th:block>
 </body>
 </html>

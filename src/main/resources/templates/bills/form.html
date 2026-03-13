@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${bill.id != null} ? 'Edit Tagihan' : 'Tagihan Baru', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title th:text="${bill.id != null} ? 'Edit Tagihan' : 'Tagihan Baru'">Tagihan</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${bill.id != null} ? 'Edit Tagihan' : 'Tagihan Baru'">Tagihan</h1>
+    <h1 id="page-title" th:text="${bill.id != null} ? 'Edit Tagihan' : 'Tagihan Baru'">Tagihan</h1>
 
-    <div layout:fragment="content" class="max-w-4xl">
+    <section class="max-w-4xl">
         <!-- Breadcrumb -->
         <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
             <a th:href="@{/bills}" class="hover:text-primary-600 transition-colors">Tagihan</a>
@@ -172,9 +171,8 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             // CSP-compatible: Register Alpine component before Alpine processes the DOM
             document.addEventListener('alpine:init', function() {
@@ -223,6 +221,5 @@
                 });
             });
         </script>
-    </th:block>
 </body>
 </html>

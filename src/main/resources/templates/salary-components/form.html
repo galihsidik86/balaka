@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${component.id != null} ? 'Edit Komponen Gaji' : 'Komponen Gaji Baru', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="${component.id != null} ? 'Edit Komponen Gaji' : 'Komponen Gaji Baru'">Komponen Gaji</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${component.id != null} ? 'Edit Komponen Gaji' : 'Komponen Gaji Baru'">Komponen Gaji</h1>
+    <h1 id="page-title" th:text="${component.id != null} ? 'Edit Komponen Gaji' : 'Komponen Gaji Baru'">Komponen Gaji</h1>
 
-    <div layout:fragment="content" class="max-w-2xl"
+    <section class="max-w-2xl"
          x-data="percentageToggle"
          th:data-initial-percentage="${component.isPercentage}">
         <div class="bg-white rounded-lg shadow p-6">
@@ -154,7 +153,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
 </body>
 </html>

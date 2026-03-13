@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Rekonsiliasi Baru', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Rekonsiliasi Baru</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Rekonsiliasi Baru</h1>
+    <h1 id="page-title">Rekonsiliasi Baru</h1>
 
-    <div layout:fragment="content" class="max-w-2xl">
+    <section class="max-w-2xl">
         <div th:if="${errorMessage}" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p class="text-sm text-red-600" th:text="${errorMessage}">Error</p>
         </div>
@@ -49,6 +48,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

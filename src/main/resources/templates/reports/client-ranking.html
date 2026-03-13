@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Peringkat Klien', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Peringkat Klien</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Peringkat Klien</h1>
+    <h1 id="page-title">Peringkat Klien</h1>
 
-    <div id="client-ranking-content" layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section id="client-ranking-content" class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
@@ -122,6 +121,6 @@
                 </table>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

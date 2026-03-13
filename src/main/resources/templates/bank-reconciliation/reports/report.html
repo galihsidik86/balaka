@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Laporan Rekonsiliasi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Laporan Rekonsiliasi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Laporan Rekonsiliasi Bank</h1>
+    <h1 id="page-title">Laporan Rekonsiliasi Bank</h1>
 
-    <div layout:fragment="content">
+    <section>
         <!-- Actions -->
         <div class="flex gap-2 mb-6">
             <a th:href="@{/bank-reconciliation/reconciliations/{id}/report/print(id=${recon.id})}" target="_blank"
@@ -128,6 +127,6 @@
                 </table>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

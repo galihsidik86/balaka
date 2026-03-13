@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Ekspor Data Pribadi (DSAR)', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Ekspor Data Pribadi (DSAR)</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Ekspor Data Pribadi (DSAR)</h1>
+    <h1 id="page-title">Ekspor Data Pribadi (DSAR)</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Back Button -->
         <div>
             <a th:href="@{/settings/data-subjects/{id}(id=${employee.id})}" class="text-primary-600 hover:text-primary-800 flex items-center gap-1">
@@ -156,11 +155,9 @@
                 Cetak
             </button>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('btn-print').addEventListener('click', function() { globalThis.print(); });
         </script>
-    </th:block>
 </body>
 </html>

@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Transaksi Persediaan', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Transaksi Persediaan</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Transaksi Persediaan</h1>
+    <h1 id="page-title">Transaksi Persediaan</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Header -->
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-4 flex-wrap">
@@ -103,6 +102,6 @@
         <div class="bg-white rounded-lg shadow">
             <th:block th:insert="~{inventory/fragments/transaction-table :: transactionTable}"/>
         </div>
-    </div>
+    </section>
 </body>
 </html>

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Tentang Aplikasi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Tentang Aplikasi</title>
 </head>
 <body>
-<div layout:fragment="content" id="about-page-content">
+<h1 id="page-title">Tentang Aplikasi</h1>
+<section id="about-page-content">
     <div class="max-w-4xl mx-auto py-8 px-4">
         <!-- Header -->
         <div class="mb-8">
@@ -121,6 +121,6 @@
             </a>
         </div>
     </div>
-</div>
+</section>
 </body>
 </html>

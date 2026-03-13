@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${user.id != null} ? 'Edit Pengguna' : 'Pengguna Baru', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="${user.id != null} ? 'Edit Pengguna' : 'Pengguna Baru'">Form Pengguna</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${user.id != null} ? 'Edit Pengguna' : 'Pengguna Baru'">Form Pengguna</h1>
+    <h1 id="page-title" th:text="${user.id != null} ? 'Edit Pengguna' : 'Pengguna Baru'">Form Pengguna</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Back Link -->
         <div>
             <a th:href="${user.id != null} ? @{/users/{id}(id=${user.id})} : @{/users}"
@@ -122,6 +121,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

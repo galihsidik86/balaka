@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Vendor', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Detail Vendor</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Vendor</h1>
+    <h1 id="page-title">Detail Vendor</h1>
 
-    <div layout:fragment="content" class="space-y-6" data-testid="vendor-detail">
+    <section class="space-y-6" data-testid="vendor-detail">
         <!-- Header -->
         <div class="flex items-start justify-between">
             <div>
@@ -134,8 +133,7 @@
                 </form>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('form-deactivate')?.addEventListener('submit', function(e) {
                 if (!confirm('Nonaktifkan vendor ini?')) {
@@ -143,6 +141,5 @@
                 }
             });
         </script>
-    </th:block>
 </body>
 </html>

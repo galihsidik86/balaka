@@ -94,14 +94,6 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>3.0.1</version>
 		</dependency>
-		<!-- Version override: Spring Boot ships layout-dialect 3.x which has Groovy 5.0.4 NPE
-		     in DecorateProcessor (GROOVY-11841, layout-dialect#251).
-		     Track removal via: spring-projects/spring-boot#49361 -->
-		<dependency>
-			<groupId>nz.net.ultraq.thymeleaf</groupId>
-			<artifactId>thymeleaf-layout-dialect</artifactId>
-			<version>4.0.0</version>
-		</dependency>
 		<!-- Google Cloud Vision for Receipt OCR -->
 		<dependency>
 			<groupId>com.google.cloud</groupId>

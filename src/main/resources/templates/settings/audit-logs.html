@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Security Audit Log', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Security Audit Log</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Security Audit Log</h1>
+    <h1 id="page-title">Security Audit Log</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col">
+    <section class="h-full flex flex-col">
         <!-- Filters -->
         <form id="filter-form" th:action="@{/settings/audit-logs}" method="get"
               hx-get="/settings/audit-logs"
@@ -64,6 +63,6 @@
 
         <!-- Audit Log Table -->
         <th:block th:insert="~{settings/fragments/audit-log-table :: table}"/>
-    </div>
+    </section>
 </body>
 </html>

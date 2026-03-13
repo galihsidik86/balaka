@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Jadwal Amortisasi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Jadwal Amortisasi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Jadwal Amortisasi</h1>
+    <h1 id="page-title">Jadwal Amortisasi</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col" data-testid="amortization-list">
+    <section class="h-full flex flex-col" data-testid="amortization-list">
         <!-- Search Bar -->
         <div class="mb-4 flex-shrink-0">
             <form th:action="@{/amortization}" method="get" class="flex gap-2"
@@ -104,6 +103,6 @@
 
         <!-- Schedule Table -->
         <th:block th:insert="~{amortization/fragments/schedule-table :: table}"/>
-    </div>
+    </section>
 </body>
 </html>

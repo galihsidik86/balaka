@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Buku Besar', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Buku Besar</title>
 </head>
 <body>
-    <h1 layout:fragment="page-title" id="page-title">Buku Besar</h1>
+    <h1 id="page-title">Buku Besar</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col">
+    <section class="h-full flex flex-col">
         <!-- Header Actions -->
         <form id="filter-form" th:action="@{/journals}" method="get"
               hx-get="/journals"
@@ -86,6 +85,6 @@
 
         <!-- Journal Ledger (loaded via fragment) -->
         <th:block th:insert="~{fragments/journal-ledger :: ledger}"/>
-    </div>
+    </section>
 </body>
 </html>

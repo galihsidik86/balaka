@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Deadline Pajak Mendatang', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Deadline Pajak Mendatang</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Deadline Pajak Mendatang</h1>
+    <h1 id="page-title">Deadline Pajak Mendatang</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Back Link -->
         <div>
             <a th:href="@{/tax-calendar}" class="text-gray-600 hover:text-gray-900 flex items-center gap-2">
@@ -76,6 +75,6 @@
             </svg>
             <p class="text-gray-500">Tidak ada deadline pajak mendatang</p>
         </div>
-    </div>
+    </section>
 </body>
 </html>

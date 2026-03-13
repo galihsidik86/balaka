@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Kartu Stok', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Kartu Stok</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Kartu Stok</h1>
+    <h1 id="page-title">Kartu Stok</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Product Header -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-start justify-between">
@@ -166,6 +165,6 @@
                 Lihat Detail Produk
             </a>
         </div>
-    </div>
+    </section>
 </body>
 </html>

@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Anonimisasi Data (Hak Hapus)', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Anonimisasi Data (Hak Hapus)</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Anonimisasi Data (Hak Hapus)</h1>
+    <h1 id="page-title">Anonimisasi Data (Hak Hapus)</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Back Button -->
         <div>
             <a th:href="@{/settings/data-subjects/{id}(id=${employee.id})}" class="text-primary-600 hover:text-primary-800 flex items-center gap-1">
@@ -126,6 +125,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

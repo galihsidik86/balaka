@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Stok Barang', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Stok Barang</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Stok Barang</h1>
+    <h1 id="page-title">Stok Barang</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white rounded-lg shadow p-4">
@@ -91,6 +90,6 @@
         <div class="bg-white rounded-lg shadow">
             <th:block th:insert="~{inventory/fragments/stock-table :: stockTable}"/>
         </div>
-    </div>
+    </section>
 </body>
 </html>

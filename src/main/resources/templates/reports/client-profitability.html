@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Profitabilitas Klien', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Profitabilitas Klien</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Profitabilitas Klien</h1>
+    <h1 id="page-title">Profitabilitas Klien</h1>
 
-    <div id="client-profitability-content" layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section id="client-profitability-content" class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
@@ -160,6 +159,6 @@
                 </div>
             </th:block>
         </div>
-    </div>
+    </section>
 </body>
 </html>

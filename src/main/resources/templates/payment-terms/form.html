@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${paymentTerm.id != null} ? 'Edit Termin Pembayaran' : 'Termin Pembayaran Baru', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="${paymentTerm.id != null} ? 'Edit Termin Pembayaran' : 'Termin Pembayaran Baru'">Termin</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${paymentTerm.id != null} ? 'Edit Termin Pembayaran' : 'Termin Pembayaran Baru'">Termin</h1>
+    <h1 id="page-title" th:text="${paymentTerm.id != null} ? 'Edit Termin Pembayaran' : 'Termin Pembayaran Baru'">Termin</h1>
 
-    <div layout:fragment="content" class="max-w-2xl">
+    <section class="max-w-2xl">
         <!-- Breadcrumb -->
         <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
             <a th:href="@{/projects}" class="hover:text-primary-600 transition-colors">Proyek</a>
@@ -118,6 +117,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

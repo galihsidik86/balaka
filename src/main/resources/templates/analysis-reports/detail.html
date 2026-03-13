@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(|Analisis: ${report.title}|, ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="|Analisis: ${report.title}|">Analisis AI</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${report.title}">Laporan Analisis</h1>
+    <h1 id="page-title" th:text="${report.title}">Laporan Analisis</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Back Link + Actions -->
         <div class="flex items-center justify-between">
             <a id="link-back-to-list" th:href="@{/analysis-reports}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
@@ -184,6 +183,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

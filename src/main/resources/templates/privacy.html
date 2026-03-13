@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Kebijakan Privasi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Kebijakan Privasi</title>
 </head>
 <body>
-<div layout:fragment="content" id="privacy-page-content">
+<h1 id="page-title">Kebijakan Privasi</h1>
+<section id="privacy-page-content">
     <div class="max-w-4xl mx-auto py-8 px-4">
         <!-- Header -->
         <div class="mb-8">
@@ -117,6 +117,6 @@
             </a>
         </div>
     </div>
-</div>
+</section>
 </body>
 </html>

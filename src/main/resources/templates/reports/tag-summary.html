@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Ringkasan per Label', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Ringkasan per Label</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Ringkasan per Label</h1>
+    <h1 id="page-title">Ringkasan per Label</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Breadcrumb -->
         <nav class="flex items-center text-sm text-gray-500">
             <a th:href="@{/reports}" class="hover:text-primary-600">Laporan</a>
@@ -88,6 +87,6 @@
         <div th:if="${summaries == null or summaries.isEmpty()}" class="bg-white rounded-lg shadow p-12 text-center">
             <p class="text-gray-500">Tidak ada data transaksi dengan label pada periode ini</p>
         </div>
-    </div>
+    </section>
 </body>
 </html>

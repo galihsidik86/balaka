@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${isEdit} ? 'Edit Template' : (${isDuplicate} ? 'Duplikat Template' : 'Template Baru'), ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title th:text="${isEdit} ? 'Edit Template' : (${isDuplicate} ? 'Duplikat Template' : 'Template Baru')">Template</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${isEdit} ? 'Edit Template' : (${isDuplicate} ? 'Duplikat Template' : 'Template Baru')">Template</h1>
+    <h1 id="page-title" th:text="${isEdit} ? 'Edit Template' : (${isDuplicate} ? 'Duplikat Template' : 'Template Baru')">Template</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-4xl">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
@@ -488,9 +487,8 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
     <script th:replace="~{fragments/formula-help :: formula-help-script}" th:attr="nonce=${cspNonce}"></script>
     <script th:inline="javascript" th:attr="nonce=${cspNonce}">
         function templateForm() {
@@ -1013,6 +1011,5 @@
             Alpine.data('templateForm', templateForm);
         });
     </script>
-    </th:block>
 </body>
 </html>

@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Draft Transaksi', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Draft Transaksi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Draft Transaksi</h1>
+    <h1 id="page-title">Draft Transaksi</h1>
 
-    <div id="drafts-list-content" layout:fragment="content" class="h-full flex flex-col">
+    <section id="drafts-list-content" class="h-full flex flex-col">
         <!-- Header Actions -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 flex-shrink-0">
             <!-- Filters Row -->
@@ -51,6 +50,6 @@
 
         <!-- Draft Table -->
         <th:block th:insert="~{fragments/draft-table :: table}"/>
-    </div>
+    </section>
 </body>
 </html>

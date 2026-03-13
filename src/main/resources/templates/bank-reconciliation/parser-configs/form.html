@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${isEdit} ? 'Edit Konfigurasi Parser' : 'Konfigurasi Parser Baru', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="${isEdit} ? 'Edit Konfigurasi Parser' : 'Konfigurasi Parser Baru'">Konfigurasi Parser</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${isEdit} ? 'Edit Konfigurasi Parser' : 'Konfigurasi Parser Baru'">Konfigurasi Parser</h1>
+    <h1 id="page-title" th:text="${isEdit} ? 'Edit Konfigurasi Parser' : 'Konfigurasi Parser Baru'">Konfigurasi Parser</h1>
 
-    <div layout:fragment="content" class="max-w-2xl">
+    <section class="max-w-2xl">
         <div class="bg-white rounded-lg shadow p-6">
             <form th:action="${isEdit} ? @{/bank-reconciliation/parser-configs/{id}(id=${config.id})} : @{/bank-reconciliation/parser-configs/new}"
                   th:object="${config}"
@@ -146,6 +145,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

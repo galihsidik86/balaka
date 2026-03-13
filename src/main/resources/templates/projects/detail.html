@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Proyek', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Detail Proyek</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Proyek</h1>
+    <h1 id="page-title">Detail Proyek</h1>
 
-    <div layout:fragment="content" class="space-y-6" data-testid="project-detail">
+    <section class="space-y-6" data-testid="project-detail">
         <!-- Header -->
         <div class="flex items-start justify-between">
             <div>
@@ -259,8 +258,7 @@
                 </form>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.querySelectorAll('.form-delete-milestone').forEach(form => {
                 form.addEventListener('submit', function(e) {
@@ -284,6 +282,5 @@
                 if (!confirm('Arsipkan proyek ini?')) e.preventDefault();
             });
         </script>
-    </th:block>
 </body>
 </html>

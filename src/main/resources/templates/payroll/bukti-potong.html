@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Bukti Potong 1721-A1', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Bukti Potong 1721-A1</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">
+    <h1 id="page-title">
         Bukti Potong PPh 21 (1721-A1)
     </h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Year Filter -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div class="flex items-center space-x-4">
@@ -96,13 +95,11 @@
                 <li>Karyawan menggunakan dokumen ini untuk melaporkan SPT Tahunan PPh Orang Pribadi</li>
             </ul>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('year-select')?.addEventListener('change', function() {
                 globalThis.location.href = '/payroll/bukti-potong?year=' + this.value;
             });
         </script>
-    </th:block>
 </body>
 </html>

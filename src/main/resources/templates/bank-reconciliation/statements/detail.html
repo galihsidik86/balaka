@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Mutasi Bank', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Detail Mutasi Bank</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Mutasi Bank</h1>
+    <h1 id="page-title">Detail Mutasi Bank</h1>
 
-    <div layout:fragment="content">
+    <section>
         <!-- Statement Info -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -85,6 +84,6 @@
                 </table>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

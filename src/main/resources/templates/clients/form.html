@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout(${client.id != null} ? 'Edit Klien' : 'Klien Baru', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="${client.id != null} ? 'Edit Klien' : 'Klien Baru'">Klien</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="${client.id != null} ? 'Edit Klien' : 'Klien Baru'">Klien</h1>
+    <h1 id="page-title" th:text="${client.id != null} ? 'Edit Klien' : 'Klien Baru'">Klien</h1>
 
-    <div layout:fragment="content" class="max-w-2xl">
+    <section class="max-w-2xl">
         <div class="bg-white rounded-lg shadow p-6">
             <form th:action="${client.id != null} ? @{/clients/{code}(code=${client.code})} : @{/clients/new}"
                   th:object="${client}"
@@ -153,6 +152,6 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </body>
 </html>

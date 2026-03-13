@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Pengaturan Telegram', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Pengaturan Telegram</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Pengaturan Telegram</h1>
+    <h1 id="page-title">Pengaturan Telegram</h1>
 
-    <div id="telegram-settings-content" layout:fragment="content">
+    <section id="telegram-settings-content">
         <!-- Back Link -->
         <div class="mb-4">
             <a th:href="@{/settings}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
@@ -197,9 +196,8 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('form-unlink-telegram')?.addEventListener('submit', function(e) {
                 if (!confirm('Yakin ingin memutus hubungan dengan akun Telegram ini?')) e.preventDefault();
@@ -214,6 +212,5 @@
                 });
             }
         </script>
-    </th:block>
 </body>
 </html>

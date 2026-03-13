@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Edit Profil', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Edit Profil</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Edit Profil</h1>
+    <h1 id="page-title">Edit Profil</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
             <p class="text-sm">Anda hanya dapat mengubah informasi kontak dan rekening bank. Untuk mengubah data lain, silakan hubungi administrator.</p>
         </div>
@@ -71,6 +70,6 @@
                 </a>
             </div>
         </form>
-    </div>
+    </section>
 </body>
 </html>

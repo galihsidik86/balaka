@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Daftar Vendor', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Daftar Vendor</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Daftar Vendor</h1>
+    <h1 id="page-title">Daftar Vendor</h1>
 
-    <div layout:fragment="content" class="space-y-6" data-testid="vendor-list">
+    <section class="space-y-6" data-testid="vendor-list">
         <!-- Filters & Actions -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <form th:action="@{/vendors}" method="get" class="flex flex-wrap items-center gap-2">
@@ -85,6 +84,6 @@
                    class="px-3 py-1 border rounded hover:bg-gray-50">Next &raquo;</a>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

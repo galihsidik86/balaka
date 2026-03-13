@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Transaksi Berulang', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Transaksi Berulang</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Transaksi Berulang</h1>
+    <h1 id="page-title">Transaksi Berulang</h1>
 
-    <div layout:fragment="content" class="space-y-6" data-testid="recurring-list">
+    <section class="space-y-6" data-testid="recurring-list">
         <!-- Success Message -->
         <div th:if="${successMessage}" class="p-4 bg-green-50 border border-green-200 rounded-lg">
             <p class="text-sm text-green-600" th:text="${successMessage}"></p>
@@ -108,6 +107,6 @@
                    class="px-3 py-1 border rounded hover:bg-gray-50">Next &raquo;</a>
             </div>
         </div>
-    </div>
+    </section>
 </body>
 </html>

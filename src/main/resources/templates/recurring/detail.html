@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Transaksi Berulang', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Detail Transaksi Berulang</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Transaksi Berulang</h1>
+    <h1 id="page-title">Detail Transaksi Berulang</h1>
 
-    <div layout:fragment="content" class="space-y-6" data-testid="recurring-detail">
+    <section class="space-y-6" data-testid="recurring-detail">
         <!-- Success Message -->
         <div th:if="${successMessage}" class="p-4 bg-green-50 border border-green-200 rounded-lg">
             <p class="text-sm text-green-600" th:text="${successMessage}"></p>
@@ -185,9 +184,8 @@
                 </form>
             </div>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('form-pause')?.addEventListener('submit', function(e) {
                 if (!confirm('Jeda transaksi berulang ini?')) {
@@ -205,6 +203,5 @@
                 }
             });
         </script>
-    </th:block>
 </body>
 </html>

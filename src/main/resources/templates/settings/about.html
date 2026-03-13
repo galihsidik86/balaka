@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Tentang Aplikasi', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Tentang Aplikasi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Tentang Aplikasi</h1>
+    <h1 id="page-title">Tentang Aplikasi</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Application Info Card -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center mb-6">
@@ -186,9 +185,8 @@
         <div class="text-center text-sm text-gray-500">
             <p>&copy; 2025 Artivisi. All rights reserved.</p>
         </div>
-    </div>
+    </section>
 
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('btn-copy-commit')?.addEventListener('click', function(event) {
                 const targetBtn = event.currentTarget;
@@ -203,6 +201,5 @@
                 });
             });
         </script>
-    </th:block>
 </body>
 </html>

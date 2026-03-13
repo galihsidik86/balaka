@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Hak Subjek Data (GDPR/UU PDP)', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Hak Subjek Data (GDPR/UU PDP)</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Hak Subjek Data (GDPR/UU PDP)</h1>
+    <h1 id="page-title">Hak Subjek Data (GDPR/UU PDP)</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Header with Info -->
         <div id="gdpr-info-panel" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div class="flex items-start gap-3">
@@ -53,6 +52,6 @@
         <div class="bg-white rounded-lg shadow">
             <th:block th:insert="~{settings/data-subjects/fragments/employee-table :: table}"/>
         </div>
-    </div>
+    </section>
 </body>
 </html>

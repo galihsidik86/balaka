@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Produk - ' + ${product.code}, ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title th:text="'Detail Produk - ' + ${product.code}">Detail Produk</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Detail Produk</h1>
+    <h1 id="page-title">Detail Produk</h1>
 
-    <div layout:fragment="content" class="max-w-4xl space-y-6">
+    <section class="max-w-4xl space-y-6">
         <!-- Header with actions -->
         <div class="flex items-center justify-between">
             <div>
@@ -125,8 +124,7 @@
                 </form>
             </div>
         </div>
-    </div>
-    <th:block layout:fragment="scripts">
+    </section>
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.getElementById('form-deactivate')?.addEventListener('submit', function(e) {
                 if (!confirm('Nonaktifkan produk ini?')) e.preventDefault();
@@ -135,6 +133,5 @@
                 if (!confirm('Hapus produk ini? Tindakan ini tidak dapat dibatalkan.')) e.preventDefault();
             });
         </script>
-    </th:block>
 </body>
 </html>

@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Penyusutan Aset', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Penyusutan Aset</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Penyusutan Aset Tetap</h1>
+    <h1 id="page-title">Penyusutan Aset Tetap</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Generate Depreciation -->
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Generate Penyusutan</h3>
@@ -97,6 +96,6 @@
                 Kembali ke Daftar Aset
             </a>
         </div>
-    </div>
+    </section>
 </body>
 </html>

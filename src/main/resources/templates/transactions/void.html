@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Void Transaksi', ~{::#page-title}, ~{::section}, ~{::script})}"
       lang="id">
 <head>
     <title>Void Transaksi</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Void Transaksi</h1>
+    <h1 id="page-title">Void Transaksi</h1>
 
-    <div id="void-form-content" layout:fragment="content" class="h-full flex flex-col overflow-y-auto">
+    <section id="void-form-content" class="h-full flex flex-col overflow-y-auto">
         <div class="max-w-2xl">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
@@ -168,10 +167,9 @@
                 </form>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Script for void action -->
-    <th:block layout:fragment="scripts">
         <script th:inline="javascript" th:attr="nonce=${cspNonce}">
             document.addEventListener('DOMContentLoaded', function() {
                 const transactionId = /*[[${transaction.id}]]*/ '';
@@ -212,6 +210,5 @@
                 });
             });
         </script>
-    </th:block>
 </body>
 </html>

@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Detail Aset - ' + ${asset.assetCode}, ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title th:text="'Detail Aset - ' + ${asset.assetCode}">Detail Aset</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title" th:text="'Detail Aset: ' + ${asset.name}">Detail Aset</h1>
+    <h1 id="page-title" th:text="'Detail Aset: ' + ${asset.name}">Detail Aset</h1>
 
-    <div layout:fragment="content" class="space-y-6">
+    <section class="space-y-6">
         <!-- Header with actions -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -261,6 +260,6 @@
                 Kembali ke Daftar Aset
             </a>
         </div>
-    </div>
+    </section>
 </body>
 </html>

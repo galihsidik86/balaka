@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main}"
+      th:replace="~{layouts/main :: layout('Template Jurnal', ~{::#page-title}, ~{::section}, ~{})}"
       lang="id">
 <head>
     <title>Template Jurnal</title>
 </head>
 <body>
-    <h1 id="page-title" layout:fragment="page-title">Template Jurnal</h1>
+    <h1 id="page-title">Template Jurnal</h1>
 
-    <div layout:fragment="content" class="h-full flex flex-col" data-testid="template-list">
+    <section class="h-full flex flex-col" data-testid="template-list">
         <!-- Search Bar -->
         <div class="mb-4 flex-shrink-0">
             <form th:action="@{/templates}" method="get" class="flex gap-2"
@@ -91,6 +90,6 @@
 
         <!-- Template Grid (loaded via fragment) -->
         <th:block th:insert="~{fragments/template-grid :: grid}"/>
-    </div>
+    </section>
 </body>
 </html>
