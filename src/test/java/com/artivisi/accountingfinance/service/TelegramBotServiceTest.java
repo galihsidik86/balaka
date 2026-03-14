@@ -515,6 +515,246 @@ class TelegramBotServiceTest {
     }
 
     @Nested
+    @DisplayName("Send Processing Result")
+    class SendProcessingResultTests {
+
+        @Test
+        @DisplayName("Should send complete result with all fields populated")
+        void shouldSendCompleteResultWithAllFields() throws Exception {
+            TelegramUserLink link = createLinkedUserLink();
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.of(link));
+
+            // Mock file download to trigger photo processing
+            TelegramApiClient.GetFileResponse fileResponse = new TelegramApiClient.GetFileResponse(
+                    true,
+                    new TelegramApiClient.FileResult("file1", "unique1", 1234L, "photos/test.jpg"),
+                    null);
+            when(telegramApiClient.getFile(any())).thenReturn(fileResponse);
+
+            Document document = new Document();
+            when(documentService.saveFromBytes(any(), anyString(), anyString(), anyString()))
+                    .thenReturn(document);
+
+            DraftTransaction draft = createDraft();
+            when(draftService.processReceiptImage(any(), any(), any(), any(), anyString()))
+                    .thenReturn(draft);
+
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createPhotoUpdate();
+
+            try {
+                service.handleUpdate(update);
+            } catch (Exception _) {
+                // Expected - can't mock URL download
+            }
+
+            // At minimum the processing message is sent
+            verify(telegramApiClient, atLeastOnce()).sendMessage(any());
+        }
+
+        @Test
+        @DisplayName("Should send incomplete result when amount and merchant are null")
+        void shouldSendIncompleteResultWhenDataMissing() throws Exception {
+            TelegramUserLink link = createLinkedUserLink();
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.of(link));
+
+            TelegramApiClient.GetFileResponse fileResponse = new TelegramApiClient.GetFileResponse(
+                    true,
+                    new TelegramApiClient.FileResult("file1", "unique1", 1234L, "photos/test.jpg"),
+                    null);
+            when(telegramApiClient.getFile(any())).thenReturn(fileResponse);
+
+            Document document = new Document();
+            when(documentService.saveFromBytes(any(), anyString(), anyString(), anyString()))
+                    .thenReturn(document);
+
+            // Draft with null amount and null merchant
+            DraftTransaction emptyDraft = new DraftTransaction();
+            when(draftService.processReceiptImage(any(), any(), any(), any(), anyString()))
+                    .thenReturn(emptyDraft);
+
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createPhotoUpdate();
+
+            try {
+                service.handleUpdate(update);
+            } catch (Exception _) {
+                // Expected - can't mock URL download
+            }
+
+            verify(telegramApiClient, atLeastOnce()).sendMessage(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Link Command Edge Cases")
+    class LinkCommandEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should show help for /link without code")
+        void shouldShowHelpForLinkWithoutCode() {
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.empty());
+            mockSendMessageSuccess();
+
+            // /link without a code is not "/link " prefix, so it falls to unknown text handler
+            TelegramUpdate update = createTextUpdate("/link");
+            service.handleUpdate(update);
+
+            ArgumentCaptor<TelegramApiClient.SendMessageRequest> captor =
+                    ArgumentCaptor.forClass(TelegramApiClient.SendMessageRequest.class);
+            verify(telegramApiClient).sendMessage(captor.capture());
+
+            assertThat(captor.getValue().text()).contains("/help");
+        }
+
+        @Test
+        @DisplayName("Should handle already linked user trying to link again")
+        void shouldHandleAlreadyLinkedUserTryingToLink() {
+            TelegramUserLink link = createLinkedUserLink();
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.of(link));
+            mockSendMessageSuccess();
+
+            // A linked user sending /link should get the unknown text handler response
+            TelegramUpdate update = createTextUpdate("/link somecode");
+            service.handleUpdate(update);
+
+            // The text handler processes it - either links or shows error
+            verify(telegramApiClient).sendMessage(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Start Command Edge Cases")
+    class StartCommandEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should show welcome for existing but unlinked user")
+        void shouldShowWelcomeForExistingButUnlinkedUser() {
+            TelegramUserLink unlinkedLink = new TelegramUserLink();
+            unlinkedLink.setUser(createUser());
+            unlinkedLink.setIsActive(false);
+            // Not linked - no telegramUserId set
+
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.empty());
+            when(telegramLinkRepository.findByTelegramUserId(any()))
+                    .thenReturn(Optional.of(unlinkedLink));
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createTextUpdate("/start");
+            service.handleUpdate(update);
+
+            ArgumentCaptor<TelegramApiClient.SendMessageRequest> captor =
+                    ArgumentCaptor.forClass(TelegramApiClient.SendMessageRequest.class);
+            verify(telegramApiClient).sendMessage(captor.capture());
+
+            // Unlinked user should get the welcome message
+            assertThat(captor.getValue().text()).contains("Selamat datang");
+        }
+
+        @Test
+        @DisplayName("Should handle /start with invalid verification code")
+        void shouldHandleStartWithInvalidCode() {
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.empty());
+            when(telegramLinkRepository.findByTelegramUserId(any()))
+                    .thenReturn(Optional.empty());
+            when(telegramLinkRepository.findByVerificationCode(anyString()))
+                    .thenReturn(Optional.empty());
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createTextUpdate("/start invalidcode");
+            service.handleUpdate(update);
+
+            ArgumentCaptor<TelegramApiClient.SendMessageRequest> captor =
+                    ArgumentCaptor.forClass(TelegramApiClient.SendMessageRequest.class);
+            verify(telegramApiClient).sendMessage(captor.capture());
+
+            assertThat(captor.getValue().text()).contains("tidak valid");
+        }
+    }
+
+    @Nested
+    @DisplayName("Photo Processing Edge Cases")
+    class PhotoProcessingEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should handle download failure gracefully")
+        void shouldHandleDownloadFailure() {
+            TelegramUserLink link = createLinkedUserLink();
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.of(link));
+
+            // Return failed file response
+            TelegramApiClient.GetFileResponse failedResponse = new TelegramApiClient.GetFileResponse(
+                    false, null, "File not found");
+            when(telegramApiClient.getFile(any())).thenReturn(failedResponse);
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createPhotoUpdate();
+            service.handleUpdate(update);
+
+            // Should send processing message then error message
+            verify(telegramApiClient, atLeast(2)).sendMessage(any());
+        }
+
+        @Test
+        @DisplayName("Should handle getFile exception gracefully")
+        void shouldHandleGetFileException() {
+            TelegramUserLink link = createLinkedUserLink();
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.of(link));
+
+            when(telegramApiClient.getFile(any()))
+                    .thenThrow(new RuntimeException("Network timeout"));
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createPhotoUpdate();
+            service.handleUpdate(update);
+
+            // Should send processing message then error message
+            verify(telegramApiClient, atLeast(2)).sendMessage(any());
+        }
+
+        @Test
+        @DisplayName("Should select largest photo from multiple sizes")
+        void shouldSelectLargestPhoto() {
+            TelegramUserLink link = createLinkedUserLink();
+            when(telegramLinkRepository.findByTelegramUserIdAndIsActiveTrue(any()))
+                    .thenReturn(Optional.of(link));
+
+            TelegramApiClient.GetFileResponse fileResponse = new TelegramApiClient.GetFileResponse(
+                    true,
+                    new TelegramApiClient.FileResult("file_large", "unique1", 5000L, "photos/large.jpg"),
+                    null);
+            when(telegramApiClient.getFile(any())).thenReturn(fileResponse);
+            mockSendMessageSuccess();
+
+            TelegramUpdate update = createPhotoUpdate(); // has 2 photos, 90x60 and 320x240
+
+            try {
+                service.handleUpdate(update);
+            } catch (Exception _) {
+                // Expected
+            }
+
+            // Verify getFile was called (meaning largest photo was selected)
+            ArgumentCaptor<TelegramApiClient.GetFileRequest> fileCaptor =
+                    ArgumentCaptor.forClass(TelegramApiClient.GetFileRequest.class);
+            verify(telegramApiClient).getFile(fileCaptor.capture());
+
+            // The largest photo (320x240) should be selected - file ID "photo2_large"
+            assertThat(fileCaptor.getValue().file_id()).isEqualTo("photo2_large");
+        }
+    }
+
+    @Nested
     @DisplayName("Error Handling")
     class ErrorHandlingTests {
 

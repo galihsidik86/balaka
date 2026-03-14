@@ -113,4 +113,93 @@ class AmountToWordsUtilTest {
         String result = AmountToWordsUtil.toWords(new BigDecimal("1"));
         assertThat(result.charAt(0)).isUpperCase();
     }
+
+    @Test
+    @DisplayName("Should handle large trillion with complex remainder")
+    void shouldHandleLargeTrillionWithComplexRemainder() {
+        String result = AmountToWordsUtil.toWords(new BigDecimal("2500000000000"));
+        assertThat(result).isEqualTo("Dua triliun lima ratus miliar rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle decimal rounding down")
+    void shouldHandleDecimalRoundingDown() {
+        // 1500.25 rounds to 1500
+        String result = AmountToWordsUtil.toWords(new BigDecimal("1500.25"));
+        assertThat(result).isEqualTo("Seribu lima ratus rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle teens 13 through 19")
+    void shouldHandleTeens() {
+        assertToWords(new BigDecimal("13"), "Tiga belas rupiah");
+        assertToWords(new BigDecimal("14"), "Empat belas rupiah");
+        assertToWords(new BigDecimal("16"), "Enam belas rupiah");
+        assertToWords(new BigDecimal("17"), "Tujuh belas rupiah");
+        assertToWords(new BigDecimal("18"), "Delapan belas rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle tens with zero unit")
+    void shouldHandleTensWithZeroUnit() {
+        assertToWords(new BigDecimal("30"), "Tiga puluh rupiah");
+        assertToWords(new BigDecimal("40"), "Empat puluh rupiah");
+        assertToWords(new BigDecimal("60"), "Enam puluh rupiah");
+        assertToWords(new BigDecimal("70"), "Tujuh puluh rupiah");
+        assertToWords(new BigDecimal("80"), "Delapan puluh rupiah");
+        assertToWords(new BigDecimal("90"), "Sembilan puluh rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle hundreds 200-999")
+    void shouldHandleHundredsWithRemainder() {
+        assertToWords(new BigDecimal("123"), "Seratus dua puluh tiga rupiah");
+        assertToWords(new BigDecimal("250"), "Dua ratus lima puluh rupiah");
+        assertToWords(new BigDecimal("311"), "Tiga ratus sebelas rupiah");
+        assertToWords(new BigDecimal("415"), "Empat ratus lima belas rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle seribu with remainder")
+    void shouldHandleSeribuWithRemainder() {
+        assertToWords(new BigDecimal("1001"), "Seribu satu rupiah");
+        assertToWords(new BigDecimal("1999"), "Seribu sembilan ratus sembilan puluh sembilan rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle thousands with complex remainders")
+    void shouldHandleThousandsWithComplexRemainders() {
+        assertToWords(new BigDecimal("12345"), "Dua belas ribu tiga ratus empat puluh lima rupiah");
+        assertToWords(new BigDecimal("100001"), "Seratus ribu satu rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle millions with remainders")
+    void shouldHandleMillionsWithRemainders() {
+        assertToWords(new BigDecimal("1500000"), "Satu juta lima ratus ribu rupiah");
+        assertToWords(new BigDecimal("2100500"), "Dua juta seratus ribu lima ratus rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle billions with remainders")
+    void shouldHandleBillionsWithRemainders() {
+        assertToWords(new BigDecimal("1500000000"), "Satu miliar lima ratus juta rupiah");
+        assertToWords(new BigDecimal("2000000001"), "Dua miliar satu rupiah");
+    }
+
+    @Test
+    @DisplayName("Should handle trillions with remainders")
+    void shouldHandleTrillionsWithRemainders() {
+        assertToWords(new BigDecimal("1500000000000"), "Satu triliun lima ratus miliar rupiah");
+        assertToWords(new BigDecimal("2000000000001"), "Dua triliun satu rupiah");
+    }
+
+    @Test
+    @DisplayName("Should clean up multiple spaces in result")
+    void shouldCleanUpMultipleSpaces() {
+        // 20 -> "dua puluh " + convertToWords(0) where convertToWords(0) returns ""
+        // This tests the space cleanup in capitalize
+        String result = AmountToWordsUtil.toWords(new BigDecimal("20"));
+        assertThat(result).doesNotContain("  ");
+    }
 }

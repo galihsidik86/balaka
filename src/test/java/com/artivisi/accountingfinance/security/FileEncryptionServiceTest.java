@@ -347,4 +347,121 @@ class FileEncryptionServiceTest {
             assertThat(actualOverhead).isEqualTo(service.getEncryptionOverhead());
         }
     }
+
+    @Nested
+    @DisplayName("Version Check Tests")
+    class VersionCheckTests {
+
+        @BeforeEach
+        void setUpEncryption() {
+            ReflectionTestUtils.setField(service, "encryptionKeyBase64", VALID_KEY);
+            service.init();
+        }
+
+        @Test
+        @DisplayName("Should fail decryption for unsupported version")
+        void shouldFailForUnsupportedVersion() {
+            byte[] original = "Test data".getBytes(StandardCharsets.UTF_8);
+            byte[] encrypted = service.encrypt(original);
+
+            // Tamper version byte (position 4, after ENCF magic header)
+            encrypted[4] = (byte) 99;
+
+            assertThatThrownBy(() -> service.decrypt(encrypted))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Failed to decrypt file");
+        }
+    }
+
+    @Nested
+    @DisplayName("InputStream Edge Cases")
+    class InputStreamEdgeCaseTests {
+
+        @BeforeEach
+        void setUpEncryption() {
+            ReflectionTestUtils.setField(service, "encryptionKeyBase64", VALID_KEY);
+            service.init();
+        }
+
+        @Test
+        @DisplayName("Should encrypt empty input stream")
+        void shouldEncryptEmptyInputStream() throws IOException {
+            InputStream emptyStream = new ByteArrayInputStream(new byte[0]);
+            byte[] result = service.encrypt(emptyStream);
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should decrypt to stream for non-encrypted data")
+        void shouldDecryptToStreamPassthrough() throws IOException {
+            byte[] plain = "not encrypted".getBytes(StandardCharsets.UTF_8);
+            InputStream stream = service.decryptToStream(plain);
+            byte[] result = stream.readAllBytes();
+            assertThat(result).isEqualTo(plain);
+        }
+
+        @Test
+        @DisplayName("Should encrypt single byte via input stream")
+        void shouldEncryptSingleByteViaStream() throws IOException {
+            byte[] original = new byte[]{42};
+            InputStream inputStream = new ByteArrayInputStream(original);
+
+            byte[] encrypted = service.encrypt(inputStream);
+            byte[] decrypted = service.decrypt(encrypted);
+
+            assertThat(decrypted).isEqualTo(original);
+        }
+    }
+
+    @Nested
+    @DisplayName("isEncrypted Edge Cases")
+    class IsEncryptedEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should return false when magic header partially matches")
+        void shouldReturnFalseForPartialMagicMatch() {
+            // ENCF = 0x45, 0x4E, 0x43, 0x46
+            // Start with ENC but wrong 4th byte
+            byte[] data = new byte[20];
+            data[0] = 0x45; // E
+            data[1] = 0x4E; // N
+            data[2] = 0x43; // C
+            data[3] = 0x00; // Not F
+            assertThat(service.isEncrypted(data)).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return false for data exactly at minimum header length minus 1")
+        void shouldReturnFalseForDataJustUnderMinLength() {
+            // Minimum = 4 (magic) + 1 (version) + 12 (IV) = 17
+            byte[] data = new byte[16];
+            data[0] = 0x45;
+            data[1] = 0x4E;
+            data[2] = 0x43;
+            data[3] = 0x46;
+            assertThat(service.isEncrypted(data)).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("Disabled Encryption Encrypt InputStream Tests")
+    class DisabledEncryptionInputStreamTests {
+
+        @BeforeEach
+        void setUpDisabledEncryption() {
+            ReflectionTestUtils.setField(service, "encryptionKeyBase64", "");
+            service.init();
+        }
+
+        @Test
+        @DisplayName("Should pass through input stream when encryption disabled")
+        void shouldPassthroughInputStreamWhenDisabled() throws IOException {
+            byte[] original = "Test stream data".getBytes(StandardCharsets.UTF_8);
+            InputStream inputStream = new ByteArrayInputStream(original);
+
+            byte[] result = service.encrypt(inputStream);
+
+            assertThat(result).isEqualTo(original);
+        }
+    }
 }

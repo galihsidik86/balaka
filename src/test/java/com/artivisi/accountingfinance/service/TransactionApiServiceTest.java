@@ -293,4 +293,240 @@ class TransactionApiServiceTest {
             assertThat(entity.getRejectionReason()).isEqualTo("Invalid merchant");
         }
     }
+
+    @Nested
+    @DisplayName("Update Draft")
+    class UpdateDraftTests {
+
+        @Test
+        @DisplayName("Should update pending draft fields")
+        void shouldUpdatePendingDraftFields() {
+            // Create draft
+            CreateFromTextRequest request = new CreateFromTextRequest(
+                    "Original Merchant",
+                    new BigDecimal("100000"),
+                    LocalDate.now(),
+                    "IDR",
+                    "Test",
+                    "Original description",
+                    new BigDecimal("0.95"),
+                    "test"
+            );
+            DraftResponse draft = transactionApiService.createFromText(request);
+
+            // Update draft
+            com.artivisi.accountingfinance.dto.UpdateDraftRequest updateRequest =
+                    new com.artivisi.accountingfinance.dto.UpdateDraftRequest(
+                            "Updated Merchant",
+                            new BigDecimal("200000"),
+                            "Updated description",
+                            null,
+                            "Updated Category"
+                    );
+
+            DraftResponse updated = transactionApiService.updateDraft(draft.draftId(), updateRequest);
+
+            assertThat(updated.merchant()).isEqualTo("Updated Merchant");
+            assertThat(updated.amount()).isEqualByComparingTo(new BigDecimal("200000"));
+        }
+
+        @Test
+        @DisplayName("Should reject update for non-pending draft")
+        void shouldRejectUpdateForNonPendingDraft() {
+            // Create and reject draft
+            CreateFromTextRequest request = new CreateFromTextRequest(
+                    "Merchant",
+                    new BigDecimal("100000"),
+                    LocalDate.now(),
+                    "IDR",
+                    "Test",
+                    "Test",
+                    new BigDecimal("0.95"),
+                    "test"
+            );
+            DraftResponse draft = transactionApiService.createFromText(request);
+            transactionApiService.reject(draft.draftId(), "reason", "testuser");
+
+            com.artivisi.accountingfinance.dto.UpdateDraftRequest updateRequest =
+                    new com.artivisi.accountingfinance.dto.UpdateDraftRequest(
+                            "New Merchant", null, null, null, null);
+
+            assertThatThrownBy(() -> transactionApiService.updateDraft(draft.draftId(), updateRequest))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Only pending drafts");
+        }
+
+        @Test
+        @DisplayName("Should update draft with suggested template")
+        void shouldUpdateDraftWithSuggestedTemplate() {
+            CreateFromTextRequest request = new CreateFromTextRequest(
+                    "Merchant",
+                    new BigDecimal("100000"),
+                    LocalDate.now(),
+                    "IDR",
+                    null,
+                    "Test",
+                    new BigDecimal("0.95"),
+                    "test"
+            );
+            DraftResponse draft = transactionApiService.createFromText(request);
+
+            List<JournalTemplate> templates = journalTemplateRepository.findByActiveAndIsCurrentVersionTrueOrderByTemplateNameAsc(true);
+            assertThat(templates).isNotEmpty();
+
+            com.artivisi.accountingfinance.dto.UpdateDraftRequest updateRequest =
+                    new com.artivisi.accountingfinance.dto.UpdateDraftRequest(
+                            null, null, null, templates.getFirst().getId(), null);
+
+            DraftResponse updated = transactionApiService.updateDraft(draft.draftId(), updateRequest);
+
+            assertThat(updated.suggestedTemplate()).isNotNull();
+            assertThat(updated.suggestedTemplate().id()).isEqualTo(templates.getFirst().getId());
+        }
+    }
+
+    @Nested
+    @DisplayName("Create Draft Directly")
+    class CreateDraftDirectlyTests {
+
+        @Test
+        @DisplayName("Should create draft transaction directly")
+        void shouldCreateDraftTransactionDirectly() {
+            List<JournalTemplate> templates = journalTemplateRepository.findByActiveAndIsCurrentVersionTrueOrderByTemplateNameAsc(true);
+            assertThat(templates).isNotEmpty();
+
+            com.artivisi.accountingfinance.dto.CreateDraftRequest draftRequest =
+                    new com.artivisi.accountingfinance.dto.CreateDraftRequest(
+                            templates.getFirst().getId(),
+                            "Direct draft test",
+                            new BigDecimal("500000"),
+                            LocalDate.now(),
+                            null,
+                            null,
+                            null
+                    );
+
+            com.artivisi.accountingfinance.dto.TransactionResponse response =
+                    transactionApiService.createDraft(draftRequest, "testuser");
+
+            assertThat(response).isNotNull();
+            assertThat(response.transactionId()).isNotNull();
+            assertThat(response.status()).isEqualTo("DRAFT");
+            assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("500000"));
+        }
+
+        @Test
+        @DisplayName("Should reject direct draft with future date")
+        void shouldRejectDirectDraftWithFutureDate() {
+            List<JournalTemplate> templates = journalTemplateRepository.findByActiveAndIsCurrentVersionTrueOrderByTemplateNameAsc(true);
+            assertThat(templates).isNotEmpty();
+
+            com.artivisi.accountingfinance.dto.CreateDraftRequest draftRequest =
+                    new com.artivisi.accountingfinance.dto.CreateDraftRequest(
+                            templates.getFirst().getId(),
+                            "Future draft test",
+                            new BigDecimal("500000"),
+                            LocalDate.now().plusDays(1),
+                            null,
+                            null,
+                            null
+                    );
+
+            assertThatThrownBy(() -> transactionApiService.createDraft(draftRequest, "testuser"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("future");
+        }
+    }
+
+    @Nested
+    @DisplayName("Create Transaction Direct")
+    class CreateTransactionDirectTests {
+
+        @Test
+        @DisplayName("Should create and post transaction directly")
+        void shouldCreateAndPostTransactionDirectly() {
+            List<JournalTemplate> templates = journalTemplateRepository.findByActiveAndIsCurrentVersionTrueOrderByTemplateNameAsc(true);
+            assertThat(templates).isNotEmpty();
+
+            com.artivisi.accountingfinance.dto.CreateTransactionRequest txRequest =
+                    new com.artivisi.accountingfinance.dto.CreateTransactionRequest(
+                            templates.getFirst().getId(),
+                            "Test Merchant",
+                            new BigDecimal("250000"),
+                            LocalDate.now(),
+                            "IDR",
+                            "Direct transaction test",
+                            "Test",
+                            null,
+                            "claude-code",
+                            true,
+                            null,
+                            null
+                    );
+
+            com.artivisi.accountingfinance.dto.TransactionResponse response =
+                    transactionApiService.createTransactionDirect(txRequest, "testuser");
+
+            assertThat(response).isNotNull();
+            assertThat(response.transactionId()).isNotNull();
+            assertThat(response.status()).isEqualTo("POSTED");
+            assertThat(response.transactionNumber()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should reject direct transaction with future date")
+        void shouldRejectDirectTransactionWithFutureDate() {
+            List<JournalTemplate> templates = journalTemplateRepository.findByActiveAndIsCurrentVersionTrueOrderByTemplateNameAsc(true);
+            assertThat(templates).isNotEmpty();
+
+            com.artivisi.accountingfinance.dto.CreateTransactionRequest txRequest =
+                    new com.artivisi.accountingfinance.dto.CreateTransactionRequest(
+                            templates.getFirst().getId(),
+                            "Test Merchant",
+                            new BigDecimal("250000"),
+                            LocalDate.now().plusDays(1),
+                            "IDR",
+                            "Future transaction test",
+                            "Test",
+                            null,
+                            "test",
+                            true,
+                            null,
+                            null
+                    );
+
+            assertThatThrownBy(() -> transactionApiService.createTransactionDirect(txRequest, "testuser"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("future");
+        }
+    }
+
+    @Nested
+    @DisplayName("Delete Transaction")
+    class DeleteTransactionTests {
+
+        @Test
+        @DisplayName("Should delete draft transaction")
+        void shouldDeleteDraftTransaction() {
+            List<JournalTemplate> templates = journalTemplateRepository.findByActiveAndIsCurrentVersionTrueOrderByTemplateNameAsc(true);
+            assertThat(templates).isNotEmpty();
+
+            com.artivisi.accountingfinance.dto.CreateDraftRequest draftRequest =
+                    new com.artivisi.accountingfinance.dto.CreateDraftRequest(
+                            templates.getFirst().getId(),
+                            "Draft to delete",
+                            new BigDecimal("100000"),
+                            LocalDate.now(),
+                            null,
+                            null,
+                            null
+                    );
+
+            com.artivisi.accountingfinance.dto.TransactionResponse response =
+                    transactionApiService.createDraft(draftRequest, "testuser");
+
+            // Delete should not throw
+            transactionApiService.deleteTransaction(response.transactionId());
+        }
+    }
 }

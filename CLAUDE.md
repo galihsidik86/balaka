@@ -73,7 +73,11 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 
 # Run all tests (unit, integration, functional, DAST)
 # Requires Docker for Testcontainers (PostgreSQL, ZAP)
-./mvnw test
+# IMPORTANT: Full test suite takes 60-90 minutes. Always run in background
+# with log capture. NEVER run multiple instances simultaneously.
+./mvnw test 2>&1 | tee target/test-output.log
+# Or in background:
+nohup ./mvnw test > target/test-output.log 2>&1 &
 
 # Run specific functional test
 ./mvnw test -Dtest=MfgBomTest

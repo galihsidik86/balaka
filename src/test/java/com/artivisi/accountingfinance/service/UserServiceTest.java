@@ -154,6 +154,16 @@ class UserServiceTest {
         }
 
         @Test
+        @DisplayName("search should return all when search is null")
+        void searchShouldReturnAllWhenSearchIsNull() {
+            createTestUser();
+
+            Page<User> page = userService.search(null, PageRequest.of(0, 10));
+
+            assertThat(page.getContent()).isNotEmpty();
+        }
+
+        @Test
         @DisplayName("findAllActive should return only active users")
         void findAllActiveShouldReturnOnlyActiveUsers() {
             User active = createTestUser();
@@ -354,6 +364,35 @@ class UserServiceTest {
             assertThatThrownBy(() -> userService.update(invalidId, updateData, Set.of(Role.STAFF)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User not found");
+        }
+
+        @Test
+        @DisplayName("update should allow null email without duplicate check")
+        void updateShouldAllowNullEmail() {
+            User user = createTestUser();
+
+            User updateData = buildUpdateData(user);
+            updateData.setEmail(null);
+            updateData.setFullName("Updated With Null Email");
+
+            User updated = userService.update(user.getId(), updateData, Set.of(Role.STAFF));
+
+            assertThat(updated.getFullName()).isEqualTo("Updated With Null Email");
+            assertThat(updated.getEmail()).isNull();
+        }
+
+        @Test
+        @DisplayName("update should allow blank email without duplicate check")
+        void updateShouldAllowBlankEmail() {
+            User user = createTestUser();
+
+            User updateData = buildUpdateData(user);
+            updateData.setEmail("");
+            updateData.setFullName("Updated With Blank Email");
+
+            User updated = userService.update(user.getId(), updateData, Set.of(Role.STAFF));
+
+            assertThat(updated.getFullName()).isEqualTo("Updated With Blank Email");
         }
     }
 

@@ -531,4 +531,118 @@ class JournalTemplateServiceTest {
         debitLine2.setLineOrder(2);
         template.addLine(debitLine2);
     }
+
+    @Nested
+    @DisplayName("Template Line Validation")
+    class TemplateLineValidationTests {
+
+        @Test
+        @DisplayName("Should reject template with invalid formula")
+        void shouldRejectTemplateWithInvalidFormula() {
+            JournalTemplate template = buildTestTemplate();
+
+            List<ChartOfAccount> accounts = chartOfAccountRepository.findAll();
+            ChartOfAccount debitAccount = accounts.stream()
+                .filter(a -> a.getAccountType().name().equals("ASSET"))
+                .findFirst().orElse(accounts.get(0));
+            ChartOfAccount creditAccount = accounts.stream()
+                .filter(a -> a.getAccountType().name().equals("REVENUE"))
+                .findFirst().orElse(accounts.get(1));
+
+            JournalTemplateLine debitLine = new JournalTemplateLine();
+            debitLine.setAccount(debitAccount);
+            debitLine.setPosition(JournalPosition.DEBIT);
+            debitLine.setFormula("invalid!!!formula");
+            debitLine.setLineOrder(1);
+            template.addLine(debitLine);
+
+            JournalTemplateLine creditLine = new JournalTemplateLine();
+            creditLine.setAccount(creditAccount);
+            creditLine.setPosition(JournalPosition.CREDIT);
+            creditLine.setFormula("amount");
+            creditLine.setLineOrder(2);
+            template.addLine(creditLine);
+
+            assertThatThrownBy(() -> journalTemplateService.create(template))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid formula");
+        }
+
+        @Test
+        @DisplayName("Should reject template line without account and without accountHint")
+        void shouldRejectLineWithoutAccountAndWithoutHint() {
+            JournalTemplate template = buildTestTemplate();
+
+            JournalTemplateLine debitLine = new JournalTemplateLine();
+            debitLine.setAccount(null);
+            debitLine.setPosition(JournalPosition.DEBIT);
+            debitLine.setFormula("amount");
+            debitLine.setLineOrder(1);
+            // No accountHint set
+            template.addLine(debitLine);
+
+            List<ChartOfAccount> accounts = chartOfAccountRepository.findAll();
+            JournalTemplateLine creditLine = new JournalTemplateLine();
+            creditLine.setAccount(accounts.get(0));
+            creditLine.setPosition(JournalPosition.CREDIT);
+            creditLine.setFormula("amount");
+            creditLine.setLineOrder(2);
+            template.addLine(creditLine);
+
+            assertThatThrownBy(() -> journalTemplateService.create(template))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no account and no accountHint");
+        }
+
+        @Test
+        @DisplayName("Should reject template with duplicate accountHint")
+        void shouldRejectTemplateWithDuplicateAccountHint() {
+            JournalTemplate template = buildTestTemplate();
+
+            JournalTemplateLine debitLine = new JournalTemplateLine();
+            debitLine.setAccount(null);
+            debitLine.setAccountHint("cash");
+            debitLine.setPosition(JournalPosition.DEBIT);
+            debitLine.setFormula("amount");
+            debitLine.setLineOrder(1);
+            template.addLine(debitLine);
+
+            JournalTemplateLine creditLine = new JournalTemplateLine();
+            creditLine.setAccount(null);
+            creditLine.setAccountHint("cash"); // duplicate
+            creditLine.setPosition(JournalPosition.CREDIT);
+            creditLine.setFormula("amount");
+            creditLine.setLineOrder(2);
+            template.addLine(creditLine);
+
+            assertThatThrownBy(() -> journalTemplateService.create(template))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Duplicate accountHint");
+        }
+    }
+
+    @Nested
+    @DisplayName("FindAllWithLines and FindByTag Edge Cases")
+    class AdditionalFindTests {
+
+        @Test
+        @DisplayName("findAllWithLines should return templates with lines loaded")
+        void findAllWithLinesShouldReturnTemplatesWithLines() {
+            List<JournalTemplate> templates = journalTemplateService.findAllWithLines();
+
+            assertThat(templates).isNotEmpty();
+            // All templates should have lines eagerly loaded
+            for (JournalTemplate t : templates) {
+                assertThat(t.getLines()).isNotNull();
+            }
+        }
+
+        @Test
+        @DisplayName("findByTag with non-existent tag should return empty list")
+        void findByTagWithNonExistentTagShouldReturnEmptyList() {
+            List<JournalTemplate> templates = journalTemplateService.findByTag("nonexistenttag" + System.nanoTime());
+
+            assertThat(templates).isEmpty();
+        }
+    }
 }

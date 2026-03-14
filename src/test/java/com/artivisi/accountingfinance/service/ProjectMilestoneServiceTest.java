@@ -183,6 +183,45 @@ class ProjectMilestoneServiceTest {
             assertThat(saved.getId()).isNotNull();
             assertThat(saved.getSequence()).isEqualTo(999);
         }
+
+        @Test
+        @DisplayName("Should throw exception when creating milestone with duplicate sequence")
+        void shouldThrowExceptionForDuplicateSequence() {
+            if (testProject == null) return;
+
+            ProjectMilestone m1 = new ProjectMilestone();
+            m1.setName("First Milestone");
+            m1.setSequence(888);
+            m1.setWeightPercent(10);
+            m1.setTargetDate(LocalDate.now().plusMonths(1));
+            milestoneService.create(testProject.getId(), m1);
+
+            ProjectMilestone m2 = new ProjectMilestone();
+            m2.setName("Duplicate Seq Milestone");
+            m2.setSequence(888);
+            m2.setWeightPercent(10);
+            m2.setTargetDate(LocalDate.now().plusMonths(2));
+
+            assertThatThrownBy(() -> milestoneService.create(testProject.getId(), m2))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("already exists");
+        }
+
+        @Test
+        @DisplayName("Should set project on created milestone")
+        void shouldSetProjectOnCreatedMilestone() {
+            if (testProject == null) return;
+
+            ProjectMilestone milestone = new ProjectMilestone();
+            milestone.setName("Project Linkage Test");
+            milestone.setWeightPercent(10);
+            milestone.setTargetDate(LocalDate.now().plusMonths(1));
+
+            ProjectMilestone saved = milestoneService.create(testProject.getId(), milestone);
+
+            assertThat(saved.getProject()).isNotNull();
+            assertThat(saved.getProject().getId()).isEqualTo(testProject.getId());
+        }
     }
 
     @Nested
@@ -252,6 +291,86 @@ class ProjectMilestoneServiceTest {
             ProjectMilestone updated = milestoneService.findById(saved.getId());
             assertThat(updated.getStatus()).isEqualTo(MilestoneStatus.IN_PROGRESS);
         }
+
+        @Test
+        @WithMockUser(username = "admin")
+        @DisplayName("Should set actual date when status updated to COMPLETED")
+        void shouldSetActualDateWhenCompleted() {
+            if (testProject == null) return;
+
+            ProjectMilestone milestone = new ProjectMilestone();
+            milestone.setName("Complete Status Test");
+            milestone.setWeightPercent(10);
+            milestone.setTargetDate(LocalDate.now().plusMonths(1));
+            ProjectMilestone saved = milestoneService.create(testProject.getId(), milestone);
+
+            milestoneService.updateStatus(saved.getId(), MilestoneStatus.COMPLETED);
+
+            ProjectMilestone updated = milestoneService.findById(saved.getId());
+            assertThat(updated.getStatus()).isEqualTo(MilestoneStatus.COMPLETED);
+            assertThat(updated.getActualDate()).isEqualTo(LocalDate.now());
+        }
+
+        @Test
+        @WithMockUser(username = "admin")
+        @DisplayName("Should clear actual date when status updated to non-COMPLETED")
+        void shouldClearActualDateWhenStatusNotCompleted() {
+            if (testProject == null) return;
+
+            ProjectMilestone milestone = new ProjectMilestone();
+            milestone.setName("Clear Date Test");
+            milestone.setWeightPercent(10);
+            milestone.setTargetDate(LocalDate.now().plusMonths(1));
+            ProjectMilestone saved = milestoneService.create(testProject.getId(), milestone);
+
+            // Complete it first
+            milestoneService.updateStatus(saved.getId(), MilestoneStatus.COMPLETED);
+
+            // Then set back to PENDING
+            milestoneService.updateStatus(saved.getId(), MilestoneStatus.PENDING);
+
+            ProjectMilestone updated = milestoneService.findById(saved.getId());
+            assertThat(updated.getStatus()).isEqualTo(MilestoneStatus.PENDING);
+            assertThat(updated.getActualDate()).isNull();
+        }
+
+        @Test
+        @WithMockUser(username = "admin")
+        @DisplayName("Should set actual date when using completeMilestone")
+        void shouldSetActualDateWithCompleteMilestone() {
+            if (testProject == null) return;
+
+            ProjectMilestone milestone = new ProjectMilestone();
+            milestone.setName("CompleteMilestone Test");
+            milestone.setWeightPercent(10);
+            milestone.setTargetDate(LocalDate.now().plusMonths(1));
+            ProjectMilestone saved = milestoneService.create(testProject.getId(), milestone);
+
+            milestoneService.completeMilestone(saved.getId());
+
+            ProjectMilestone updated = milestoneService.findById(saved.getId());
+            assertThat(updated.getStatus()).isEqualTo(MilestoneStatus.COMPLETED);
+            assertThat(updated.getActualDate()).isEqualTo(LocalDate.now());
+        }
+
+        @Test
+        @WithMockUser(username = "admin")
+        @DisplayName("Should clear actual date when using startMilestone")
+        void shouldClearActualDateWithStartMilestone() {
+            if (testProject == null) return;
+
+            ProjectMilestone milestone = new ProjectMilestone();
+            milestone.setName("StartMilestone Clear Date Test");
+            milestone.setWeightPercent(10);
+            milestone.setTargetDate(LocalDate.now().plusMonths(1));
+            ProjectMilestone saved = milestoneService.create(testProject.getId(), milestone);
+
+            milestoneService.startMilestone(saved.getId());
+
+            ProjectMilestone updated = milestoneService.findById(saved.getId());
+            assertThat(updated.getStatus()).isEqualTo(MilestoneStatus.IN_PROGRESS);
+            assertThat(updated.getActualDate()).isNull();
+        }
     }
 
     @Nested
@@ -279,6 +398,52 @@ class ProjectMilestoneServiceTest {
             assertThat(updated.getName()).isEqualTo("Updated Name");
             assertThat(updated.getDescription()).isEqualTo("Updated description");
             assertThat(updated.getWeightPercent()).isEqualTo(20);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when updating to duplicate sequence")
+        void shouldThrowExceptionWhenUpdatingToDuplicateSequence() {
+            if (testProject == null) return;
+
+            // Create two milestones
+            ProjectMilestone m1 = new ProjectMilestone();
+            m1.setName("Milestone A");
+            m1.setSequence(901);
+            m1.setWeightPercent(10);
+            m1.setTargetDate(LocalDate.now().plusMonths(1));
+            milestoneService.create(testProject.getId(), m1);
+
+            ProjectMilestone m2 = new ProjectMilestone();
+            m2.setName("Milestone B");
+            m2.setSequence(902);
+            m2.setWeightPercent(10);
+            m2.setTargetDate(LocalDate.now().plusMonths(2));
+            ProjectMilestone savedM2 = milestoneService.create(testProject.getId(), m2);
+
+            // Try to update m2 sequence to 901 (duplicate)
+            savedM2.setSequence(901);
+            UUID m2Id = savedM2.getId();
+            assertThatThrownBy(() -> milestoneService.update(m2Id, savedM2))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("already exists");
+        }
+
+        @Test
+        @DisplayName("Should update milestone target date")
+        void shouldUpdateMilestoneTargetDate() {
+            if (testProject == null) return;
+
+            ProjectMilestone milestone = new ProjectMilestone();
+            milestone.setName("Date Update Test");
+            milestone.setWeightPercent(15);
+            milestone.setTargetDate(LocalDate.now().plusMonths(1));
+            ProjectMilestone saved = milestoneService.create(testProject.getId(), milestone);
+
+            LocalDate newDate = LocalDate.now().plusMonths(3);
+            saved.setTargetDate(newDate);
+            ProjectMilestone updated = milestoneService.update(saved.getId(), saved);
+
+            assertThat(updated.getTargetDate()).isEqualTo(newDate);
         }
     }
 

@@ -298,4 +298,134 @@ class RateLimitServiceTest {
         boolean apiAllowed = rateLimitService.isApiAllowed(ip);
         assertThat(apiAllowed).isTrue();
     }
+
+    // ==================== API and General Null/Blank IP ====================
+
+    @Test
+    @DisplayName("Should allow API for null IP address")
+    void shouldAllowApiForNullIpAddress() {
+        assertThat(rateLimitService.isApiAllowed(null)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should allow API for blank IP address")
+    void shouldAllowApiForBlankIpAddress() {
+        assertThat(rateLimitService.isApiAllowed("   ")).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should allow general for null IP address")
+    void shouldAllowGeneralForNullIpAddress() {
+        assertThat(rateLimitService.isGeneralAllowed(null)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should allow general for blank IP address")
+    void shouldAllowGeneralForBlankIpAddress() {
+        assertThat(rateLimitService.isGeneralAllowed("  ")).isTrue();
+    }
+
+    // ==================== Login Remaining for Blank IP ====================
+
+    @Test
+    @DisplayName("Should return max remaining for blank IP")
+    void shouldReturnMaxRemainingForBlankIp() {
+        int remaining = rateLimitService.getLoginRemaining("  ");
+        assertThat(remaining).isEqualTo(10);
+    }
+
+    // ==================== Reset Seconds for Blank IP ====================
+
+    @Test
+    @DisplayName("Should return zero reset seconds for blank IP")
+    void shouldReturnZeroResetSecondsForBlankIp() {
+        long resetSeconds = rateLimitService.getLoginResetSeconds("  ");
+        assertThat(resetSeconds).isZero();
+    }
+
+    // ==================== Cleanup with Entries ====================
+
+    @Test
+    @DisplayName("Should cleanup without affecting active entries")
+    void shouldCleanupWithoutAffectingActiveEntries() {
+        String ip = "192.168.1.85";
+        rateLimitService.isLoginAllowed(ip);
+        rateLimitService.isApiAllowed(ip);
+        rateLimitService.isGeneralAllowed(ip);
+
+        rateLimitService.cleanup();
+
+        // Active entries should still be present (window hasn't expired)
+        int remaining = rateLimitService.getLoginRemaining(ip);
+        assertThat(remaining).isEqualTo(9);
+    }
+
+    @Test
+    @DisplayName("Should cleanup empty maps without error")
+    void shouldCleanupEmptyMapsWithoutError() {
+        // No entries have been added
+        assertThatCode(() -> rateLimitService.cleanup())
+                .doesNotThrowAnyException();
+    }
+
+    // ==================== X-Forwarded-For Edge Cases ====================
+
+    @Test
+    @DisplayName("Should handle single IP in X-Forwarded-For")
+    void shouldHandleSingleIpInXForwardedFor() {
+        String ip = "10.0.0.1";
+        boolean allowed = rateLimitService.isLoginAllowed(ip);
+        assertThat(allowed).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should track same first IP from X-Forwarded-For consistently")
+    void shouldTrackSameFirstIpConsistently() {
+        String xff1 = "10.0.0.1, 192.168.1.1";
+        String xff2 = "10.0.0.1, 172.16.0.1";
+
+        for (int i = 0; i < 5; i++) {
+            rateLimitService.isLoginAllowed(xff1);
+        }
+        for (int i = 0; i < 5; i++) {
+            rateLimitService.isLoginAllowed(xff2);
+        }
+
+        // Both share the same first IP, so limit should be exhausted
+        boolean allowed = rateLimitService.isLoginAllowed(xff1);
+        assertThat(allowed).isFalse();
+    }
+
+    // ==================== General and API Limits Independent ====================
+
+    @Test
+    @DisplayName("Should track general and login limits independently")
+    void shouldTrackGeneralAndLoginLimitsIndependently() {
+        String ip = "192.168.1.95";
+
+        // Exhaust login limit
+        for (int i = 0; i < 10; i++) {
+            rateLimitService.isLoginAllowed(ip);
+        }
+        assertThat(rateLimitService.isLoginAllowed(ip)).isFalse();
+
+        // General should still be available
+        assertThat(rateLimitService.isGeneralAllowed(ip)).isTrue();
+    }
+
+    // ==================== Reset Seconds After Requests ====================
+
+    @Test
+    @DisplayName("Should return positive reset seconds after rate limiting")
+    void shouldReturnPositiveResetSecondsAfterRateLimiting() {
+        String ip = "192.168.1.75";
+
+        for (int i = 0; i < 10; i++) {
+            rateLimitService.isLoginAllowed(ip);
+        }
+
+        long resetSeconds = rateLimitService.getLoginResetSeconds(ip);
+        assertThat(resetSeconds).isGreaterThan(0);
+        assertThat(resetSeconds).isLessThanOrEqualTo(60);
+    }
 }

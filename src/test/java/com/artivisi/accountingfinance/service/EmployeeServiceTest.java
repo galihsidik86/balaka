@@ -137,6 +137,53 @@ class EmployeeServiceTest {
         }
 
         @Test
+        @DisplayName("findByFilters should return all when search is blank")
+        void findByFiltersShouldReturnAllWhenSearchIsBlank() {
+            createTestEmployee();
+
+            Page<Employee> page = employeeService.findByFilters(
+                "", null, null, PageRequest.of(0, 10));
+
+            assertThat(page.getContent()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("findByFilters should search with status and active combined")
+        void findByFiltersShouldSearchWithStatusAndActiveCombined() {
+            Employee emp = createTestEmployeeWithName("CombinedFilter Employee");
+
+            Page<Employee> page = employeeService.findByFilters(
+                "CombinedFilter", EmploymentStatus.ACTIVE, true, PageRequest.of(0, 10));
+
+            assertThat(page.getContent()).isNotEmpty();
+            assertThat(page.getContent()).anyMatch(e -> e.getName().contains("CombinedFilter"));
+        }
+
+        @Test
+        @DisplayName("findByFilters should filter without search using status only")
+        void findByFiltersShouldFilterWithoutSearchUsingStatusOnly() {
+            createTestEmployeeWithStatus(EmploymentStatus.ACTIVE);
+
+            Page<Employee> page = employeeService.findByFilters(
+                null, EmploymentStatus.ACTIVE, null, PageRequest.of(0, 10));
+
+            assertThat(page.getContent()).isNotEmpty();
+            assertThat(page.getContent()).allMatch(e -> e.getEmploymentStatus() == EmploymentStatus.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("findByFilters should filter without search using active only")
+        void findByFiltersShouldFilterWithoutSearchUsingActiveOnly() {
+            createTestEmployee();
+
+            Page<Employee> page = employeeService.findByFilters(
+                null, null, true, PageRequest.of(0, 10));
+
+            assertThat(page.getContent()).isNotEmpty();
+            assertThat(page.getContent()).allMatch(Employee::isActive);
+        }
+
+        @Test
         @DisplayName("findActiveEmployees should return only active employees")
         void findActiveEmployeesShouldReturnOnlyActive() {
             Employee active = createTestEmployee();
@@ -361,6 +408,60 @@ class EmployeeServiceTest {
 
             assertThat(updated.getName()).isEqualTo("Updated Name");
             assertThat(updated.getNpwp()).isEqualTo("22.222.222.2-222.222");
+        }
+
+        @Test
+        @DisplayName("update should throw for invalid NPWP format")
+        void updateShouldThrowForInvalidNpwpFormat() {
+            Employee employee = createTestEmployee();
+
+            Employee updateData = buildUpdateData(employee);
+            updateData.setNpwp("123"); // Too short
+
+            assertThatThrownBy(() -> employeeService.update(employee.getId(), updateData))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Format NPWP tidak valid");
+        }
+
+        @Test
+        @DisplayName("update should throw for NPWP with non-numeric characters")
+        void updateShouldThrowForNpwpWithNonNumericOnUpdate() {
+            Employee employee = createTestEmployee();
+
+            Employee updateData = buildUpdateData(employee);
+            updateData.setNpwp("12.345.ABC.9-012.345");
+
+            assertThatThrownBy(() -> employeeService.update(employee.getId(), updateData))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("NPWP hanya boleh berisi angka");
+        }
+
+        @Test
+        @DisplayName("update should allow null NPWP")
+        void updateShouldAllowNullNpwp() {
+            Employee employee = createTestEmployee();
+
+            Employee updateData = buildUpdateData(employee);
+            updateData.setNpwp(null);
+            updateData.setName("Updated Without NPWP");
+
+            Employee updated = employeeService.update(employee.getId(), updateData);
+
+            assertThat(updated.getName()).isEqualTo("Updated Without NPWP");
+        }
+
+        @Test
+        @DisplayName("update should allow blank NPWP")
+        void updateShouldAllowBlankNpwp() {
+            Employee employee = createTestEmployee();
+
+            Employee updateData = buildUpdateData(employee);
+            updateData.setNpwp("");
+            updateData.setName("Updated With Blank NPWP");
+
+            Employee updated = employeeService.update(employee.getId(), updateData);
+
+            assertThat(updated.getName()).isEqualTo("Updated With Blank NPWP");
         }
 
         @Test

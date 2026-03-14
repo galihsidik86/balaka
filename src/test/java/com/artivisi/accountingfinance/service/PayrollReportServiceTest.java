@@ -233,4 +233,121 @@ class PayrollReportServiceTest {
         byte[] bpjsPdf = payrollReportService.exportBpjsReportToPdf(testPayrollRun, testDetails);
         assertThat(bpjsPdf).isNotNull();
     }
+
+    // ==================== Excel Structure Verification ====================
+
+    @Test
+    @DisplayName("Should export PPh 21 Excel with correct column structure")
+    void shouldExportPph21ExcelWithCorrectColumnStructure() throws Exception {
+        byte[] excel = payrollReportService.exportPph21ReportToExcel(testPayrollRun, testDetails);
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excel))) {
+            assertThat((Object) workbook.getSheetAt(0).getRow(0)).isNotNull();
+            // PPh 21 sheet should have data rows beyond header
+            assertThat(workbook.getSheetAt(0).getPhysicalNumberOfRows()).isGreaterThan(1);
+        }
+    }
+
+    @Test
+    @DisplayName("Should export BPJS Excel with data in both sheets")
+    void shouldExportBpjsExcelWithDataInBothSheets() throws Exception {
+        byte[] excel = payrollReportService.exportBpjsReportToExcel(testPayrollRun, testDetails);
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excel))) {
+            // Both sheets should have header + data rows
+            assertThat(workbook.getSheetAt(0).getPhysicalNumberOfRows()).isGreaterThan(1);
+            assertThat(workbook.getSheetAt(1).getPhysicalNumberOfRows()).isGreaterThan(1);
+        }
+    }
+
+    @Test
+    @DisplayName("Should export payroll summary Excel with data rows for each employee")
+    void shouldExportPayrollSummaryExcelWithDataRows() throws Exception {
+        byte[] excel = payrollReportService.exportPayrollSummaryToExcel(testPayrollRun, testDetails);
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excel))) {
+            // Should have header rows + at least one data row per employee + total
+            assertThat(workbook.getSheetAt(0).getPhysicalNumberOfRows())
+                    .isGreaterThanOrEqualTo(testDetails.size() + 1);
+        }
+    }
+
+    // ==================== PDF Content Size Verification ====================
+
+    @Test
+    @DisplayName("Should generate PPh 21 PDF with substantial content")
+    void shouldGeneratePph21PdfWithSubstantialContent() {
+        byte[] pdf = payrollReportService.exportPph21ReportToPdf(testPayrollRun, testDetails);
+
+        assertThat(pdf).hasSizeGreaterThan(1000);
+        assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+    }
+
+    @Test
+    @DisplayName("Should generate BPJS PDF with substantial content")
+    void shouldGenerateBpjsPdfWithSubstantialContent() {
+        byte[] pdf = payrollReportService.exportBpjsReportToPdf(testPayrollRun, testDetails);
+
+        assertThat(pdf).hasSizeGreaterThan(1000);
+        assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+    }
+
+    @Test
+    @DisplayName("Should generate payslip PDF with substantial content for each employee")
+    void shouldGeneratePayslipPdfForEachEmployee() {
+        for (PayrollDetail detail : testDetails) {
+            byte[] pdf = payrollReportService.generatePayslipPdf(testPayrollRun, detail);
+
+            assertThat(pdf).isNotNull();
+            assertThat(pdf).hasSizeGreaterThan(500);
+            assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+        }
+    }
+
+    @Test
+    @DisplayName("Should generate Bukti Potong PDF with zero values")
+    void shouldGenerateBuktiPotongWithZeroValues() {
+        var employee = employeeRepository.findById(EMPLOYEE_1_ID)
+                .orElseThrow(() -> new IllegalStateException("Test employee not found"));
+
+        var summary = new PayrollService.YearlyPayrollSummary(
+                employee,
+                2025,
+                0,
+                java.math.BigDecimal.ZERO,
+                java.math.BigDecimal.ZERO,
+                java.math.BigDecimal.ZERO
+        );
+
+        byte[] pdf = payrollReportService.generateBuktiPotong1721A1(summary);
+
+        assertThat(pdf).isNotNull();
+        assertThat(pdf).hasSizeGreaterThan(0);
+        assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+    }
+
+    @Test
+    @DisplayName("Should handle empty details in Excel exports")
+    void shouldHandleEmptyDetailsInExcelExports() throws Exception {
+        byte[] summaryExcel = payrollReportService.exportPayrollSummaryToExcel(testPayrollRun, List.of());
+        assertThat(summaryExcel).isNotNull();
+
+        byte[] pph21Excel = payrollReportService.exportPph21ReportToExcel(testPayrollRun, List.of());
+        assertThat(pph21Excel).isNotNull();
+
+        byte[] bpjsExcel = payrollReportService.exportBpjsReportToExcel(testPayrollRun, List.of());
+        assertThat(bpjsExcel).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should handle empty details in PDF exports")
+    void shouldHandleEmptyDetailsInPdfExports() {
+        byte[] pph21Pdf = payrollReportService.exportPph21ReportToPdf(testPayrollRun, List.of());
+        assertThat(pph21Pdf).isNotNull();
+        assertThat(new String(pph21Pdf, 0, 4)).isEqualTo("%PDF");
+
+        byte[] bpjsPdf = payrollReportService.exportBpjsReportToPdf(testPayrollRun, List.of());
+        assertThat(bpjsPdf).isNotNull();
+        assertThat(new String(bpjsPdf, 0, 4)).isEqualTo("%PDF");
+    }
 }

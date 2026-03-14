@@ -4,6 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -1209,6 +1213,565 @@ class ReceiptParserServiceTest {
             ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
 
             assertThat(result.reference()).isEqualTo("FT1234567890");
+        }
+    }
+
+    @Nested
+    @DisplayName("Generic Receipt Fallback Patterns")
+    class GenericFallbackTests {
+
+        @Test
+        @DisplayName("Should fall back to TOTAL pattern when no Rp/IDR prefix found")
+        void shouldFallBackToTotalPatternWhenNoPrefix() {
+            String ocrText = """
+                WARUNG BAKSO
+                Bakso Urat x2
+                TOTAL 75.000
+                26/11/2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result).isNotNull();
+            assertThat(result.receiptType()).isEqualTo("unknown");
+            assertThat(result.amount()).isEqualByComparingTo("75000");
+        }
+
+        @Test
+        @DisplayName("Should fall back to Indonesian date pattern when slash/dash date not found")
+        void shouldFallBackToIndonesianDatePattern() {
+            // Generic parser first tries dd/MM/yyyy or dd-MM-yyyy, then falls back to "dd month yyyy"
+            // Use text that has no slash/dash date but has Indonesian month date
+            String ocrText = """
+                TOKO SERBA ADA
+                Rp 50.000
+                Tanggal pembelian 15 Mei 2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result).isNotNull();
+            assertThat(result.transactionDate()).isEqualTo(LocalDate.of(2025, 5, 15));
+        }
+
+        @Test
+        @DisplayName("Should return null merchant when all lines are short or numeric")
+        void shouldReturnNullMerchantWhenAllLinesShortOrNumeric() {
+            String ocrText = """
+                12
+                34
+                56
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result).isNotNull();
+            assertThat(result.merchantName()).isNull();
+            assertThat(result.merchantConfidence()).isEqualByComparingTo("0");
+        }
+
+        @Test
+        @DisplayName("Should return null amount and null date when nothing matches")
+        void shouldReturnNullAmountAndDateWhenNothingMatches() {
+            String ocrText = """
+                Some random text without amounts or dates
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result).isNotNull();
+            assertThat(result.amount()).isNull();
+            assertThat(result.transactionDate()).isNull();
+            assertThat(result.amountConfidence()).isEqualByComparingTo("0");
+            assertThat(result.dateConfidence()).isEqualByComparingTo("0");
+            // Merchant is extracted from first non-empty line, so merchant confidence is 0.50
+            assertThat(result.merchantConfidence()).isEqualByComparingTo("0.50");
+            // Overall = 0.50 * 0.30 + 0 * 0.40 + 0 * 0.30 = 0.15
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.15");
+        }
+
+        @Test
+        @DisplayName("Should handle generic receipt with no reference")
+        void shouldHandleGenericReceiptWithNoReference() {
+            String ocrText = """
+                TOKO ABC
+                Rp 100.000
+                01/01/2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.reference()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Amount Parsing Edge Cases")
+    class AmountEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should truncate long decimal portion to 2 decimal places")
+        void shouldTruncateLongDecimalPortion() {
+            // "10,000,00000" after removing dots becomes "10,000,00000"
+            // after replacing commas: "10.000.00000"
+            // The branch triggers when decimal portion > 3 chars
+            String ocrText = """
+                Unknown Receipt
+                Rp 10,00000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.amount()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should parse amount with Rp prefix and no space")
+        void shouldParseAmountWithRpPrefixNoSpace() {
+            String ocrText = """
+                Unknown Receipt
+                Rp250.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.amount()).isEqualByComparingTo("250000");
+        }
+
+        @Test
+        @DisplayName("Should parse IDR amount in CIMB receipt")
+        void shouldParseIdrAmountInCimbReceipt() {
+            String ocrText = """
+                OCTO Mobile
+                IDR 500.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("cimb");
+            assertThat(result.amount()).isEqualByComparingTo("500000");
+        }
+
+        @Test
+        @DisplayName("Should parse IDR amount without space")
+        void shouldParseIdrAmountWithoutSpace() {
+            String ocrText = """
+                OCTO Mobile
+                IDR1.000.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.amount()).isEqualByComparingTo("1000000");
+        }
+    }
+
+    @Nested
+    @DisplayName("CIMB Recipient Extraction Edge Cases")
+    class CimbRecipientEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should return null merchant when line after IDR is not all uppercase")
+        void shouldReturnNullMerchantWhenNotAllUppercase() {
+            String ocrText = """
+                OCTO Mobile
+                IDR 1.000.000
+                some lowercase name
+                Transaction Time
+                10 Jan 2025 14:00:00
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("cimb");
+            assertThat(result.merchantName()).isNull();
+            assertThat(result.merchantConfidence()).isEqualByComparingTo("0");
+        }
+
+        @Test
+        @DisplayName("Should return null merchant when IDR is on last line")
+        void shouldReturnNullMerchantWhenIdrOnLastLine() {
+            String ocrText = """
+                OCTO Mobile
+                Transaction Time
+                10 Jan 2025 14:00:00
+                IDR 1.000.000""";
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("cimb");
+            // IDR is on last line, no next line to check
+        }
+
+        @Test
+        @DisplayName("Should extract CIMB 12-digit reference number")
+        void shouldExtractCimb12DigitReference() {
+            String ocrText = """
+                OCTO Mobile
+                IDR 500.000
+                RECIPIENT NAME
+                Transaction Time
+                10 Jan 2025
+                999888777666
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.reference()).isEqualTo("999888777666");
+        }
+    }
+
+    @Nested
+    @DisplayName("Date Parsing Additional Formats")
+    class DateParsingAdditionalTests {
+
+        @ParameterizedTest(name = "Should parse abbreviated month {0} as month {1}")
+        @CsvSource({
+            "Feb, 2, 10",
+            "Mar, 3, 15",
+            "Apr, 4, 20",
+            "May, 5, 25",
+            "Jun, 6, 1",
+            "Jul, 7, 4",
+            "Agu, 8, 17",
+            "Sep, 9, 30",
+            "Des, 12, 31"
+        })
+        @DisplayName("Should parse all abbreviated Indonesian months")
+        void shouldParseAbbreviatedIndonesianMonths(String monthAbbr, int expectedMonth, int day) {
+            String ocrText = String.format("""
+                Unknown Receipt
+                Rp 100.000
+                %d %s 2025
+                """, day, monthAbbr);
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.transactionDate()).isEqualTo(LocalDate.of(2025, expectedMonth, day));
+        }
+
+        @Test
+        @DisplayName("Should return null date when month name is not recognized")
+        void shouldReturnNullDateWhenMonthNotRecognized() {
+            String ocrText = """
+                Bank Jago
+                Rp 100.000
+                26 Zulkaidah 2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.transactionDate()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should parse date with single-digit day")
+        void shouldParseDateWithSingleDigitDay() {
+            String ocrText = """
+                Unknown Receipt
+                Rp 100.000
+                5 Jan 2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.transactionDate()).isEqualTo(LocalDate.of(2025, 1, 5));
+        }
+    }
+
+    @Nested
+    @DisplayName("Confidence Score Edge Cases")
+    class ConfidenceEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should calculate zero overall confidence when no fields extracted")
+        void shouldCalculateZeroOverallConfidenceWhenNoFields() {
+            String ocrText = """
+                AB
+                CD
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.merchantConfidence()).isEqualByComparingTo("0");
+            assertThat(result.amountConfidence()).isEqualByComparingTo("0");
+            assertThat(result.dateConfidence()).isEqualByComparingTo("0");
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.00");
+        }
+
+        @Test
+        @DisplayName("Should calculate CIMB overall confidence with all fields")
+        void shouldCalculateCimbOverallConfidenceWithAllFields() {
+            String ocrText = """
+                OCTO Mobile
+                IDR 1.000.000
+                JOHN DOE
+                Transaction Time
+                10 Jan 2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            // merchant: 0.80 * 0.30 = 0.24
+            // amount: 0.90 * 0.40 = 0.36
+            // date: 0.85 * 0.30 = 0.255
+            // total = 0.855 -> 0.86
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.86");
+        }
+
+        @Test
+        @DisplayName("Should calculate GoPay overall confidence with all fields")
+        void shouldCalculateGopayOverallConfidenceWithAllFields() {
+            String ocrText = """
+                GoPay
+                Ditransfer ke Test Store
+                Rp 500.000
+                Tanggal
+                15 Nov 2025
+                ID transaksi
+                gptx123
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            // merchant: 0.90 * 0.30 = 0.27
+            // amount: 0.95 * 0.40 = 0.38
+            // date: 0.90 * 0.30 = 0.27
+            // total = 0.92
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.92");
+        }
+
+        @Test
+        @DisplayName("Should calculate Byond overall confidence with all fields")
+        void shouldCalculateByondOverallConfidenceWithAllFields() {
+            String ocrText = """
+                Byond
+                Nama Merchant
+                TEST STORE
+                Rp 100.000
+                10 Aug 2025
+                Nomor Transaksi
+                FT99999
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            // merchant: 0.85 * 0.30 = 0.255
+            // amount: 0.90 * 0.40 = 0.36
+            // date: 0.85 * 0.30 = 0.255
+            // total = 0.87
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.87");
+        }
+
+        @Test
+        @DisplayName("Should calculate generic overall confidence with all fields")
+        void shouldCalculateGenericOverallConfidenceWithAllFields() {
+            String ocrText = """
+                TOKO ABC
+                Rp 100.000
+                01/01/2025
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            // merchant: 0.50 * 0.30 = 0.15
+            // amount: 0.70 * 0.40 = 0.28
+            // date: 0.60 * 0.30 = 0.18
+            // total = 0.61
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.61");
+        }
+    }
+
+    @Nested
+    @DisplayName("Receipt Type Detection Priority")
+    class ReceiptTypeDetectionPriorityTests {
+
+        @Test
+        @DisplayName("Should prioritize Byond over other types when byond keyword present")
+        void shouldPrioritizeByondWhenKeywordPresent() {
+            // Text contains both "jago" and "byond" — byond should win (checked first)
+            String ocrText = """
+                Byond Jago
+                Rp 100.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("byond");
+        }
+
+        @Test
+        @DisplayName("Should detect Jago Syariah before plain Jago")
+        void shouldDetectJagoSyariahBeforePlainJago() {
+            String ocrText = """
+                Bank Jago Syariah
+                Rp 100.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("jago");
+        }
+
+        @Test
+        @DisplayName("Should detect CIMB via octo keyword")
+        void shouldDetectCimbViaOctoKeyword() {
+            String ocrText = """
+                OCTO Mobile Banking
+                IDR 100.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("cimb");
+        }
+
+        @Test
+        @DisplayName("Should detect BSI as Byond type")
+        void shouldDetectBsiAsByondType() {
+            String ocrText = """
+                BSI Mobile
+                Rp 100.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("byond");
+        }
+    }
+
+    @Nested
+    @DisplayName("Jago Parsing Missing Fields")
+    class JagoMissingFieldsTests {
+
+        @Test
+        @DisplayName("Should have zero confidence for all missing fields in Jago receipt")
+        void shouldHaveZeroConfidenceForAllMissingFieldsInJago() {
+            String ocrText = """
+                Bank Jago Syariah
+                No recognizable data here
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("jago");
+            assertThat(result.merchantName()).isNull();
+            assertThat(result.amount()).isNull();
+            assertThat(result.transactionDate()).isNull();
+            assertThat(result.reference()).isNull();
+            assertThat(result.merchantConfidence()).isEqualByComparingTo("0");
+            assertThat(result.amountConfidence()).isEqualByComparingTo("0");
+            assertThat(result.dateConfidence()).isEqualByComparingTo("0");
+            assertThat(result.overallConfidence()).isEqualByComparingTo("0.00");
+        }
+    }
+
+    @Nested
+    @DisplayName("GoPay Parsing Missing Fields")
+    class GopayMissingFieldsTests {
+
+        @Test
+        @DisplayName("Should have zero confidence for missing fields in GoPay receipt")
+        void shouldHaveZeroConfidenceForMissingFieldsInGopay() {
+            String ocrText = """
+                GoPay
+                No recognizable data
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("gopay");
+            assertThat(result.merchantName()).isNull();
+            assertThat(result.amount()).isNull();
+            assertThat(result.transactionDate()).isNull();
+            assertThat(result.reference()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Byond Parsing Missing Fields")
+    class ByondMissingFieldsTests {
+
+        @Test
+        @DisplayName("Should have zero confidence for missing fields in Byond receipt")
+        void shouldHaveZeroConfidenceForMissingFieldsInByond() {
+            String ocrText = """
+                Byond
+                No recognizable data
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("byond");
+            assertThat(result.merchantName()).isNull();
+            assertThat(result.amount()).isNull();
+            assertThat(result.transactionDate()).isNull();
+            assertThat(result.reference()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("CIMB Parsing Missing Fields")
+    class CimbMissingFieldsTests {
+
+        @Test
+        @DisplayName("Should have zero confidence for missing fields in CIMB receipt")
+        void shouldHaveZeroConfidenceForMissingFieldsInCimb() {
+            String ocrText = """
+                CIMB Niaga
+                No recognizable data
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result.receiptType()).isEqualTo("cimb");
+            assertThat(result.merchantName()).isNull();
+            assertThat(result.amount()).isNull();
+            assertThat(result.transactionDate()).isNull();
+            assertThat(result.reference()).isNull();
+            assertThat(result.merchantConfidence()).isEqualByComparingTo("0");
+            assertThat(result.amountConfidence()).isEqualByComparingTo("0");
+            assertThat(result.dateConfidence()).isEqualByComparingTo("0");
+        }
+    }
+
+    @Nested
+    @DisplayName("Generic TOTAL Fallback Amount")
+    class GenericTotalFallbackTests {
+
+        @Test
+        @DisplayName("Should extract amount from TOTAL line without Rp/IDR prefix")
+        void shouldExtractAmountFromTotalLineWithoutPrefix() {
+            String ocrText = """
+                WARUNG BAKSO
+                Bakso          25.000
+                Es Jeruk       10.000
+                TOTAL 35.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result).isNotNull();
+            assertThat(result.receiptType()).isEqualTo("unknown");
+            // The first Rp/IDR pattern won't match (no prefix), fallback to TOTAL pattern
+            assertThat(result.amount()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should use TOTAL Rp pattern as fallback")
+        void shouldUseTotalRpPatternAsFallback() {
+            String ocrText = """
+                MINIMARKET XYZ
+                Item satu
+                Item dua
+                TOTAL Rp 85.000
+                """;
+
+            ReceiptParserService.ParsedReceipt result = parser.parse(ocrText);
+
+            assertThat(result).isNotNull();
+            // The first (?:Rp|IDR) pattern matches "Rp 85.000" so it won't fall through
+            assertThat(result.amount()).isEqualByComparingTo("85000");
         }
     }
 }

@@ -644,4 +644,143 @@ class FormulaEvaluatorTest {
                     .hasMessageContaining("Formula evaluation error");
         }
     }
+
+    @Nested
+    @DisplayName("toBigDecimal Conversion")
+    class ToBigDecimalTests {
+
+        @Test
+        @DisplayName("Should convert integer result to BigDecimal")
+        void shouldConvertIntegerResult() {
+            FormulaContext context = FormulaContext.of(100L);
+            // Integer arithmetic: 100 + 50 = 150 (returns Integer/Long)
+            BigDecimal result = evaluator.evaluate("amount + 50", context);
+            assertThat(result).isEqualByComparingTo("150");
+        }
+
+        @Test
+        @DisplayName("Should convert double result to BigDecimal")
+        void shouldConvertDoubleResult() {
+            FormulaContext context = FormulaContext.of(100L);
+            BigDecimal result = evaluator.evaluate("amount * 0.5", context);
+            assertThat(result).isEqualByComparingTo("50");
+        }
+
+        @Test
+        @DisplayName("Should floor result to zero decimal places")
+        void shouldFloorResult() {
+            FormulaContext context = FormulaContext.of(100L);
+            // 100 / 3 = 33.333... -> floor to 33
+            BigDecimal result = evaluator.evaluate("amount / 3", context);
+            assertThat(result).isEqualByComparingTo("33");
+        }
+    }
+
+    @Nested
+    @DisplayName("isSimpleIdentifier Edge Cases")
+    class SimpleIdentifierTests {
+
+        @Test
+        @DisplayName("Should handle identifier with underscore prefix")
+        void shouldHandleUnderscorePrefix() {
+            FormulaContext context = FormulaContext.of(
+                BigDecimal.valueOf(1000),
+                Map.of("_myVar", BigDecimal.valueOf(500))
+            );
+            BigDecimal result = evaluator.evaluate("_myVar", context);
+            assertThat(result).isEqualByComparingTo("500");
+        }
+
+        @Test
+        @DisplayName("Should handle identifier with digits")
+        void shouldHandleIdentifierWithDigits() {
+            FormulaContext context = FormulaContext.of(
+                BigDecimal.valueOf(1000),
+                Map.of("var1", BigDecimal.valueOf(300))
+            );
+            BigDecimal result = evaluator.evaluate("var1", context);
+            assertThat(result).isEqualByComparingTo("300");
+        }
+
+        @Test
+        @DisplayName("Should not treat expression with operators as simple identifier")
+        void shouldNotTreatExpressionAsIdentifier() {
+            FormulaContext context = FormulaContext.of(1000L);
+            BigDecimal result = evaluator.evaluate("amount + 0", context);
+            assertThat(result).isEqualByComparingTo("1000");
+        }
+    }
+
+    @Nested
+    @DisplayName("Validate Method Edge Cases")
+    class ValidateEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should return empty for blank formula")
+        void shouldReturnEmptyForBlankFormula() {
+            List<String> errors = evaluator.validate("   ");
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should accept underscore identifier in validation")
+        void shouldAcceptUnderscoreIdentifier() {
+            List<String> errors = evaluator.validate("_var1");
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should return syntax error for unclosed parenthesis")
+        void shouldReturnSyntaxErrorForUnclosedParens() {
+            List<String> errors = evaluator.validate("amount * (0.11");
+            assertThat(errors).isNotEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Preview Edge Cases")
+    class PreviewEdgeCaseTests {
+
+        @Test
+        @DisplayName("Should preview with null formula")
+        void shouldPreviewWithNullFormula() {
+            BigDecimal result = evaluator.preview(null, new BigDecimal("5000"));
+            assertThat(result).isEqualByComparingTo("5000");
+        }
+
+        @Test
+        @DisplayName("Should preview with blank formula")
+        void shouldPreviewWithBlankFormula() {
+            BigDecimal result = evaluator.preview("  ", new BigDecimal("5000"));
+            assertThat(result).isEqualByComparingTo("5000");
+        }
+
+        @Test
+        @DisplayName("Should preview constant value formula")
+        void shouldPreviewConstantValue() {
+            BigDecimal result = evaluator.preview("42", new BigDecimal("5000"));
+            assertThat(result).isEqualByComparingTo("42");
+        }
+    }
+
+    @Nested
+    @DisplayName("MapPropertyAccessor canWrite/write")
+    class PropertyAccessorTests {
+
+        @Test
+        @DisplayName("Should evaluate amount via PropertyAccessor read")
+        void shouldEvaluateAmountViaPropertyAccessor() {
+            FormulaContext context = FormulaContext.of(BigDecimal.valueOf(7777));
+            BigDecimal result = evaluator.evaluate("amount * 1", context);
+            assertThat(result).isEqualByComparingTo("7777");
+        }
+
+        @Test
+        @DisplayName("Should throw when accessing non-existent property via SpEL")
+        void shouldThrowForNonExistentProperty() {
+            FormulaContext context = FormulaContext.of(BigDecimal.valueOf(1000));
+            assertThatThrownBy(() -> evaluator.evaluate("nonExistent * 2", context))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
 }

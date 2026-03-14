@@ -292,4 +292,242 @@ class InventoryServiceTest {
             assertThat(cogs).isNotNull();
         }
     }
+
+    @Nested
+    @DisplayName("Stock Adjustment Operations")
+    @WithMockUser(username = "admin")
+    class StockAdjustmentTests {
+
+        @Test
+        @DisplayName("Should record adjustment in and update balance")
+        void shouldRecordAdjustmentInAndUpdateBalance() {
+            if (testProduct == null) return;
+
+            BigDecimal stockBefore = inventoryService.getCurrentStock(testProduct.getId());
+
+            InventoryTransaction transaction = inventoryService.recordAdjustmentIn(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("5"), new BigDecimal("10000"),
+                    "ADJ-IN-TEST", "Test adjustment in");
+
+            assertThat(transaction).isNotNull();
+            assertThat(transaction.getId()).isNotNull();
+
+            BigDecimal stockAfter = inventoryService.getCurrentStock(testProduct.getId());
+            assertThat(stockAfter).isEqualByComparingTo(stockBefore.add(new BigDecimal("5")));
+        }
+
+        @Test
+        @DisplayName("Should record adjustment out and decrease balance")
+        void shouldRecordAdjustmentOutAndDecreaseBalance() {
+            if (testProduct == null) return;
+
+            // First add stock
+            inventoryService.recordAdjustmentIn(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("10"), new BigDecimal("10000"),
+                    "ADJ-IN-PREP", "Prepare stock");
+
+            BigDecimal stockBefore = inventoryService.getCurrentStock(testProduct.getId());
+
+            InventoryTransaction transaction = inventoryService.recordAdjustmentOut(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("3"),
+                    "ADJ-OUT-TEST", "Test adjustment out");
+
+            assertThat(transaction).isNotNull();
+
+            BigDecimal stockAfter = inventoryService.getCurrentStock(testProduct.getId());
+            assertThat(stockAfter).isEqualByComparingTo(stockBefore.subtract(new BigDecimal("3")));
+        }
+
+        @Test
+        @DisplayName("Should throw for adjustment out exceeding stock")
+        void shouldThrowForAdjustmentOutExceedingStock() {
+            if (testProduct == null) return;
+
+            BigDecimal currentStock = inventoryService.getCurrentStock(testProduct.getId());
+            BigDecimal excessQuantity = currentStock.add(new BigDecimal("999"));
+
+            assertThatThrownBy(() -> inventoryService.recordAdjustmentOut(
+                    testProduct.getId(), LocalDate.now(),
+                    excessQuantity, "ADJ-EXCESS", "Should fail"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("tidak mencukupi");
+        }
+    }
+
+    @Nested
+    @DisplayName("Sale Operations - Additional")
+    @WithMockUser(username = "admin")
+    class SaleAdditionalTests {
+
+        @Test
+        @DisplayName("Should record sale after purchase")
+        void shouldRecordSaleAfterPurchase() {
+            if (testProduct == null) return;
+
+            // Purchase first
+            inventoryService.recordPurchase(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("20"), new BigDecimal("10000"),
+                    "SALE-PREP", "Prepare for sale");
+
+            BigDecimal stockBefore = inventoryService.getCurrentStock(testProduct.getId());
+
+            // Then sell
+            InventoryTransaction sale = inventoryService.recordSale(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("5"), new BigDecimal("15000"),
+                    "SALE-TEST", "Test sale");
+
+            assertThat(sale).isNotNull();
+            assertThat(sale.getUnitCost()).isNotNull();
+            assertThat(sale.getTotalCost()).isNotNull();
+
+            BigDecimal stockAfter = inventoryService.getCurrentStock(testProduct.getId());
+            assertThat(stockAfter).isEqualByComparingTo(stockBefore.subtract(new BigDecimal("5")));
+        }
+
+        @Test
+        @DisplayName("Should throw for sale exceeding available stock")
+        void shouldThrowForSaleExceedingStock() {
+            if (testProduct == null) return;
+
+            BigDecimal currentStock = inventoryService.getCurrentStock(testProduct.getId());
+            BigDecimal excessQuantity = currentStock.add(new BigDecimal("999"));
+
+            assertThatThrownBy(() -> inventoryService.recordSale(
+                    testProduct.getId(), LocalDate.now(),
+                    excessQuantity, new BigDecimal("15000"),
+                    "SALE-EXCESS", "Should fail"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("tidak mencukupi");
+        }
+    }
+
+    @Nested
+    @DisplayName("Production Operations - Additional")
+    @WithMockUser(username = "admin")
+    class ProductionAdditionalTests {
+
+        @Test
+        @DisplayName("Should record production in and update balance")
+        void shouldRecordProductionInAndUpdateBalance() {
+            if (testProduct == null) return;
+
+            BigDecimal stockBefore = inventoryService.getCurrentStock(testProduct.getId());
+
+            InventoryTransaction transaction = inventoryService.recordProductionIn(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("10"), new BigDecimal("8000"),
+                    "PROD-IN-TEST", "Test production in");
+
+            assertThat(transaction).isNotNull();
+
+            BigDecimal stockAfter = inventoryService.getCurrentStock(testProduct.getId());
+            assertThat(stockAfter).isEqualByComparingTo(stockBefore.add(new BigDecimal("10")));
+        }
+
+        @Test
+        @DisplayName("Should record production out after adding stock")
+        void shouldRecordProductionOutAfterAddingStock() {
+            if (testProduct == null) return;
+
+            // Add stock first
+            inventoryService.recordProductionIn(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("20"), new BigDecimal("8000"),
+                    "PROD-PREP", "Prepare for production out");
+
+            BigDecimal stockBefore = inventoryService.getCurrentStock(testProduct.getId());
+
+            InventoryTransaction transaction = inventoryService.recordProductionOut(
+                    testProduct.getId(), LocalDate.now(),
+                    new BigDecimal("5"),
+                    "PROD-OUT-TEST", "Test production out");
+
+            assertThat(transaction).isNotNull();
+
+            BigDecimal stockAfter = inventoryService.getCurrentStock(testProduct.getId());
+            assertThat(stockAfter).isEqualByComparingTo(stockBefore.subtract(new BigDecimal("5")));
+        }
+    }
+
+    @Nested
+    @DisplayName("Transaction Filter Operations")
+    class TransactionFilterTests {
+
+        @Test
+        @DisplayName("Should find transactions with type filter")
+        void shouldFindTransactionsWithTypeFilter() {
+            if (testProduct == null) return;
+
+            Page<InventoryTransaction> transactions = inventoryService.findTransactions(
+                    testProduct.getId(),
+                    com.artivisi.accountingfinance.entity.InventoryTransactionType.PURCHASE,
+                    null, null, PageRequest.of(0, 10));
+
+            assertThat(transactions).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should find transactions with date range filter")
+        void shouldFindTransactionsWithDateRangeFilter() {
+            if (testProduct == null) return;
+
+            Page<InventoryTransaction> transactions = inventoryService.findTransactions(
+                    testProduct.getId(), null,
+                    LocalDate.now().minusMonths(1), LocalDate.now().plusDays(1),
+                    PageRequest.of(0, 10));
+
+            assertThat(transactions).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should return zero stock for non-existent product")
+        void shouldReturnZeroStockForNonExistentProduct() {
+            BigDecimal stock = inventoryService.getCurrentStock(UUID.randomUUID());
+            assertThat(stock).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("Should return zero average cost for non-existent product")
+        void shouldReturnZeroAverageCostForNonExistent() {
+            BigDecimal cost = inventoryService.getCurrentAverageCost(UUID.randomUUID());
+            assertThat(cost).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("Should return zero available quantity for non-existent product")
+        void shouldReturnZeroAvailableForNonExistent() {
+            BigDecimal available = inventoryService.getAvailableQuantity(UUID.randomUUID());
+            assertThat(available).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+    }
+
+    @Nested
+    @DisplayName("Balance Operations - Additional")
+    @WithMockUser(username = "admin")
+    class BalanceAdditionalTests {
+
+        @Test
+        @DisplayName("Should get or create balance for product")
+        void shouldGetOrCreateBalance() {
+            if (testProduct == null) return;
+
+            InventoryBalance balance = inventoryService.getOrCreateBalance(testProduct);
+
+            assertThat(balance).isNotNull();
+            assertThat(balance.getProduct().getId()).isEqualTo(testProduct.getId());
+        }
+
+        @Test
+        @DisplayName("Should find balances with category filter")
+        void shouldFindBalancesWithCategoryFilter() {
+            Page<InventoryBalance> balances = inventoryService.findBalances(
+                    null, UUID.randomUUID(), PageRequest.of(0, 10));
+            assertThat(balances).isNotNull();
+        }
+    }
 }

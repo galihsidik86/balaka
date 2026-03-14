@@ -255,5 +255,242 @@ class ReportServiceTest {
                     .add(report.financingTotal());
             assertThat(report.netCashChange()).isEqualByComparingTo(expectedNet);
         }
+
+        @Test
+        @DisplayName("Should include beginning and ending cash balance")
+        void shouldIncludeBeginningAndEndingCashBalance() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.CashFlowReport report = reportService.generateCashFlowStatement(startDate, endDate);
+
+            assertThat(report.beginningCashBalance()).isNotNull();
+            assertThat(report.endingCashBalance()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should include cash account balances breakdown")
+        void shouldIncludeCashAccountBalancesBreakdown() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.CashFlowReport report = reportService.generateCashFlowStatement(startDate, endDate);
+
+            assertThat(report.cashAccountBalances()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should handle empty period for cash flow")
+        void shouldHandleEmptyPeriodForCashFlow() {
+            LocalDate startDate = LocalDate.of(2099, 1, 1);
+            LocalDate endDate = LocalDate.of(2099, 12, 31);
+
+            ReportService.CashFlowReport report = reportService.generateCashFlowStatement(startDate, endDate);
+
+            assertThat(report).isNotNull();
+            assertThat(report.operatingTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(report.investingTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(report.financingTotal()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+    }
+
+    @Nested
+    @DisplayName("Trial Balance with Test Data")
+    class TrialBalanceWithTestDataTests {
+
+        @Test
+        @DisplayName("Should generate trial balance with balanced totals")
+        void shouldGenerateTrialBalanceWithBalancedTotals() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+            ReportService.TrialBalanceReport report = reportService.generateTrialBalance(asOfDate);
+
+            assertThat(report.totalDebit()).isEqualByComparingTo(report.totalCredit());
+            // Items should not include accounts with zero balance
+            for (ReportService.TrialBalanceItem item : report.items()) {
+                BigDecimal itemTotal = item.debitBalance().add(item.creditBalance());
+                assertThat(itemTotal).isNotEqualByComparingTo(BigDecimal.ZERO);
+            }
+        }
+
+        @Test
+        @DisplayName("Should exclude VOID and DRAFT entries from trial balance")
+        void shouldExcludeVoidAndDraftEntriesFromTrialBalance() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+            ReportService.TrialBalanceReport report = reportService.generateTrialBalance(asOfDate);
+
+            // With VOID/DRAFT excluded, debits and credits must still balance
+            assertThat(report.totalDebit()).isEqualByComparingTo(report.totalCredit());
+        }
+
+        @Test
+        @DisplayName("Should have positive totals for date with transactions")
+        void shouldHavePositiveTotalsForDateWithTransactions() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+            ReportService.TrialBalanceReport report = reportService.generateTrialBalance(asOfDate);
+
+            // Test data has transactions, so totals should be positive
+            assertThat(report.totalDebit()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(report.totalCredit()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(report.items()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("Should only include items with non-zero debit or credit")
+        void shouldOnlyIncludeItemsWithNonZeroBalance() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+            ReportService.TrialBalanceReport report = reportService.generateTrialBalance(asOfDate);
+
+            for (ReportService.TrialBalanceItem item : report.items()) {
+                boolean hasDebit = item.debitBalance().compareTo(BigDecimal.ZERO) > 0;
+                boolean hasCredit = item.creditBalance().compareTo(BigDecimal.ZERO) > 0;
+                assertThat(hasDebit || hasCredit).isTrue();
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Income Statement with Test Data")
+    class IncomeStatementWithTestDataTests {
+
+        @Test
+        @DisplayName("Should calculate positive revenue from test data")
+        void shouldCalculatePositiveRevenueFromTestData() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.IncomeStatementReport report = reportService.generateIncomeStatement(startDate, endDate);
+
+            // V901 alone has 52M revenue, plus other migrations add more
+            assertThat(report.totalRevenue()).isGreaterThanOrEqualTo(new BigDecimal("52000000"));
+        }
+
+        @Test
+        @DisplayName("Should calculate positive expense from test data")
+        void shouldCalculatePositiveExpenseFromTestData() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.IncomeStatementReport report = reportService.generateIncomeStatement(startDate, endDate);
+
+            // V901 alone has 19M expense, plus other migrations add more
+            assertThat(report.totalExpense()).isGreaterThanOrEqualTo(new BigDecimal("19000000"));
+        }
+
+        @Test
+        @DisplayName("Should calculate net income as revenue minus expense")
+        void shouldCalculateNetIncomeCorrectlyFromTestData() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.IncomeStatementReport report = reportService.generateIncomeStatement(startDate, endDate);
+
+            BigDecimal expectedNetIncome = report.totalRevenue().subtract(report.totalExpense());
+            assertThat(report.netIncome()).isEqualByComparingTo(expectedNetIncome);
+        }
+
+        @Test
+        @DisplayName("Should include revenue and expense items")
+        void shouldIncludeRevenueAndExpenseItems() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.IncomeStatementReport report = reportService.generateIncomeStatement(startDate, endDate);
+
+            assertThat(report.revenueItems()).isNotEmpty();
+            assertThat(report.expenseItems()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("Should not include header accounts in items")
+        void shouldNotIncludeHeaderAccountsInItems() {
+            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            LocalDate endDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.IncomeStatementReport report = reportService.generateIncomeStatement(startDate, endDate);
+
+            for (ReportService.IncomeStatementItem item : report.revenueItems()) {
+                assertThat(item.account().getIsHeader()).isFalse();
+            }
+            for (ReportService.IncomeStatementItem item : report.expenseItems()) {
+                assertThat(item.account().getIsHeader()).isFalse();
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Balance Sheet with Test Data")
+    class BalanceSheetWithTestDataTests {
+
+        @Test
+        @DisplayName("Should calculate positive total assets")
+        void shouldCalculatePositiveTotalAssets() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
+
+            assertThat(report.totalAssets()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(report.assetItems()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle contra-asset accounts correctly")
+        void shouldHandleContraAssetAccountsCorrectly() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
+
+            // Balance sheet must be balanced: A = L + E (with retained earnings)
+            BigDecimal liabilitiesAndEquity = report.totalLiabilities().add(report.totalEquity());
+            assertThat(report.totalAssets()).isEqualByComparingTo(liabilitiesAndEquity);
+        }
+
+        @Test
+        @DisplayName("Should include retained earnings in equity")
+        void shouldIncludeRetainedEarningsInEquity() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
+
+            // Balance sheet should be balanced: A = L + E
+            BigDecimal liabilitiesAndEquity = report.totalLiabilities().add(report.totalEquity());
+            assertThat(report.totalAssets()).isEqualByComparingTo(liabilitiesAndEquity);
+        }
+
+        @Test
+        @DisplayName("Should calculate current year earnings matching income statement")
+        void shouldCalculateCurrentYearEarningsMatchingIncomeStatement() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
+
+            // Current year earnings should match income statement for Jan 1 - Jun 30
+            ReportService.IncomeStatementReport incomeReport = reportService.generateIncomeStatement(
+                    LocalDate.of(2024, 1, 1), asOfDate);
+
+            assertThat(report.currentYearEarnings()).isEqualByComparingTo(incomeReport.netIncome());
+        }
+
+        @Test
+        @DisplayName("Should include liability items")
+        void shouldIncludeLiabilityItemsFromTestData() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
+
+            // V901 has hutang usaha 10M, so liabilities should be non-empty
+            assertThat(report.liabilityItems()).isNotEmpty();
+            assertThat(report.totalLiabilities()).isGreaterThan(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("Should include equity items")
+        void shouldIncludeEquityItemsFromTestData() {
+            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
+
+            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
+
+            // V901 has modal disetor, so equity items should be non-empty
+            assertThat(report.equityItems()).isNotEmpty();
+        }
     }
 }

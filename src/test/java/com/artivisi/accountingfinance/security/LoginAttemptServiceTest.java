@@ -242,5 +242,134 @@ class LoginAttemptServiceTest {
             assertThat(service.getFailedAttempts("user3")).isZero();
             assertThat(service.isBlocked("user3")).isFalse();
         }
+
+        @Test
+        @DisplayName("Should handle reset when already empty")
+        void shouldHandleResetWhenEmpty() {
+            service.resetAllAttempts();
+            assertThat(service.getFailedAttempts("anyuser")).isZero();
+        }
+    }
+
+    @Nested
+    @DisplayName("Login Failed Edge Cases")
+    class LoginFailedEdgeCases {
+
+        @Test
+        @DisplayName("Should lock at exactly 5 attempts")
+        void shouldLockAtExactly5Attempts() {
+            for (int i = 0; i < 4; i++) {
+                service.loginFailed("edgeuser");
+                assertThat(service.isBlocked("edgeuser")).isFalse();
+            }
+            service.loginFailed("edgeuser");
+            assertThat(service.isBlocked("edgeuser")).isTrue();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"   ", "\t"})
+        @DisplayName("Should ignore whitespace-only usernames in loginFailed")
+        void shouldIgnoreWhitespaceOnlyUsernames(String username) {
+            service.loginFailed(username);
+            assertThat(service.getFailedAttempts(username)).isZero();
+        }
+
+        @Test
+        @DisplayName("Should continue counting after lockout")
+        void shouldContinueCountingAfterLockout() {
+            for (int i = 0; i < 7; i++) {
+                service.loginFailed("countuser");
+            }
+            assertThat(service.getFailedAttempts("countuser")).isEqualTo(7);
+            assertThat(service.isBlocked("countuser")).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("Login Succeeded Edge Cases")
+    class LoginSucceededEdgeCases {
+
+        @Test
+        @DisplayName("Should handle loginSucceeded for non-existent user")
+        void shouldHandleSucceededForNonExistentUser() {
+            service.loginSucceeded("neverFailed");
+            assertThat(service.getFailedAttempts("neverFailed")).isZero();
+            assertThat(service.isBlocked("neverFailed")).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should reset blocked user on successful login")
+        void shouldResetBlockedUserOnSuccess() {
+            for (int i = 0; i < 5; i++) {
+                service.loginFailed("blockeduser");
+            }
+            assertThat(service.isBlocked("blockeduser")).isTrue();
+
+            service.loginSucceeded("blockeduser");
+
+            assertThat(service.isBlocked("blockeduser")).isFalse();
+            assertThat(service.getFailedAttempts("blockeduser")).isZero();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"   ", "\t"})
+        @DisplayName("Should ignore whitespace-only usernames in loginSucceeded")
+        void shouldIgnoreWhitespaceOnlyInSucceeded(String username) {
+            assertThatCode(() -> service.loginSucceeded(username))
+                    .doesNotThrowAnyException();
+        }
+    }
+
+    @Nested
+    @DisplayName("isBlocked Null/Blank Handling")
+    class IsBlockedNullBlankTests {
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {"   "})
+        @DisplayName("Should return false for null, empty, or blank username")
+        void shouldReturnFalseForNullEmptyBlank(String username) {
+            assertThat(service.isBlocked(username)).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("getRemainingLockoutMinutes Edge Cases")
+    class RemainingLockoutEdgeCases {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"   ", "\t"})
+        @DisplayName("Should return 0 for whitespace-only username")
+        void shouldReturnZeroForWhitespaceOnly(String username) {
+            assertThat(service.getRemainingLockoutMinutes(username)).isZero();
+        }
+
+        @Test
+        @DisplayName("Should return 0 when not locked (below max attempts)")
+        void shouldReturnZeroWhenNotLocked() {
+            service.loginFailed("partialuser");
+            service.loginFailed("partialuser");
+            assertThat(service.getRemainingLockoutMinutes("partialuser")).isZero();
+        }
+    }
+
+    @Nested
+    @DisplayName("getFailedAttempts Edge Cases")
+    class FailedAttemptsEdgeCases {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"   ", "\t"})
+        @DisplayName("Should return 0 for whitespace-only username")
+        void shouldReturnZeroForWhitespaceOnly(String username) {
+            assertThat(service.getFailedAttempts(username)).isZero();
+        }
+
+        @Test
+        @DisplayName("Should track case-insensitively for getFailedAttempts")
+        void shouldTrackCaseInsensitivelyForGetFailed() {
+            service.loginFailed("MixedCase");
+            assertThat(service.getFailedAttempts("mixedcase")).isEqualTo(1);
+            assertThat(service.getFailedAttempts("MIXEDCASE")).isEqualTo(1);
+        }
     }
 }

@@ -261,4 +261,156 @@ class CoretaxExportServiceTest {
             assertThat(firstRefRow.getCell(0).getStringCellValue()).isEqualTo("24-104-01");
         }
     }
+
+    @Test
+    @DisplayName("Should export e-Faktur Keluaran with seller tax ID from company config")
+    void shouldExportEFakturKeluaranWithSellerTaxId() throws IOException {
+        var fakturKeluaran = taxTransactionDetailRepository.findEFakturKeluaranByDateRange(START_DATE, END_DATE);
+        if (fakturKeluaran.isEmpty()) {
+            return;
+        }
+
+        byte[] excelData = coretaxExportService.exportEFakturKeluaran(START_DATE, END_DATE);
+
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelData))) {
+            Sheet dataSheet = workbook.getSheet("DATA");
+            Row firstDataRow = dataSheet.getRow(1);
+
+            // Column 3 = SellerTaxId (should be company NPWP)
+            String sellerTaxId = firstDataRow.getCell(3).getStringCellValue();
+            assertThat(sellerTaxId).isNotEmpty();
+
+            // Column 4 = SellerNitku
+            String sellerNitku = firstDataRow.getCell(4).getStringCellValue();
+            assertThat(sellerNitku).isNotEmpty();
+
+            // Column 8 = BuyerName
+            String buyerName = firstDataRow.getCell(8).getStringCellValue();
+            assertThat(buyerName).isNotEmpty();
+
+            // Column 10 = GoodServiceOpt should be "B" (services)
+            String goodServiceOpt = firstDataRow.getCell(10).getStringCellValue();
+            assertThat(goodServiceOpt).isEqualTo("B");
+
+            // Column 11 = TaxBaseSellingPrice (gross = dpp + ppn)
+            double gross = firstDataRow.getCell(11).getNumericCellValue();
+            assertThat(gross).isGreaterThan(0);
+
+            // Column 12 = OtherTaxBaseSellingPrice (DPP)
+            double dpp = firstDataRow.getCell(12).getNumericCellValue();
+            assertThat(dpp).isGreaterThan(0);
+
+            // Column 13 = VAT (PPN)
+            double vat = firstDataRow.getCell(13).getNumericCellValue();
+            assertThat(vat).isGreaterThan(0);
+
+            // Gross = DPP + PPN
+            assertThat(gross).isEqualTo(dpp + vat, org.assertj.core.api.Assertions.within(0.01));
+        }
+    }
+
+    @Test
+    @DisplayName("Should export e-Faktur Masukan with data rows matching repository count")
+    void shouldExportEFakturMasukanWithCorrectRowCount() throws IOException {
+        var fakturMasukan = taxTransactionDetailRepository.findEFakturMasukanByDateRange(START_DATE, END_DATE);
+
+        byte[] excelData = coretaxExportService.exportEFakturMasukan(START_DATE, END_DATE);
+
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelData))) {
+            Sheet dataSheet = workbook.getSheet("DATA");
+            // lastRowNum is 0-based, row 0 = header, so data row count = lastRowNum
+            int dataRowCount = dataSheet.getLastRowNum();
+            assertThat(dataRowCount).isEqualTo(fakturMasukan.size());
+        }
+    }
+
+    @Test
+    @DisplayName("Should export e-Bupot with cutter tax ID and tax object codes")
+    void shouldExportBupotWithCutterTaxIdAndTaxObjectCodes() throws IOException {
+        var bupotData = taxTransactionDetailRepository.findEBupotUnifikasiByDateRange(START_DATE, END_DATE);
+        if (bupotData.isEmpty()) {
+            return;
+        }
+
+        byte[] excelData = coretaxExportService.exportBupotUnifikasi(START_DATE, END_DATE);
+
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelData))) {
+            Sheet dataSheet = workbook.getSheet("DATA");
+            Row firstDataRow = dataSheet.getRow(1);
+
+            // Column 2 = CutterTaxId (company NPWP)
+            String cutterTaxId = firstDataRow.getCell(2).getStringCellValue();
+            assertThat(cutterTaxId).isNotEmpty();
+
+            // Column 7 = RecipientName
+            String recipientName = firstDataRow.getCell(7).getStringCellValue();
+            assertThat(recipientName).isNotEmpty();
+
+            // Column 8 = TaxObjectCode
+            String taxObjectCode = firstDataRow.getCell(8).getStringCellValue();
+            assertThat(taxObjectCode).isNotEmpty();
+
+            // Column 9 = GrossAmount
+            double grossAmount = firstDataRow.getCell(9).getNumericCellValue();
+            assertThat(grossAmount).isGreaterThan(0);
+
+            // Column 10 = TaxRate
+            double taxRate = firstDataRow.getCell(10).getNumericCellValue();
+            assertThat(taxRate).isGreaterThan(0);
+
+            // Column 11 = TaxAmount
+            double taxAmount = firstDataRow.getCell(11).getNumericCellValue();
+            assertThat(taxAmount).isGreaterThan(0);
+        }
+    }
+
+    @Test
+    @DisplayName("Should return non-negative PPN totals in statistics")
+    void shouldReturnNonNegativePpnTotalsInStatistics() {
+        CoretaxExportService.ExportStatistics stats = coretaxExportService.getExportStatistics(START_DATE, END_DATE);
+
+        assertThat(stats.totalPPNKeluaran()).isGreaterThanOrEqualTo(java.math.BigDecimal.ZERO);
+        assertThat(stats.totalPPNMasukan()).isGreaterThanOrEqualTo(java.math.BigDecimal.ZERO);
+        assertThat(stats.totalPPh()).isGreaterThanOrEqualTo(java.math.BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("Should return zero statistics for empty date range")
+    void shouldReturnZeroStatisticsForEmptyDateRange() {
+        LocalDate pastStart = LocalDate.of(2000, 1, 1);
+        LocalDate pastEnd = LocalDate.of(2000, 1, 31);
+
+        CoretaxExportService.ExportStatistics stats = coretaxExportService.getExportStatistics(pastStart, pastEnd);
+
+        assertThat(stats.fakturKeluaranCount()).isZero();
+        assertThat(stats.fakturMasukanCount()).isZero();
+        assertThat(stats.bupotUnifikasiCount()).isZero();
+        assertThat(stats.totalPPNKeluaran()).isEqualByComparingTo(java.math.BigDecimal.ZERO);
+        assertThat(stats.totalPPNMasukan()).isEqualByComparingTo(java.math.BigDecimal.ZERO);
+        assertThat(stats.totalPPh()).isEqualByComparingTo(java.math.BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("Should export e-Faktur REF sheet with all 10 reference entries")
+    void shouldExportEFakturRefSheetWithAllEntries() throws IOException {
+        byte[] excelData = coretaxExportService.exportEFakturKeluaran(START_DATE, END_DATE);
+
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelData))) {
+            Sheet refSheet = workbook.getSheet("REF");
+            // 1 header row + 10 data rows = 11 rows (lastRowNum = 10)
+            assertThat(refSheet.getLastRowNum()).isEqualTo(10);
+        }
+    }
+
+    @Test
+    @DisplayName("Should export Bupot REF sheet with all 12 reference entries")
+    void shouldExportBupotRefSheetWithAllEntries() throws IOException {
+        byte[] excelData = coretaxExportService.exportBupotUnifikasi(START_DATE, END_DATE);
+
+        try (Workbook workbook = new XSSFWorkbook(new ByteArrayInputStream(excelData))) {
+            Sheet refSheet = workbook.getSheet("REF");
+            // 1 header row + 12 data rows = 13 rows (lastRowNum = 12)
+            assertThat(refSheet.getLastRowNum()).isEqualTo(12);
+        }
+    }
 }

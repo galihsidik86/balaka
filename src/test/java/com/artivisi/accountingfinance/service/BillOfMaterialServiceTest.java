@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +45,9 @@ class BillOfMaterialServiceTest {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     // Test data IDs from V911
     private static final UUID PRODUCT_FINISHED_ID = UUID.fromString("d0911002-0000-0000-0000-000000000003");
@@ -274,6 +279,259 @@ class BillOfMaterialServiceTest {
 
             assertThatThrownBy(() -> bomService.delete(nonExistentId))
                     .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("Validation Tests")
+    class ValidationTests {
+
+        @Test
+        @DisplayName("Should reject BOM with null code")
+        void shouldRejectBomWithNullCode() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode(null);
+            bom.setName("No Code BOM");
+            bom.setProduct(finishedProduct);
+            bom.setOutputQuantity(BigDecimal.ONE);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Kode BOM wajib diisi");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM with null name")
+        void shouldRejectBomWithNullName() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-NULL-NAME");
+            bom.setName(null);
+            bom.setProduct(finishedProduct);
+            bom.setOutputQuantity(BigDecimal.ONE);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Nama BOM wajib diisi");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM with zero output quantity")
+        void shouldRejectBomWithZeroOutputQuantity() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-ZERO-QTY");
+            bom.setName("Zero Qty BOM");
+            bom.setProduct(finishedProduct);
+            bom.setOutputQuantity(BigDecimal.ZERO);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Jumlah output harus lebih dari 0");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM with null output quantity")
+        void shouldRejectBomWithNullOutputQuantity() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-NULL-QTY");
+            bom.setName("Null Qty BOM");
+            bom.setProduct(finishedProduct);
+            bom.setOutputQuantity(null);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Jumlah output harus lebih dari 0");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM with zero component quantity")
+        void shouldRejectBomWithZeroComponentQuantity() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-ZERO-COMP");
+            bom.setName("Zero Component BOM");
+            bom.setProduct(finishedProduct);
+            bom.setOutputQuantity(BigDecimal.ONE);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ZERO);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Jumlah komponen harus lebih dari 0");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM without product")
+        void shouldRejectBomWithoutProduct() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-NO-PRODUCT");
+            bom.setName("No Product BOM");
+            bom.setProduct(null);
+            bom.setOutputQuantity(BigDecimal.ONE);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Produk jadi wajib dipilih");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM with non-existent product")
+        void shouldRejectBomWithNonExistentProduct() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-BAD-PRODUCT");
+            bom.setName("Bad Product BOM");
+            Product badProduct = new Product();
+            badProduct.setId(UUID.randomUUID());
+            bom.setProduct(badProduct);
+            bom.setOutputQuantity(BigDecimal.ONE);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(component1);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Produk tidak ditemukan");
+        }
+
+        @Test
+        @DisplayName("Should reject BOM line with null component")
+        void shouldRejectBomLineWithNullComponent() {
+            BillOfMaterial bom = new BillOfMaterial();
+            bom.setCode("BOM-NULL-COMP");
+            bom.setName("Null Component BOM");
+            bom.setProduct(finishedProduct);
+            bom.setOutputQuantity(BigDecimal.ONE);
+
+            BillOfMaterialLine line = new BillOfMaterialLine();
+            line.setComponent(null);
+            line.setQuantity(BigDecimal.ONE);
+            bom.addLine(line);
+
+            assertThatThrownBy(() -> bomService.create(bom))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Komponen pada baris wajib dipilih");
+        }
+    }
+
+    @Nested
+    @DisplayName("Extended Update Operations")
+    class ExtendedUpdateTests {
+
+        @Test
+        @DisplayName("Should reject update with duplicate code")
+        void shouldRejectUpdateWithDuplicateCode() {
+            BillOfMaterial bom1 = createTestBom("BOM-UPD-DUP-001");
+            bomService.create(bom1);
+            entityManager.flush();
+            entityManager.clear();
+
+            BillOfMaterial bom2 = createTestBom("BOM-UPD-DUP-002");
+            BillOfMaterial saved2 = bomService.create(bom2);
+            entityManager.flush();
+            entityManager.clear();
+
+            // Build a detached update object with duplicate code
+            BillOfMaterial updateData = createTestBom("BOM-UPD-DUP-001");
+            updateData.setActive(true);
+
+            UUID bom2Id = saved2.getId();
+            assertThatThrownBy(() -> bomService.update(bom2Id, updateData))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("sudah digunakan");
+        }
+
+        @Test
+        @DisplayName("Should update BOM with self-reference check on update")
+        void shouldRejectSelfReferenceOnUpdate() {
+            BillOfMaterial bom = createTestBom("BOM-SELF-UPD");
+            BillOfMaterial saved = bomService.create(bom);
+
+            BillOfMaterial updated = new BillOfMaterial();
+            updated.setCode("BOM-SELF-UPD");
+            updated.setName("Updated Self Ref");
+            updated.setProduct(finishedProduct);
+            updated.setOutputQuantity(BigDecimal.ONE);
+            updated.setActive(true);
+
+            BillOfMaterialLine selfLine = new BillOfMaterialLine();
+            selfLine.setComponent(finishedProduct);
+            selfLine.setQuantity(BigDecimal.ONE);
+            updated.addLine(selfLine);
+
+            assertThatThrownBy(() -> bomService.update(saved.getId(), updated))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("tidak boleh menjadi komponen dari dirinya sendiri");
+        }
+    }
+
+    @Nested
+    @DisplayName("Find By ID and Code")
+    class FindByIdAndCodeTests {
+
+        @Test
+        @DisplayName("Should find BOM by ID with lines")
+        void shouldFindBomByIdWithLines() {
+            BillOfMaterial bom = createTestBom("BOM-FIND-LINES");
+            BillOfMaterial saved = bomService.create(bom);
+
+            Optional<BillOfMaterial> found = bomService.findByIdWithLines(saved.getId());
+
+            assertThat(found).isPresent();
+            assertThat(found.get().getLines()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("Should find BOM by code")
+        void shouldFindBomByCode() {
+            BillOfMaterial bom = createTestBom("BOM-FIND-CODE");
+            bomService.create(bom);
+
+            Optional<BillOfMaterial> found = bomService.findByCode("BOM-FIND-CODE");
+
+            assertThat(found).isPresent();
+            assertThat(found.get().getCode()).isEqualTo("BOM-FIND-CODE");
+        }
+
+        @Test
+        @DisplayName("Should return empty for non-existent code")
+        void shouldReturnEmptyForNonExistentCode() {
+            Optional<BillOfMaterial> found = bomService.findByCode("NON-EXISTENT-CODE");
+            assertThat(found).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should return empty for non-existent ID")
+        void shouldReturnEmptyForNonExistentId() {
+            Optional<BillOfMaterial> found = bomService.findById(UUID.randomUUID());
+            assertThat(found).isEmpty();
         }
     }
 

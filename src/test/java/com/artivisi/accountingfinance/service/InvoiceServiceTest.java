@@ -24,6 +24,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.artivisi.accountingfinance.entity.InvoicePayment;
+import com.artivisi.accountingfinance.enums.PaymentMethod;
+import com.artivisi.accountingfinance.repository.InvoicePaymentRepository;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -57,6 +61,9 @@ class InvoiceServiceTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
+
+    @Autowired
+    private InvoicePaymentRepository invoicePaymentRepository;
 
     private Client testClient;
 
@@ -560,6 +567,210 @@ class InvoiceServiceTest {
             String prefix1 = saved1.getInvoiceNumber().substring(0, saved1.getInvoiceNumber().lastIndexOf("-") + 1);
             String prefix2 = saved2.getInvoiceNumber().substring(0, saved2.getInvoiceNumber().lastIndexOf("-") + 1);
             assertThat(prefix1).isEqualTo(prefix2);
+        }
+    }
+
+    @Nested
+    @DisplayName("Record Payment")
+    class RecordPaymentTests {
+
+        @Test
+        @DisplayName("recordPayment should set status to PARTIAL when not fully paid")
+        void recordPaymentShouldSetPartialStatus() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.SENT);
+
+            InvoicePayment payment = new InvoicePayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(new BigDecimal("2000000")); // Partial of 5000000
+            payment.setPaymentMethod(PaymentMethod.TRANSFER);
+            payment.setReferenceNumber("PAY-001");
+
+            Invoice result = invoiceService.recordPayment(invoice.getId(), payment);
+
+            assertThat(result.getStatus()).isEqualTo(InvoiceStatus.PARTIAL);
+        }
+
+        @Test
+        @DisplayName("recordPayment should set status to PAID when fully paid")
+        void recordPaymentShouldSetPaidStatusWhenFullyPaid() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.SENT);
+
+            InvoicePayment payment = new InvoicePayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(new BigDecimal("5000000")); // Full amount
+            payment.setPaymentMethod(PaymentMethod.TRANSFER);
+
+            Invoice result = invoiceService.recordPayment(invoice.getId(), payment);
+
+            assertThat(result.getStatus()).isEqualTo(InvoiceStatus.PAID);
+            assertThat(result.getPaidAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("recordPayment should reject overpayment")
+        void recordPaymentShouldRejectOverpayment() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.SENT);
+
+            InvoicePayment payment = new InvoicePayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(new BigDecimal("10000000")); // More than invoice total
+            payment.setPaymentMethod(PaymentMethod.TRANSFER);
+
+            assertThatThrownBy(() -> invoiceService.recordPayment(invoice.getId(), payment))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("melebihi total invoice");
+        }
+
+        @Test
+        @DisplayName("recordPayment should reject payment on draft invoice")
+        void recordPaymentShouldRejectPaymentOnDraft() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.DRAFT);
+
+            InvoicePayment payment = new InvoicePayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(new BigDecimal("1000000"));
+            payment.setPaymentMethod(PaymentMethod.CASH);
+
+            assertThatThrownBy(() -> invoiceService.recordPayment(invoice.getId(), payment))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Pembayaran hanya bisa dicatat");
+        }
+
+        @Test
+        @DisplayName("recordPayment should allow payment on overdue invoice")
+        void recordPaymentShouldAllowOnOverdue() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.OVERDUE);
+
+            InvoicePayment payment = new InvoicePayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(new BigDecimal("3000000"));
+            payment.setPaymentMethod(PaymentMethod.TRANSFER);
+
+            Invoice result = invoiceService.recordPayment(invoice.getId(), payment);
+
+            assertThat(result.getStatus()).isEqualTo(InvoiceStatus.PARTIAL);
+        }
+
+        @Test
+        @DisplayName("recordPayment should allow multiple partial payments leading to full payment")
+        void recordPaymentShouldHandleMultiplePartials() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.SENT);
+
+            // First partial payment
+            InvoicePayment payment1 = new InvoicePayment();
+            payment1.setPaymentDate(LocalDate.now());
+            payment1.setAmount(new BigDecimal("2000000"));
+            payment1.setPaymentMethod(PaymentMethod.TRANSFER);
+            Invoice partial = invoiceService.recordPayment(invoice.getId(), payment1);
+            assertThat(partial.getStatus()).isEqualTo(InvoiceStatus.PARTIAL);
+
+            // Second partial payment - completes payment
+            InvoicePayment payment2 = new InvoicePayment();
+            payment2.setPaymentDate(LocalDate.now());
+            payment2.setAmount(new BigDecimal("3000000"));
+            payment2.setPaymentMethod(PaymentMethod.CASH);
+            Invoice paid = invoiceService.recordPayment(invoice.getId(), payment2);
+            assertThat(paid.getStatus()).isEqualTo(InvoiceStatus.PAID);
+        }
+    }
+
+    @Nested
+    @DisplayName("Find Payments")
+    class FindPaymentsTests {
+
+        @Test
+        @DisplayName("findPaymentsByInvoiceId should return all payments")
+        void findPaymentsByInvoiceIdShouldReturnPayments() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.SENT);
+
+            InvoicePayment payment = new InvoicePayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(new BigDecimal("1000000"));
+            payment.setPaymentMethod(PaymentMethod.TRANSFER);
+            invoiceService.recordPayment(invoice.getId(), payment);
+
+            List<InvoicePayment> payments = invoiceService.findPaymentsByInvoiceId(invoice.getId());
+
+            assertThat(payments).hasSize(1);
+            assertThat(payments.get(0).getAmount()).isEqualByComparingTo("1000000");
+        }
+
+        @Test
+        @DisplayName("findPaymentsByInvoiceId should return empty for no payments")
+        void findPaymentsByInvoiceIdShouldReturnEmptyForNoPayments() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.DRAFT);
+
+            List<InvoicePayment> payments = invoiceService.findPaymentsByInvoiceId(invoice.getId());
+
+            assertThat(payments).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Mark As Paid - Additional")
+    class MarkAsPaidAdditionalTests {
+
+        @Test
+        @DisplayName("markAsPaid should accept PARTIAL status")
+        void markAsPaidShouldAcceptPartialStatus() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.PARTIAL);
+
+            Invoice paid = invoiceService.markAsPaid(invoice.getId());
+
+            assertThat(paid.getStatus()).isEqualTo(InvoiceStatus.PAID);
+            assertThat(paid.getPaidAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("linkTransactionAndMarkPaid should accept overdue invoice")
+        void linkTransactionAndMarkPaidShouldAcceptOverdue() {
+            Invoice invoice = createTestInvoice(InvoiceStatus.OVERDUE);
+
+            Transaction transaction = new Transaction();
+            transaction.setTransactionNumber("TRX-OD-" + System.currentTimeMillis());
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(invoice.getAmount());
+            transaction.setDescription("Payment for overdue");
+            transaction.setStatus(TransactionStatus.POSTED);
+            transaction = transactionRepository.save(transaction);
+
+            Invoice result = invoiceService.linkTransactionAndMarkPaid(invoice.getId(), transaction);
+
+            assertThat(result.getStatus()).isEqualTo(InvoiceStatus.PAID);
+            assertThat(result.getTransaction()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Project and Payment Term Queries")
+    class ProjectPaymentTermTests {
+
+        @Test
+        @DisplayName("findByProjectId should return invoices for project")
+        void findByProjectIdShouldReturnInvoices() {
+            List<Project> projects = projectRepository.findAll();
+            if (projects.isEmpty()) return;
+
+            Project project = projects.get(0);
+            Invoice invoice = new Invoice();
+            invoice.setClient(testClient);
+            invoice.setProject(project);
+            invoice.setInvoiceDate(LocalDate.now());
+            invoice.setDueDate(LocalDate.now().plusDays(30));
+            invoice.setAmount(new BigDecimal("10000000"));
+            invoiceService.create(invoice);
+
+            List<Invoice> invoices = invoiceService.findByProjectId(project.getId());
+
+            assertThat(invoices).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("sumPaidAmountByProjectId should return sum for project")
+        void sumPaidAmountByProjectIdShouldReturnSum() {
+            BigDecimal sum = invoiceService.sumPaidAmountByProjectId(UUID.randomUUID());
+            // Random UUID should have no paid invoices
+            assertThat(sum).isNotNull();
         }
     }
 

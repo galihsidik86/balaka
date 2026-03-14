@@ -268,6 +268,155 @@ class DataExportServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Export CSV Content Verification")
+    class ExportCsvContentTests {
+
+        @Test
+        @DisplayName("Should contain payroll runs CSV")
+        void shouldContainPayrollRunsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("21_payroll_runs.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain payroll details CSV")
+        void shouldContainPayrollDetailsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("22_payroll_details.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain invoices CSV")
+        void shouldContainInvoicesCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("17_invoices.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain fiscal periods CSV")
+        void shouldContainFiscalPeriodsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("11_fiscal_periods.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain tax deadlines CSV")
+        void shouldContainTaxDeadlinesCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("12_tax_deadlines.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain company bank accounts CSV")
+        void shouldContainCompanyBankAccountsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("13_company_bank_accounts.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain merchant mappings CSV")
+        void shouldContainMerchantMappingsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("14_merchant_mappings.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain tax transaction details CSV")
+        void shouldContainTaxTransactionDetailsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("25_tax_transaction_details.csv");
+        }
+
+        @Test
+        @DisplayName("Should contain draft transactions CSV")
+        void shouldContainDraftTransactionsCsv() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains("27_draft_transactions.csv");
+        }
+
+        @Test
+        @DisplayName("Should have CSV content in chart of accounts file")
+        void shouldHaveCsvContentInChartOfAccounts() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+
+            try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipData))) {
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    if ("02_chart_of_accounts.csv".equals(entry.getName())) {
+                        byte[] content = zis.readAllBytes();
+                        String csv = new String(content);
+                        // CSV should have a header line
+                        assertThat(csv).contains("account_code");
+                        assertThat(csv).contains("account_name");
+                        zis.closeEntry();
+                        return;
+                    }
+                    zis.closeEntry();
+                }
+            }
+        }
+
+        @Test
+        @DisplayName("Should have MANIFEST.md with export contents")
+        void shouldHaveManifestWithContents() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+
+            try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipData))) {
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    if ("MANIFEST.md".equals(entry.getName())) {
+                        byte[] content = zis.readAllBytes();
+                        String manifest = new String(content);
+                        assertThat(manifest).contains("Export Contents");
+                        assertThat(manifest).contains("Chart of Accounts");
+                        assertThat(manifest).contains("records");
+                        zis.closeEntry();
+                        return;
+                    }
+                    zis.closeEntry();
+                }
+            }
+        }
+
+        @Test
+        @DisplayName("Should contain all additional CSV files")
+        void shouldContainAllAdditionalCsvFiles() throws IOException {
+            byte[] zipData = dataExportService.exportAllData();
+            Set<String> fileNames = getZipFileNames(zipData);
+
+            assertThat(fileNames).contains(
+                    "16_employee_salary_components.csv",
+                    "23_amortization_schedules.csv",
+                    "24_amortization_entries.csv",
+                    "26_tax_deadline_completions.csv",
+                    "29_user_roles.csv",
+                    "30_user_template_preferences.csv",
+                    "31_telegram_user_links.csv",
+                    "33_transaction_sequences.csv",
+                    "34_asset_categories.csv"
+            );
+        }
+    }
+
     private Set<String> getZipFileNames(byte[] zipData) throws IOException {
         Set<String> names = new HashSet<>();
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipData))) {

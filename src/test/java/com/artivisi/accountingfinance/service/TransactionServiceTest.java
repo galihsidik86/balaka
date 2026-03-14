@@ -715,4 +715,188 @@ class TransactionServiceTest {
             assertThat(hasCredit).isTrue();
         }
     }
+
+    @Nested
+    @DisplayName("Search and Filter Operations")
+    class SearchAndFilterTests {
+
+        @Test
+        @DisplayName("search should return empty page for non-matching query")
+        void searchShouldReturnEmptyForNonMatchingQuery() {
+            Page<Transaction> result = transactionService.search("xyznonexistent999", PageRequest.of(0, 10));
+
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("findByFilters with status and category should filter correctly")
+        void findByFiltersShouldFilterByStatusAndCategory() {
+            Page<Transaction> result = transactionService.findByFilters(
+                TransactionStatus.POSTED, null,
+                LocalDate.of(2020, 1, 1), LocalDate.now().plusDays(1),
+                PageRequest.of(0, 10));
+
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).allMatch(t -> t.getStatus() == TransactionStatus.POSTED);
+        }
+
+        @Test
+        @DisplayName("findByFilters with null status should return all")
+        void findByFiltersWithNullStatusShouldReturnAll() {
+            Page<Transaction> result = transactionService.findByFilters(
+                null, null,
+                LocalDate.of(2020, 1, 1), LocalDate.now().plusDays(1),
+                PageRequest.of(0, 10));
+
+            assertThat(result).isNotNull();
+        }
+
+        @Test
+        @DisplayName("findByFilters with projectId should filter by project")
+        void findByFiltersWithProjectIdShouldFilter() {
+            Page<Transaction> result = transactionService.findByFilters(
+                null, null, UUID.randomUUID(),
+                LocalDate.of(2020, 1, 1), LocalDate.now().plusDays(1),
+                PageRequest.of(0, 10));
+
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).isEmpty(); // Random UUID won't match
+        }
+
+        @Test
+        @DisplayName("findByIdWithMappingsAndVariables should return transaction")
+        void findByIdWithMappingsAndVariablesShouldReturnTransaction() {
+            Transaction tx = transactionService.findByIdWithMappingsAndVariables(DRAFT_TRANSACTION_ID);
+            assertThat(tx).isNotNull();
+            assertThat(tx.getId()).isEqualTo(DRAFT_TRANSACTION_ID);
+        }
+
+        @Test
+        @DisplayName("findByIdWithMappingsAndVariables should throw for invalid ID")
+        void findByIdWithMappingsAndVariablesShouldThrowForInvalidId() {
+            UUID invalidId = UUID.randomUUID();
+
+            assertThatThrownBy(() -> transactionService.findByIdWithMappingsAndVariables(invalidId))
+                .isInstanceOf(EntityNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("Void Transaction Additional Tests")
+    class VoidTransactionAdditionalTests {
+
+        @Test
+        @DisplayName("void should throw for already voided transaction")
+        void voidShouldThrowForAlreadyVoided() {
+            assertThatThrownBy(() -> transactionService.voidTransaction(
+                    VOIDED_TRANSACTION_ID, VoidReason.INPUT_ERROR, "Test", "testuser"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Only posted transactions can be voided");
+        }
+
+        @Test
+        @DisplayName("void should set all void metadata fields")
+        void voidShouldSetAllVoidMetadata() {
+            JournalTemplate template = journalTemplateService.findById(INCOME_CONSULTING_TEMPLATE_ID);
+
+            Transaction transaction = new Transaction();
+            transaction.setJournalTemplate(template);
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(new BigDecimal("3000000"));
+            transaction.setDescription("Test void metadata");
+
+            Transaction draft = transactionService.create(transaction, null);
+            Transaction posted = transactionService.post(draft.getId(), "testuser");
+
+            Transaction voided = transactionService.voidTransaction(
+                posted.getId(), VoidReason.OTHER, "Custom reason for void", "voiduser");
+
+            assertThat(voided.getVoidReason()).isEqualTo(VoidReason.OTHER);
+            assertThat(voided.getVoidNotes()).isEqualTo("Custom reason for void");
+            assertThat(voided.getVoidedBy()).isEqualTo("voiduser");
+            assertThat(voided.getVoidedAt()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Create With Variables")
+    class CreateWithVariablesTests {
+
+        @Test
+        @DisplayName("create with variables should store transaction variables")
+        void createWithVariablesShouldStoreVariables() {
+            JournalTemplate template = journalTemplateService.findById(INCOME_CONSULTING_TEMPLATE_ID);
+
+            Transaction transaction = new Transaction();
+            transaction.setJournalTemplate(template);
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(new BigDecimal("5000000"));
+            transaction.setDescription("Test with variables");
+
+            Map<String, BigDecimal> variables = new HashMap<>();
+            variables.put("amount", new BigDecimal("5000000"));
+            variables.put("ppnAmount", new BigDecimal("550000"));
+
+            Transaction saved = transactionService.create(transaction, null, variables);
+
+            assertThat(saved.getId()).isNotNull();
+            assertThat(saved.getVariables()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("create with null variables should work")
+        void createWithNullVariablesShouldWork() {
+            JournalTemplate template = journalTemplateService.findById(INCOME_CONSULTING_TEMPLATE_ID);
+
+            Transaction transaction = new Transaction();
+            transaction.setJournalTemplate(template);
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(new BigDecimal("2000000"));
+            transaction.setDescription("Test null variables");
+
+            Transaction saved = transactionService.create(transaction, null, null);
+
+            assertThat(saved.getId()).isNotNull();
+            assertThat(saved.getVariables()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Create From Reconciliation")
+    class CreateFromReconciliationTests {
+
+        @Test
+        @DisplayName("createFromReconciliation should create DRAFT transaction")
+        void createFromReconciliationShouldCreateDraft() {
+            Transaction tx = transactionService.createFromReconciliation(
+                INCOME_CONSULTING_TEMPLATE_ID,
+                LocalDate.now(),
+                new BigDecimal("1500000"),
+                "Reconciliation transaction",
+                "reconciler"
+            );
+
+            assertThat(tx).isNotNull();
+            assertThat(tx.getStatus()).isEqualTo(TransactionStatus.DRAFT);
+            assertThat(tx.getTransactionNumber()).isNull();
+            assertThat(tx.getDescription()).isEqualTo("Reconciliation transaction");
+            assertThat(tx.getCreatedBy()).isEqualTo("reconciler");
+        }
+    }
+
+    @Nested
+    @DisplayName("Save Directly")
+    class SaveDirectlyTests {
+
+        @Test
+        @DisplayName("saveDirectly should persist transaction without business logic")
+        void saveDirectlyShouldPersist() {
+            Transaction existing = transactionService.findById(DRAFT_TRANSACTION_ID);
+            existing.setNotes("Updated via saveDirectly");
+
+            Transaction saved = transactionService.saveDirectly(existing);
+
+            assertThat(saved.getNotes()).isEqualTo("Updated via saveDirectly");
+        }
+    }
 }

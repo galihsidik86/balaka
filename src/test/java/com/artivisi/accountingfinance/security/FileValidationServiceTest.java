@@ -288,6 +288,125 @@ class FileValidationServiceTest {
     }
 
     @Nested
+    @DisplayName("WebP Validation")
+    class WebPValidationTests {
+
+        @Test
+        @DisplayName("Should accept valid WebP file (RIFF header)")
+        void shouldAcceptValidWebP() throws IOException {
+            // WebP: RIFF....WEBP
+            byte[] webpContent = new byte[]{0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00,
+                    0x57, 0x45, 0x42, 0x50};
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "test.webp", "image/webp", webpContent);
+
+            boolean result = fileValidationService.validateMagicBytes(file, "image/webp");
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should reject fake WebP file")
+        void shouldRejectFakeWebP() throws IOException {
+            byte[] fakeContent = new byte[]{0x00, 0x01, 0x02, 0x03};
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "fake.webp", "image/webp", fakeContent);
+
+            boolean result = fileValidationService.validateMagicBytes(file, "image/webp");
+
+            assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("ZIP Validation")
+    class ZipValidationTests {
+
+        @Test
+        @DisplayName("Should accept valid ZIP file")
+        void shouldAcceptValidZip() throws IOException {
+            byte[] zipContent = new byte[]{0x50, 0x4B, 0x03, 0x04, 0x00, 0x00};
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "test.zip", "application/zip", zipContent);
+
+            boolean result = fileValidationService.validateMagicBytes(file, "application/zip");
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should accept empty ZIP file (PK 05 06)")
+        void shouldAcceptEmptyZip() throws IOException {
+            byte[] emptyZipContent = new byte[]{0x50, 0x4B, 0x05, 0x06, 0x00, 0x00};
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "empty.zip", "application/zip", emptyZipContent);
+
+            boolean result = fileValidationService.validateMagicBytes(file, "application/zip");
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should reject fake ZIP file")
+        void shouldRejectFakeZip() throws IOException {
+            byte[] fakeContent = new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "fake.zip", "application/zip", fakeContent);
+
+            boolean result = fileValidationService.validateMagicBytes(file, "application/zip");
+
+            assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("Byte Array Validation Additional Tests")
+    class ByteArrayAdditionalTests {
+
+        @Test
+        @DisplayName("Should validate JPEG from byte array")
+        void shouldValidateJpegFromByteArray() {
+            byte[] jpegContent = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE1};
+            assertThat(fileValidationService.validateMagicBytes(jpegContent, "image/jpeg")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should validate PNG from byte array")
+        void shouldValidatePngFromByteArray() {
+            byte[] pngContent = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+            assertThat(fileValidationService.validateMagicBytes(pngContent, "image/png")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should reject PNG with incorrect magic bytes from byte array")
+        void shouldRejectInvalidPngFromByteArray() {
+            byte[] invalidPng = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x00, 0x00, 0x00, 0x00};
+            assertThat(fileValidationService.validateMagicBytes(invalidPng, "image/png")).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should allow unknown content type from byte array")
+        void shouldAllowUnknownContentTypeFromByteArray() {
+            byte[] content = "some data".getBytes();
+            assertThat(fileValidationService.validateMagicBytes(content, "application/x-custom")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should handle content shorter than signature from byte array")
+        void shouldHandleShortContentFromByteArray() {
+            byte[] shortContent = new byte[]{(byte) 0xFF, (byte) 0xD8};
+            assertThat(fileValidationService.validateMagicBytes(shortContent, "image/jpeg")).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should validate GIF from byte array")
+        void shouldValidateGifFromByteArray() {
+            byte[] gifContent = "GIF89a".getBytes();
+            assertThat(fileValidationService.validateMagicBytes(gifContent, "image/gif")).isTrue();
+        }
+    }
+
+    @Nested
     @DisplayName("Log Sanitization")
     class LogSanitizationTests {
 

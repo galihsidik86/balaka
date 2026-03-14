@@ -250,5 +250,96 @@ class DataMaskingUtilTest {
         void shouldReturnNullForNull(String input) {
             assertThat(DataMaskingUtil.maskMiddle(input, 3, 3)).isNull();
         }
+
+        @Test
+        @DisplayName("Should mask single character in middle")
+        void shouldMaskSingleCharInMiddle() {
+            // 5 chars, show 2+2 = mask 1
+            assertThat(DataMaskingUtil.maskMiddle("abcde", 2, 2)).isEqualTo("ab*de");
+        }
+    }
+
+    @Nested
+    @DisplayName("Additional Coverage for Null and Short Inputs")
+    class AdditionalNullShortInputTests {
+
+        @Test
+        @DisplayName("Should return null for null NPWP short input")
+        void shouldReturnNpwpShortInput() {
+            assertThat(DataMaskingUtil.maskNpwp("1234567")).isEqualTo("1234567");
+            assertThat(DataMaskingUtil.maskNpwp("")).isEqualTo("");
+        }
+
+        @Test
+        @DisplayName("Should return null for null bank account")
+        void shouldReturnNullForNullBankAccount() {
+            assertThat(DataMaskingUtil.maskBankAccount(null)).isNull();
+        }
+
+        @Test
+        @DisplayName("Should return null for null phone")
+        void shouldReturnNullForNullPhone() {
+            assertThat(DataMaskingUtil.maskPhone(null)).isNull();
+        }
+
+        @Test
+        @DisplayName("Should return null for null BPJS number")
+        void shouldReturnNullForNullBpjs() {
+            assertThat(DataMaskingUtil.maskBpjsNumber(null)).isNull();
+        }
+
+        @Test
+        @DisplayName("Should handle exactly 6 char bank account (showFirst + showLast = 6)")
+        void shouldHandleExact6CharBankAccount() {
+            assertThat(DataMaskingUtil.maskBankAccount("123456")).isEqualTo("123456");
+        }
+
+        @Test
+        @DisplayName("Should handle 7 char bank account (one char masked)")
+        void shouldHandle7CharBankAccount() {
+            assertThat(DataMaskingUtil.maskBankAccount("1234567")).isEqualTo("123*567");
+        }
+
+        @Test
+        @DisplayName("Should handle exactly 7 char phone (showFirst + showLast = 7)")
+        void shouldHandleExact7CharPhone() {
+            assertThat(DataMaskingUtil.maskPhone("1234567")).isEqualTo("1234567");
+        }
+
+        @Test
+        @DisplayName("Should handle 8 char phone (one char masked)")
+        void shouldHandle8CharPhone() {
+            assertThat(DataMaskingUtil.maskPhone("12345678")).isEqualTo("1234*678");
+        }
+
+        @Test
+        @DisplayName("Should handle exactly 6 char BPJS (showFirst + showLast = 6)")
+        void shouldHandleExact6CharBpjs() {
+            assertThat(DataMaskingUtil.maskBpjsNumber("123456")).isEqualTo("123456");
+        }
+
+        @Test
+        @DisplayName("Should handle email with exactly 1 char local part")
+        void shouldHandleEmailWith1CharLocalPart() {
+            assertThat(DataMaskingUtil.maskEmail("a@example.com")).isEqualTo("a@example.com");
+        }
+
+        @Test
+        @DisplayName("Should handle email with 3 char local part")
+        void shouldHandleEmailWith3CharLocalPart() {
+            assertThat(DataMaskingUtil.maskEmail("abc@example.com")).isEqualTo("ab*@example.com");
+        }
+
+        @Test
+        @DisplayName("Should handle 9 digit NIK")
+        void shouldHandle9DigitNik() {
+            assertThat(DataMaskingUtil.maskNik("123456789")).isEqualTo("1234*6789");
+        }
+
+        @Test
+        @DisplayName("Should handle maskMiddle with showFirst 0 and showLast 0")
+        void shouldHandleMaskMiddleZeroShowFirstAndLast() {
+            assertThat(DataMaskingUtil.maskMiddle("abcdef", 0, 0)).isEqualTo("******");
+        }
     }
 }

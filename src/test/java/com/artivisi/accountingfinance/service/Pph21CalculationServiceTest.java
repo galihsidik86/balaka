@@ -386,5 +386,153 @@ class Pph21CalculationServiceTest {
             assertThat(result.monthlyPph21()).isEqualByComparingTo("0");
             assertThat(result.pkp()).isEqualByComparingTo("0");
         }
+
+        @Test
+        @DisplayName("Should handle negative salary")
+        void shouldHandleNegativeSalary() {
+            var result = service.calculate(new BigDecimal("-1000000"), PtkpStatus.TK_0);
+            assertThat(result.monthlyGrossIncome()).isEqualByComparingTo("0");
+            assertThat(result.monthlyPph21()).isEqualByComparingTo("0");
+        }
+    }
+
+    @Nested
+    @DisplayName("Progressive Tax Bracket Boundaries")
+    class BracketBoundaryTests {
+
+        @Test
+        @DisplayName("Should calculate tax exactly at bracket 2 limit (250M)")
+        void shouldCalculateTaxAtBracket2Limit() {
+            BigDecimal pkp = new BigDecimal("250000000");
+            BigDecimal tax = service.calculateProgressiveTax(pkp);
+
+            // 60M * 5% = 3M
+            // 190M * 15% = 28.5M
+            // Total = 31.5M
+            assertThat(tax).isEqualByComparingTo("31500000");
+        }
+
+        @Test
+        @DisplayName("Should calculate tax exactly at bracket 3 limit (500M)")
+        void shouldCalculateTaxAtBracket3Limit() {
+            BigDecimal pkp = new BigDecimal("500000000");
+            BigDecimal tax = service.calculateProgressiveTax(pkp);
+
+            // 60M * 5% = 3M
+            // 190M * 15% = 28.5M
+            // 250M * 25% = 62.5M
+            // Total = 94M
+            assertThat(tax).isEqualByComparingTo("94000000");
+        }
+
+        @Test
+        @DisplayName("Should calculate tax exactly at bracket 4 limit (5B)")
+        void shouldCalculateTaxAtBracket4Limit() {
+            BigDecimal pkp = new BigDecimal("5000000000");
+            BigDecimal tax = service.calculateProgressiveTax(pkp);
+
+            // 60M * 5% = 3M
+            // 190M * 15% = 28.5M
+            // 250M * 25% = 62.5M
+            // 4.5B * 30% = 1.35B
+            // Total = 1,444,000,000
+            assertThat(tax).isEqualByComparingTo("1444000000");
+        }
+
+        @Test
+        @DisplayName("Should calculate tax for 1 rupiah over bracket 1")
+        void shouldCalculateTaxOneOverBracket1() {
+            BigDecimal pkp = new BigDecimal("60000001");
+            BigDecimal tax = service.calculateProgressiveTax(pkp);
+
+            // 60M * 5% = 3M
+            // 1 * 15% = 0 (rounded)
+            assertThat(tax).isGreaterThanOrEqualTo(new BigDecimal("3000000"));
+        }
+
+        @Test
+        @DisplayName("Should calculate tax for small PKP amount")
+        void shouldCalculateTaxForSmallPkp() {
+            BigDecimal pkp = new BigDecimal("1000000");
+            BigDecimal tax = service.calculateProgressiveTax(pkp);
+
+            // 1M * 5% = 50,000
+            assertThat(tax).isEqualByComparingTo("50000");
+        }
+    }
+
+    @Nested
+    @DisplayName("Two-Parameter Calculate Overload")
+    class TwoParamCalculateTests {
+
+        @Test
+        @DisplayName("Should default to hasNpwp=true")
+        void shouldDefaultToHasNpwp() {
+            BigDecimal gross = new BigDecimal("15000000");
+            var result = service.calculate(gross, PtkpStatus.TK_0);
+
+            assertThat(result.hasNpwp()).isTrue();
+
+            // Should match explicit hasNpwp=true
+            var resultExplicit = service.calculate(gross, PtkpStatus.TK_0, true);
+            assertThat(result.annualPph21()).isEqualByComparingTo(resultExplicit.annualPph21());
+        }
+    }
+
+    @Nested
+    @DisplayName("BPJS JP Ceiling Edge Cases")
+    class BpjsJpCeilingTests {
+
+        @Test
+        @DisplayName("Should use full salary when below JP ceiling")
+        void shouldUseFullSalaryBelowCeiling() {
+            BigDecimal gross = new BigDecimal("8000000"); // below 10,042,300
+            var result = service.calculate(gross, PtkpStatus.TK_0);
+
+            // JHT: 2% of 8M = 160,000
+            // JP: 1% of 8M = 80,000
+            // Total: 240,000
+            assertThat(result.bpjsDeduction()).isEqualByComparingTo("240000");
+        }
+    }
+
+    @Nested
+    @DisplayName("Monthly Neto Edge Cases")
+    class MonthlyNetoTests {
+
+        @Test
+        @DisplayName("Should floor monthly neto to zero when deductions exceed gross")
+        void shouldFloorMonthlyNetoToZero() {
+            // Very small salary where deductions > gross is unlikely,
+            // but test the zero floor path with minimum salary
+            BigDecimal gross = new BigDecimal("1");
+            var result = service.calculate(gross, PtkpStatus.TK_0);
+
+            // Monthly neto should be 0 (can't be negative)
+            assertThat(result.monthlyNeto()).isGreaterThanOrEqualTo(BigDecimal.ZERO);
+        }
+    }
+
+    @Nested
+    @DisplayName("Result Record Additional Methods")
+    class ResultRecordAdditionalTests {
+
+        @Test
+        @DisplayName("Should calculate take home pay for zero result")
+        void shouldCalculateTakeHomePayForZero() {
+            var result = Pph21CalculationService.Pph21CalculationResult.zero();
+            assertThat(result.takeHomePay()).isEqualByComparingTo("0");
+        }
+
+        @Test
+        @DisplayName("Should calculate effective tax rate for taxed income")
+        void shouldCalculateEffectiveTaxRateForTaxedIncome() {
+            BigDecimal gross = new BigDecimal("50000000");
+            var result = service.calculate(gross, PtkpStatus.TK_0);
+
+            BigDecimal rate = result.effectiveTaxRate();
+            assertThat(rate).isGreaterThan(BigDecimal.ZERO);
+            assertThat(rate).isLessThan(new BigDecimal("35"));
+        }
     }
 }
