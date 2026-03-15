@@ -75,7 +75,8 @@ class SptTahunanApiTest extends PlaywrightTestBase {
             assertThat(data.get("year").asInt()).isEqualTo(2025);
             assertThat(data.has("operatingRevenue")).isTrue();
             assertThat(data.has("operatingExpenses")).isTrue();
-            assertThat(data.has("adjustments")).isTrue();
+            assertThat(data.has("positiveAdjustments")).isTrue();
+            assertThat(data.has("negativeAdjustments")).isTrue();
             assertThat(data.has("pkp")).isTrue();
             assertThat(data.has("pkpBeforeLoss")).isTrue();
             assertThat(data.has("lossCarryforwards")).isTrue();
@@ -114,8 +115,8 @@ class SptTahunanApiTest extends PlaywrightTestBase {
             JsonNode data = body.get("data");
             assertThat(data.has("year")).isTrue();
             assertThat(data.has("items")).isTrue();
-            assertThat(data.has("totalBruto")).isTrue();
-            assertThat(data.has("totalPph")).isTrue();
+            assertThat(data.has("totalGross")).isTrue();
+            assertThat(data.has("totalTax")).isTrue();
 
             log.info("L4 JSON test passed - items={}", data.get("items").size());
         }
@@ -150,11 +151,14 @@ class SptTahunanApiTest extends PlaywrightTestBase {
 
             JsonNode data = body.get("data");
             assertThat(data.has("year")).isTrue();
-            assertThat(data.has("neracaItems")).isTrue();
-            assertThat(data.has("labaRugiItems")).isTrue();
+            assertThat(data.has("assetItems")).isTrue();
+            assertThat(data.has("liabilityItems")).isTrue();
+            assertThat(data.has("equityItems")).isTrue();
+            assertThat(data.has("revenueItems")).isTrue();
+            assertThat(data.has("expenseItems")).isTrue();
 
-            log.info("Transkrip 8A JSON test passed - neraca={}, labaRugi={}",
-                    data.get("neracaItems").size(), data.get("labaRugiItems").size());
+            log.info("Transkrip 8A JSON test passed - assets={}, revenue={}",
+                    data.get("assetItems").size(), data.get("revenueItems").size());
         }
 
         @Test
@@ -188,8 +192,8 @@ class SptTahunanApiTest extends PlaywrightTestBase {
             JsonNode data = body.get("data");
             assertThat(data.has("year")).isTrue();
             assertThat(data.has("items")).isTrue();
-            assertThat(data.has("totalAcquisitionCost")).isTrue();
-            assertThat(data.has("totalFiscalDepreciation")).isTrue();
+            assertThat(data.has("totalPurchaseCost")).isTrue();
+            assertThat(data.has("totalDepreciationThisYear")).isTrue();
 
             log.info("L9 JSON test passed - items={}", data.get("items").size());
         }
