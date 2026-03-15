@@ -23,24 +23,24 @@
                   hx-get="/alerts/history" hx-target="#alert-history-content" hx-swap="innerHTML"
                   hx-push-url="true" hx-trigger="change from:select">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipe</label>
-                    <select name="alertType" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary-500">
+                    <label for="filterAlertType" class="block text-xs font-medium text-gray-500 mb-1">Tipe</label>
+                    <select id="filterAlertType" name="alertType" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary-500">
                         <option value="">Semua</option>
                         <option th:each="type : ${alertTypes}" th:value="${type.name()}" th:text="${type.indonesianName}"
                                 th:selected="${selectedAlertType != null and selectedAlertType.name() == type.name()}">Type</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Severity</label>
-                    <select name="severity" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary-500">
+                    <label for="filterSeverity" class="block text-xs font-medium text-gray-500 mb-1">Severity</label>
+                    <select id="filterSeverity" name="severity" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary-500">
                         <option value="">Semua</option>
                         <option th:each="sev : ${severities}" th:value="${sev.name()}" th:text="${sev.indonesianName}"
                                 th:selected="${selectedSeverity != null and selectedSeverity.name() == sev.name()}">Sev</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                    <select name="acknowledged" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary-500">
+                    <label for="filterAcknowledged" class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                    <select id="filterAcknowledged" name="acknowledged" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary-500">
                         <option value="">Semua</option>
                         <option value="false" th:selected="${selectedAcknowledged != null and !selectedAcknowledged}">Belum Dikonfirmasi</option>
                         <option value="true" th:selected="${selectedAcknowledged != null and selectedAcknowledged}">Sudah Dikonfirmasi</option>

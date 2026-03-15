@@ -400,7 +400,7 @@ class DocumentStorageServiceTest {
 
         @Test
         @DisplayName("Should throw security exception for path traversal in delete")
-        void shouldThrowForPathTraversalInDelete() throws IOException {
+        void shouldThrowForPathTraversalInDelete() {
             // This should either throw SecurityException or silently pass (file not found)
             assertThatCode(() -> documentStorageService.delete("valid-path/file.pdf"))
                     .doesNotThrowAnyException();

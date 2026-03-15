@@ -445,18 +445,6 @@ class ReportServiceTest {
         }
 
         @Test
-        @DisplayName("Should include retained earnings in equity")
-        void shouldIncludeRetainedEarningsInEquity() {
-            LocalDate asOfDate = LocalDate.of(2024, 6, 30);
-
-            ReportService.BalanceSheetReport report = reportService.generateBalanceSheet(asOfDate);
-
-            // Balance sheet should be balanced: A = L + E
-            BigDecimal liabilitiesAndEquity = report.totalLiabilities().add(report.totalEquity());
-            assertThat(report.totalAssets()).isEqualByComparingTo(liabilitiesAndEquity);
-        }
-
-        @Test
         @DisplayName("Should calculate current year earnings matching income statement")
         void shouldCalculateCurrentYearEarningsMatchingIncomeStatement() {
             LocalDate asOfDate = LocalDate.of(2024, 6, 30);

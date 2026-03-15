@@ -150,7 +150,7 @@ class EmployeeServiceTest {
         @Test
         @DisplayName("findByFilters should search with status and active combined")
         void findByFiltersShouldSearchWithStatusAndActiveCombined() {
-            Employee emp = createTestEmployeeWithName("CombinedFilter Employee");
+            createTestEmployeeWithName("CombinedFilter Employee");
 
             Page<Employee> page = employeeService.findByFilters(
                 "CombinedFilter", EmploymentStatus.ACTIVE, true, PageRequest.of(0, 10));

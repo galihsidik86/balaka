@@ -167,7 +167,7 @@ class RestExceptionHandlerTest {
 
         @Test
         @DisplayName("Should return 404 for NoResourceFoundException")
-        void shouldReturn404() throws NoResourceFoundException {
+        void shouldReturn404() {
             NoResourceFoundException ex = new NoResourceFoundException(
                     org.springframework.http.HttpMethod.GET, "/api/nonexistent", "Resource not found");
             ResponseEntity<ErrorResponse> response = handler.handleNoResourceFound(ex);

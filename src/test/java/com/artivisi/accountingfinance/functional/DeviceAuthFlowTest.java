@@ -253,7 +253,7 @@ class DeviceAuthFlowTest extends PlaywrightTestBase {
         return pollForAccessToken(deviceCode, interval);
     }
 
-    private String pollForAccessToken(String deviceCode, int interval) throws Exception {
+    private String pollForAccessToken(String deviceCode, int interval) {
         Map<String, String> tokenRequestBody = new HashMap<>();
         tokenRequestBody.put("deviceCode", deviceCode);
 

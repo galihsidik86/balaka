@@ -1292,16 +1292,20 @@ public class ReportExportService {
             CellStyle totalStyle = createTotalStyle(workbook);
             String[] headers = {COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN"};
 
-            rowNum = addPpnSectionToExcel(sheet, rowNum, COL_PPN_KELUARAN, headers,
-                    report.keluaranItems(), "Total PPN Keluaran",
-                    report.totalDppKeluaran(), report.totalPpnKeluaran(),
-                    headerStyle, textStyle, numberStyle, sectionStyle, totalStyle);
+            ExcelStyles styles = new ExcelStyles(headerStyle, textStyle, numberStyle, sectionStyle, totalStyle);
+
+            rowNum = addPpnSectionToExcel(sheet, rowNum,
+                    new PpnSectionData(COL_PPN_KELUARAN, headers,
+                            report.keluaranItems(), "Total PPN Keluaran",
+                            report.totalDppKeluaran(), report.totalPpnKeluaran()),
+                    styles);
             rowNum++;
 
-            addPpnSectionToExcel(sheet, rowNum, COL_PPN_MASUKAN, headers,
-                    report.masukanItems(), "Total PPN Masukan",
-                    report.totalDppMasukan(), report.totalPpnMasukan(),
-                    headerStyle, textStyle, numberStyle, sectionStyle, totalStyle);
+            addPpnSectionToExcel(sheet, rowNum,
+                    new PpnSectionData(COL_PPN_MASUKAN, headers,
+                            report.masukanItems(), "Total PPN Masukan",
+                            report.totalDppMasukan(), report.totalPpnMasukan()),
+                    styles);
 
             autoSizeColumns(sheet, 7);
             workbook.write(baos);
@@ -1312,27 +1316,23 @@ public class ReportExportService {
         }
     }
 
-    private int addPpnSectionToExcel(Sheet sheet, int rowNum, String sectionTitle, String[] headers,
-                                      java.util.List<TaxTransactionDetail> items, String totalLabel,
-                                      BigDecimal totalDpp, BigDecimal totalPpn,
-                                      CellStyle headerStyle, CellStyle textStyle, CellStyle numberStyle,
-                                      CellStyle sectionStyle, CellStyle totalStyle) {
+    private int addPpnSectionToExcel(Sheet sheet, int rowNum, PpnSectionData data, ExcelStyles styles) {
         Row sectionRow = sheet.createRow(rowNum++);
-        createCell(sectionRow, 0, sectionTitle, sectionStyle);
+        createCell(sectionRow, 0, data.sectionTitle(), styles.sectionStyle());
 
         Row hdrRow = sheet.createRow(rowNum++);
-        for (int i = 0; i < headers.length; i++) createCell(hdrRow, i, headers[i], headerStyle);
+        for (int i = 0; i < data.headers().length; i++) createCell(hdrRow, i, data.headers()[i], styles.headerStyle());
 
-        for (TaxTransactionDetail item : items) {
+        for (TaxTransactionDetail item : data.items()) {
             Row row = sheet.createRow(rowNum++);
-            addPpnItemRowToExcel(row, item, textStyle, numberStyle);
+            addPpnItemRowToExcel(row, item, styles.textStyle(), styles.numberStyle());
         }
 
         Row totalRow = sheet.createRow(rowNum++);
-        createCell(totalRow, 0, totalLabel, totalStyle);
-        for (int i = 1; i < 5; i++) createCell(totalRow, i, "", totalStyle);
-        createNumericCell(totalRow, 5, totalDpp, totalStyle);
-        createNumericCell(totalRow, 6, totalPpn, totalStyle);
+        createCell(totalRow, 0, data.totalLabel(), styles.totalStyle());
+        for (int i = 1; i < 5; i++) createCell(totalRow, i, "", styles.totalStyle());
+        createNumericCell(totalRow, 5, data.totalDpp(), styles.totalStyle());
+        createNumericCell(totalRow, 6, data.totalPpn(), styles.totalStyle());
         return rowNum;
     }
 
@@ -1984,5 +1984,14 @@ public class ReportExportService {
         for (int i = 0; i < columnCount; i++) {
             sheet.autoSizeColumn(i);
         }
+    }
+
+    private record ExcelStyles(CellStyle headerStyle, CellStyle textStyle,
+                                CellStyle numberStyle, CellStyle sectionStyle, CellStyle totalStyle) {
+    }
+
+    private record PpnSectionData(String sectionTitle, String[] headers,
+                                   java.util.List<TaxTransactionDetail> items, String totalLabel,
+                                   BigDecimal totalDpp, BigDecimal totalPpn) {
     }
 }

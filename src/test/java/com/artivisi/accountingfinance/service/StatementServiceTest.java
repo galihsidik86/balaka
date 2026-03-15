@@ -143,7 +143,7 @@ class StatementServiceTest {
             Client client = createTestClient();
             Invoice inv1 = createTestInvoice(client, LocalDate.of(2024, 3, 1),
                     new BigDecimal("8000000"), InvoiceStatus.PAID);
-            Invoice inv2 = createTestInvoice(client, LocalDate.of(2024, 3, 20),
+            createTestInvoice(client, LocalDate.of(2024, 3, 20),
                     new BigDecimal("5000000"), InvoiceStatus.SENT);
             createTestInvoicePayment(inv1, LocalDate.of(2024, 3, 10),
                     new BigDecimal("8000000"));

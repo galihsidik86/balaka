@@ -195,7 +195,8 @@ public class TaxTransactionDetailService {
         String transactionCode = (templateNameUpper.contains("BUMN")
                 || templateNameUpper.contains("FP 03")) ? "03" : "01";
 
-        suggestions.add(buildSuggestion(ppnType, transactionCode, dpp, ppn, null, null, null, client));
+        suggestions.add(buildSuggestion(ppnType, transactionCode,
+                new TaxAmounts(dpp, ppn, null, null, null), client));
     }
 
     private BigDecimal findPpnAmountFromEntries(List<JournalEntry> entries) {
@@ -220,7 +221,7 @@ public class TaxTransactionDetailService {
                 ACCOUNT_KREDIT_PPH_23, ACCOUNT_HUTANG_PPH_23);
 
         suggestions.add(buildSuggestion(TaxType.PPH_23, null,
-                null, null, transaction.getAmount(), new BigDecimal("2.00"), taxAmount, client));
+                new TaxAmounts(null, null, transaction.getAmount(), new BigDecimal("2.00"), taxAmount), client));
     }
 
     private void suggestPph42(Transaction transaction, String templateNameUpper,
@@ -238,7 +239,7 @@ public class TaxTransactionDetailService {
         }
 
         suggestions.add(buildSuggestion(TaxType.PPH_42, null,
-                null, null, transaction.getAmount(), new BigDecimal("10.00"), taxAmount, client));
+                new TaxAmounts(null, null, transaction.getAmount(), new BigDecimal("10.00"), taxAmount), client));
     }
 
     private void suggestPph21(Transaction transaction, String templateNameUpper,
@@ -256,7 +257,7 @@ public class TaxTransactionDetailService {
         }
         if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
             suggestions.add(buildSuggestion(TaxType.PPH_21, null,
-                    null, null, transaction.getAmount(), null, taxAmount, client));
+                    new TaxAmounts(null, null, transaction.getAmount(), null, taxAmount), client));
         }
     }
 
@@ -278,12 +279,11 @@ public class TaxTransactionDetailService {
     }
 
     private TaxDetailSuggestion buildSuggestion(TaxType taxType, String transactionCode,
-                                                 BigDecimal dpp, BigDecimal ppn,
-                                                 BigDecimal grossAmount, BigDecimal taxRate, BigDecimal taxAmount,
-                                                 Client client) {
+                                                 TaxAmounts amounts, Client client) {
         return new TaxDetailSuggestion(
                 taxType, transactionCode,
-                dpp, ppn, grossAmount, taxRate, taxAmount,
+                amounts.dpp(), amounts.ppn(), amounts.grossAmount(),
+                amounts.taxRate(), amounts.taxAmount(),
                 client != null ? client.getNpwp() : null,
                 client != null ? client.getNitku() : null,
                 client != null ? client.getNik() : null,
@@ -361,6 +361,11 @@ public class TaxTransactionDetailService {
             throw new IllegalArgumentException("NPWP harus 15 atau 16 digit");
         }
     }
+
+    public record TaxAmounts(
+            BigDecimal dpp, BigDecimal ppn,
+            BigDecimal grossAmount, BigDecimal taxRate, BigDecimal taxAmount
+    ) {}
 
     public record TaxDetailSuggestion(
             TaxType taxType, String transactionCode,

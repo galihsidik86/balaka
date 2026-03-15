@@ -328,7 +328,7 @@ class PayrollReportServiceTest {
 
     @Test
     @DisplayName("Should handle empty details in Excel exports")
-    void shouldHandleEmptyDetailsInExcelExports() throws Exception {
+    void shouldHandleEmptyDetailsInExcelExports() {
         byte[] summaryExcel = payrollReportService.exportPayrollSummaryToExcel(testPayrollRun, List.of());
         assertThat(summaryExcel).isNotNull();
 

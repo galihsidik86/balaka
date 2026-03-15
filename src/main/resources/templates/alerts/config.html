@@ -50,8 +50,9 @@
 
                         <!-- Enabled toggle -->
                         <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-500">Aktif</label>
+                            <label th:for="${'enabled-' + rule.id}" class="text-xs text-gray-500">Aktif</label>
                             <input type="checkbox" name="enabled" value="true"
+                                   th:id="${'enabled-' + rule.id}"
                                    th:checked="${rule.enabled}"
                                    class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
                         </div>

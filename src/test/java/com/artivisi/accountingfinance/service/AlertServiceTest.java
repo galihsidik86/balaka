@@ -246,7 +246,7 @@ class AlertServiceTest {
             List<AlertEvent> firstRun = alertEventRepository.findByAcknowledgedAtIsNullOrderByTriggeredAtDesc();
 
             // Second evaluation should skip rules that already have unacknowledged events
-            int secondTriggered = alertService.evaluateAllAlerts();
+            alertService.evaluateAllAlerts();
             // If first run created events, second run should trigger fewer or equal
             List<AlertEvent> secondRun = alertEventRepository.findByAcknowledgedAtIsNullOrderByTriggeredAtDesc();
             assertThat(secondRun.size()).isGreaterThanOrEqualTo(firstRun.size());

@@ -2,7 +2,6 @@ package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.TestcontainersConfiguration;
 import com.artivisi.accountingfinance.service.CompanyConfigService;
-import com.artivisi.accountingfinance.service.DepreciationReportService;
 import com.artivisi.accountingfinance.service.FiscalYearClosingService;
 import com.artivisi.accountingfinance.service.ReportExportService;
 import com.artivisi.accountingfinance.service.ReportService;
@@ -23,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-
-import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;

@@ -17,7 +17,6 @@ import com.artivisi.accountingfinance.repository.ProjectPaymentTermRepository;
 import com.artivisi.accountingfinance.repository.ProjectRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,9 +42,7 @@ public class InvoiceService {
     private final ProjectPaymentTermRepository paymentTermRepository;
     private final ProductRepository productRepository;
 
-    @Lazy
-    @Autowired
-    private InvoiceService self;
+    private final @Lazy InvoiceService self;
 
     public Invoice findById(UUID id) {
         return invoiceRepository.findById(id)

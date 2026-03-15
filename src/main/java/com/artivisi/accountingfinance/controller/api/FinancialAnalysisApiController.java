@@ -1,68 +1,39 @@
 package com.artivisi.accountingfinance.controller.api;
 
-import com.artivisi.accountingfinance.entity.AnalysisReport;
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.CompanyConfig;
-import com.artivisi.accountingfinance.entity.DraftTransaction;
-import com.artivisi.accountingfinance.entity.JournalEntry;
-import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.enums.AccountType;
 import com.artivisi.accountingfinance.enums.AuditEventType;
-import com.artivisi.accountingfinance.enums.TemplateCategory;
-import com.artivisi.accountingfinance.enums.TransactionStatus;
-import com.artivisi.accountingfinance.repository.AnalysisReportRepository;
-import com.artivisi.accountingfinance.repository.ChartOfAccountRepository;
 import com.artivisi.accountingfinance.repository.CompanyConfigRepository;
-import com.artivisi.accountingfinance.repository.DraftTransactionRepository;
-import com.artivisi.accountingfinance.repository.TransactionRepository;
 import com.artivisi.accountingfinance.service.DashboardService;
-import com.artivisi.accountingfinance.service.JournalEntryService;
 import com.artivisi.accountingfinance.service.ReportService;
 import com.artivisi.accountingfinance.service.SecurityAuditService;
-import com.artivisi.accountingfinance.service.TemplateExecutionEngine;
-import com.artivisi.accountingfinance.service.TransactionApiService;
 import com.artivisi.accountingfinance.service.TaxReportService;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.transaction.annotation.Transactional;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Read-only financial analysis API for external AI tools.
- * All endpoints return structured data that AI tools can interpret.
+ * Provides company info, snapshots, and financial report data.
  */
 @RestController
 @RequestMapping("/api/analysis")
 @Tag(name = "Financial Analysis", description = "Read-only financial data for AI analysis (reports, snapshots, ledgers)")
 @PreAuthorize("hasAuthority('SCOPE_analysis:read')")
 @RequiredArgsConstructor
-@Slf4j
 public class FinancialAnalysisApiController {
 
     private static final String META_CURRENCY = "currency";
@@ -78,14 +49,8 @@ public class FinancialAnalysisApiController {
     private final ReportService reportService;
     private final DashboardService dashboardService;
     private final TaxReportService taxReportService;
-    private final JournalEntryService journalEntryService;
-    private final ChartOfAccountRepository chartOfAccountRepository;
-    private final DraftTransactionRepository draftTransactionRepository;
-    private final TransactionRepository transactionRepository;
-    private final AnalysisReportRepository analysisReportRepository;
-    private final SecurityAuditService securityAuditService;
-    private final TransactionApiService transactionApiService;
     private final CompanyConfigRepository companyConfigRepository;
+    private final SecurityAuditService securityAuditService;
 
     @GetMapping("/company")
     public ResponseEntity<AnalysisResponse<CompanyDto>> getCompany() {
@@ -365,314 +330,6 @@ public class FinancialAnalysisApiController {
                                 + ". LIABILITY accounts with code prefix 2.1.01.")));
     }
 
-    @GetMapping("/accounts")
-    public ResponseEntity<AnalysisResponse<AccountsDto>> getAccounts() {
-
-        List<ChartOfAccount> accounts = chartOfAccountRepository.findAllTransactableAccounts();
-
-        List<AccountDto> items = accounts.stream()
-                .map(a -> new AccountDto(
-                        a.getId(), a.getAccountCode(), a.getAccountName(),
-                        a.getAccountType().name(), a.getNormalBalance().name()))
-                .toList();
-
-        AccountsDto data = new AccountsDto(items);
-
-        auditAccess("accounts", Map.of());
-
-        return ResponseEntity.ok(new AnalysisResponse<>(
-                "accounts", LocalDateTime.now(),
-                Map.of(),
-                data,
-                Map.of(META_DESCRIPTION, "Chart of accounts (leaf/transactable accounts only). "
-                        + "normalBalance indicates whether the account normally carries a DEBIT or CREDIT balance.")));
-    }
-
-    @GetMapping("/accounts/{id}/ledger")
-    @Transactional(readOnly = true)
-    public ResponseEntity<AnalysisResponse<AccountLedgerDto>> getAccountLedger(
-            @PathVariable UUID id,
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
-
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
-
-        JournalEntryService.GeneralLedgerData ledger = journalEntryService.getGeneralLedger(id, start, end);
-        ChartOfAccount account = ledger.account();
-
-        List<LedgerEntryDto> entries = ledger.entries().stream()
-                .map(item -> new LedgerEntryDto(
-                        item.entry().getJournalDate(),
-                        item.entry().getTransaction().getId(),
-                        item.entry().getJournalNumber(),
-                        item.entry().getTransaction().getDescription(),
-                        item.entry().getDebitAmount(),
-                        item.entry().getCreditAmount(),
-                        item.runningBalance()))
-                .toList();
-
-        AccountLedgerDto data = new AccountLedgerDto(
-                account.getAccountCode(),
-                account.getAccountName(),
-                account.getAccountType().name(),
-                account.getNormalBalance().name(),
-                ledger.openingBalance(),
-                ledger.totalDebit(),
-                ledger.totalCredit(),
-                ledger.closingBalance(),
-                entries);
-
-        auditAccess("account-ledger", Map.of("accountId", id.toString(),
-                PARAM_START_DATE, startDate, PARAM_END_DATE, endDate));
-
-        return ResponseEntity.ok(new AnalysisResponse<>(
-                "account-ledger", LocalDateTime.now(),
-                Map.of("accountId", id.toString(), PARAM_START_DATE, startDate, PARAM_END_DATE, endDate),
-                data,
-                Map.of(META_CURRENCY, META_CURRENCY_IDR,
-                        META_DESCRIPTION, "Account ledger for " + account.getAccountCode()
-                                + " " + account.getAccountName()
-                                + " from " + startDate + " to " + endDate
-                                + ". Running balance reflects account's normal balance convention.")));
-    }
-
-    @GetMapping("/drafts")
-    public ResponseEntity<AnalysisResponse<DraftsDto>> getDrafts(
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size) {
-
-        Page<DraftTransaction> draftsPage = draftTransactionRepository
-                .findByStatus(DraftTransaction.Status.PENDING, PageRequest.of(page, size));
-
-        List<DraftItemDto> items = draftsPage.getContent().stream()
-                .map(d -> new DraftItemDto(
-                        d.getId(),
-                        d.getStatus().name(),
-                        d.getMerchantName(),
-                        d.getAmount(),
-                        d.getCurrency(),
-                        d.getTransactionDate(),
-                        d.getSource() != null ? d.getSource().name() : null,
-                        d.getApiSource(),
-                        d.getOverallConfidence(),
-                        d.getSuggestedTemplate() != null ? d.getSuggestedTemplate().getTemplateName() : null,
-                        d.getCreatedBy(),
-                        d.getCreatedAt()))
-                .toList();
-
-        DraftsDto data = new DraftsDto(items,
-                draftsPage.getTotalElements(), draftsPage.getTotalPages(), page, size);
-
-        auditAccess("drafts", Map.of("page", String.valueOf(page), "size", String.valueOf(size)));
-
-        return ResponseEntity.ok(new AnalysisResponse<>(
-                "drafts", LocalDateTime.now(),
-                Map.of("page", String.valueOf(page), "size", String.valueOf(size)),
-                data,
-                Map.of(META_CURRENCY, META_CURRENCY_IDR,
-                        META_DESCRIPTION, "Pending draft transactions awaiting review. "
-                                + "Higher confidence scores indicate more reliable AI extraction.")));
-    }
-
-    @PostMapping("/reports")
-    @PreAuthorize("hasAuthority('SCOPE_analysis:write')")
-    public ResponseEntity<AnalysisResponse<ReportDto>> publishReport(
-            @Valid @RequestBody PublishReportRequest request,
-            Authentication authentication) {
-
-        AnalysisReport report = new AnalysisReport();
-        report.setTitle(request.title());
-        report.setReportType(request.reportType());
-        report.setIndustry(request.industry());
-        report.setExecutiveSummary(request.executiveSummary());
-        report.setMetrics(request.metrics());
-        report.setFindings(request.findings());
-        report.setRecommendations(request.recommendations());
-        report.setRisks(request.risks());
-        report.setPeriodStart(request.periodStart());
-        report.setPeriodEnd(request.periodEnd());
-        report.setAiSource(request.aiSource());
-        report.setAiModel(request.aiModel());
-
-        String username = authentication != null ? authentication.getName() : "api";
-        report.setCreatedBy(username);
-        report.setUpdatedBy(username);
-
-        AnalysisReport saved = analysisReportRepository.save(report);
-
-        auditAccess("publish-report", Map.of("reportId", saved.getId().toString(), "title", saved.getTitle()));
-
-        ReportDto dto = toReportDto(saved);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AnalysisResponse<>(
-                "analysis-report", LocalDateTime.now(),
-                Map.of("reportId", saved.getId().toString()),
-                dto,
-                Map.of(META_DESCRIPTION, "Published analysis report: " + saved.getTitle())));
-    }
-
-    @GetMapping("/reports")
-    public ResponseEntity<AnalysisResponse<ReportListDto>> listReports(
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size) {
-
-        Page<AnalysisReport> reportsPage = analysisReportRepository
-                .findAllByOrderByCreatedAtDesc(PageRequest.of(page, size));
-
-        List<ReportDto> reports = reportsPage.getContent().stream()
-                .map(this::toReportDto)
-                .toList();
-
-        auditAccess("list-reports", Map.of("page", String.valueOf(page), "size", String.valueOf(size)));
-
-        return ResponseEntity.ok(new AnalysisResponse<>(
-                "analysis-reports", LocalDateTime.now(),
-                Map.of("page", String.valueOf(page), "size", String.valueOf(size)),
-                new ReportListDto(reports,
-                        reportsPage.getTotalElements(), reportsPage.getTotalPages(), page, size),
-                Map.of(META_DESCRIPTION, "Published analysis reports, newest first.")));
-    }
-
-    @GetMapping("/transactions")
-    public ResponseEntity<AnalysisResponse<TransactionsDto>> getTransactions(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size) {
-
-        Map<String, String> params = buildParamsMap(status, category, startDate, endDate, search, page, size);
-
-        Page<Transaction> txPage = queryTransactions(status, category, startDate, endDate, search, page, size);
-
-        List<TransactionItemDto> items = txPage.getContent().stream()
-                .map(this::toTransactionItemDto)
-                .toList();
-
-        TransactionsDto data = new TransactionsDto(
-                items, txPage.getTotalElements(), txPage.getTotalPages(), page, size);
-
-        auditAccess("transactions", params);
-
-        return ResponseEntity.ok(new AnalysisResponse<>(
-                "transactions", LocalDateTime.now(), params, data,
-                Map.of(META_CURRENCY, META_CURRENCY_IDR)));
-    }
-
-    private Map<String, String> buildParamsMap(String status, String category,
-                                                String startDate, String endDate,
-                                                String search, int page, int size) {
-        Map<String, String> params = new HashMap<>();
-        if (status != null) params.put("status", status);
-        if (category != null) params.put("category", category);
-        if (startDate != null) params.put(PARAM_START_DATE, startDate);
-        if (endDate != null) params.put(PARAM_END_DATE, endDate);
-        if (search != null) params.put("search", search);
-        params.put("page", String.valueOf(page));
-        params.put("size", String.valueOf(size));
-        return params;
-    }
-
-    private Page<Transaction> queryTransactions(String status, String category,
-                                                 String startDate, String endDate,
-                                                 String search, int page, int size) {
-        if (search != null && !search.isBlank()) {
-            return transactionRepository.searchTransactions(search, PageRequest.of(page, size));
-        }
-        return transactionRepository.findByFilters(
-                status, category,
-                null,
-                startDate != null ? LocalDate.parse(startDate) : null,
-                endDate != null ? LocalDate.parse(endDate) : null,
-                PageRequest.of(page, size));
-    }
-
-    @GetMapping("/transactions/{id}")
-    public ResponseEntity<AnalysisResponse<TransactionDetailDto>> getTransactionDetail(
-            @PathVariable UUID id) {
-
-        Transaction tx = transactionRepository.findByIdWithJournalEntries(id)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found: " + id));
-
-        List<JournalEntryItemDto> journalEntries;
-        if (tx.isDraft() && tx.getJournalEntries().isEmpty()) {
-            // Generate preview entries for DRAFT transactions
-            try {
-                TemplateExecutionEngine.PreviewResult preview =
-                        transactionApiService.previewJournalEntries(tx.getId());
-                journalEntries = preview.entries().stream()
-                        .map(e -> new JournalEntryItemDto(
-                                e.accountCode(),
-                                e.accountName(),
-                                e.debitAmount(),
-                                e.creditAmount()))
-                        .toList();
-            } catch (Exception e) {
-                log.debug("Could not generate journal preview for DRAFT {}: {}", id, e.getMessage());
-                journalEntries = List.of();
-            }
-        } else {
-            journalEntries = tx.getJournalEntries().stream()
-                    .map(je -> new JournalEntryItemDto(
-                            je.getAccount().getAccountCode(),
-                            je.getAccount().getAccountName(),
-                            je.getDebitAmount(),
-                            je.getCreditAmount()))
-                    .toList();
-        }
-
-        TransactionDetailDto data = new TransactionDetailDto(
-                tx.getId(),
-                tx.getTransactionNumber(),
-                tx.getTransactionDate(),
-                tx.getDescription(),
-                tx.getAmount(),
-                tx.getStatus().name(),
-                tx.getReferenceNumber(),
-                tx.getNotes(),
-                tx.getJournalTemplate() != null ? tx.getJournalTemplate().getTemplateName() : null,
-                tx.getJournalTemplate() != null ? tx.getJournalTemplate().getCategory().name() : null,
-                journalEntries,
-                tx.getPostedAt(),
-                tx.getPostedBy(),
-                tx.getCreatedAt(),
-                tx.getCreatedBy());
-
-        auditAccess("transaction-detail", Map.of("id", id.toString()));
-
-        return ResponseEntity.ok(new AnalysisResponse<>(
-                "transaction-detail", LocalDateTime.now(),
-                Map.of("id", id.toString()), data,
-                Map.of(META_CURRENCY, META_CURRENCY_IDR)));
-    }
-
-    private TransactionItemDto toTransactionItemDto(Transaction tx) {
-        return new TransactionItemDto(
-                tx.getId(),
-                tx.getTransactionNumber(),
-                tx.getTransactionDate(),
-                tx.getDescription(),
-                tx.getAmount(),
-                tx.getStatus().name(),
-                tx.getJournalTemplate() != null ? tx.getJournalTemplate().getTemplateName() : null,
-                tx.getJournalTemplate() != null ? tx.getJournalTemplate().getCategory().name() : null,
-                tx.getCreatedBy(),
-                tx.getCreatedAt());
-    }
-
-    private ReportDto toReportDto(AnalysisReport r) {
-        return new ReportDto(
-                r.getId(), r.getTitle(), r.getReportType(), r.getIndustry(),
-                r.getExecutiveSummary(),
-                r.getPeriodStart(), r.getPeriodEnd(),
-                r.getAiSource(), r.getAiModel(),
-                r.getMetrics(), r.getFindings(),
-                r.getRecommendations(), r.getRisks(),
-                r.getCreatedBy(), r.getCreatedAt());
-    }
-
     private void auditAccess(String reportType, Map<String, String> params) {
         securityAuditService.logAsync(AuditEventType.API_CALL,
                 "Analysis API: " + reportType + " " + params);
@@ -697,14 +354,6 @@ public class FinancialAnalysisApiController {
     }
 
     // --- DTOs ---
-
-    public record AnalysisResponse<T>(
-            String reportType,
-            LocalDateTime generatedAt,
-            Map<String, String> parameters,
-            T data,
-            Map<String, String> metadata
-    ) {}
 
     public record CompanyDto(
             String companyName,
@@ -798,142 +447,5 @@ public class FinancialAnalysisApiController {
     public record ReceivablesPayablesDto(
             List<LineItemDto> items,
             BigDecimal totalBalance
-    ) {}
-
-    public record AccountsDto(
-            List<AccountDto> accounts
-    ) {}
-
-    public record AccountDto(
-            UUID id, String code, String name,
-            String type, String normalBalance
-    ) {}
-
-    public record DraftsDto(
-            List<DraftItemDto> items,
-            long totalElements,
-            int totalPages,
-            int currentPage,
-            int pageSize
-    ) {}
-
-    public record DraftItemDto(
-            UUID id,
-            String status,
-            String merchantName,
-            BigDecimal amount,
-            String currency,
-            LocalDate transactionDate,
-            String source,
-            String apiSource,
-            BigDecimal overallConfidence,
-            String suggestedTemplateName,
-            String createdBy,
-            LocalDateTime createdAt
-    ) {}
-
-    // --- Analysis Report DTOs ---
-
-    public record PublishReportRequest(
-            @NotBlank String title,
-            @NotBlank String reportType,
-            String industry,
-            String executiveSummary,
-            List<Map<String, String>> metrics,
-            List<Map<String, String>> findings,
-            List<Map<String, String>> recommendations,
-            List<Map<String, String>> risks,
-            LocalDate periodStart,
-            LocalDate periodEnd,
-            String aiSource,
-            String aiModel
-    ) {}
-
-    public record ReportDto(
-            UUID id,
-            String title,
-            String reportType,
-            String industry,
-            String executiveSummary,
-            LocalDate periodStart,
-            LocalDate periodEnd,
-            String aiSource,
-            String aiModel,
-            List<Map<String, String>> metrics,
-            List<Map<String, String>> findings,
-            List<Map<String, String>> recommendations,
-            List<Map<String, String>> risks,
-            String createdBy,
-            LocalDateTime createdAt
-    ) {}
-
-    public record ReportListDto(
-            List<ReportDto> reports,
-            long totalElements,
-            int totalPages,
-            int currentPage,
-            int pageSize
-    ) {}
-
-    // --- Transaction DTOs ---
-
-    public record TransactionsDto(
-            List<TransactionItemDto> transactions,
-            long totalElements,
-            int totalPages,
-            int currentPage,
-            int pageSize
-    ) {}
-
-    public record TransactionItemDto(
-            UUID id,
-            String transactionNumber,
-            LocalDate transactionDate,
-            String description,
-            BigDecimal amount,
-            String status,
-            String templateName,
-            String category,
-            String createdBy,
-            LocalDateTime createdAt
-    ) {}
-
-    public record TransactionDetailDto(
-            UUID id,
-            String transactionNumber,
-            LocalDate transactionDate,
-            String description,
-            BigDecimal amount,
-            String status,
-            String referenceNumber,
-            String notes,
-            String templateName,
-            String category,
-            List<JournalEntryItemDto> journalEntries,
-            LocalDateTime postedAt,
-            String postedBy,
-            LocalDateTime createdAt,
-            String createdBy
-    ) {}
-
-    public record JournalEntryItemDto(
-            String accountCode,
-            String accountName,
-            BigDecimal debitAmount,
-            BigDecimal creditAmount
-    ) {}
-
-    // --- Account Ledger DTOs ---
-
-    public record AccountLedgerDto(
-            String accountCode, String accountName, String accountType, String normalBalance,
-            BigDecimal openingBalance, BigDecimal totalDebit, BigDecimal totalCredit, BigDecimal closingBalance,
-            List<LedgerEntryDto> entries
-    ) {}
-
-    public record LedgerEntryDto(
-            LocalDate transactionDate, UUID transactionId, String journalNumber,
-            String description, BigDecimal debitAmount, BigDecimal creditAmount,
-            BigDecimal runningBalance
     ) {}
 }

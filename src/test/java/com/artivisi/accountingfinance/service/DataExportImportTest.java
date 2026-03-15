@@ -669,7 +669,7 @@ class DataExportImportTest {
         @Transactional
         void shouldHandleEmptyZipArchive() throws IOException {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            try (ZipOutputStream ignored = new ZipOutputStream(baos)) {
                 // empty ZIP
             }
 

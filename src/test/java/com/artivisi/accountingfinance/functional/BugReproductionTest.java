@@ -293,7 +293,7 @@ class BugReproductionTest extends PlaywrightTestBase {
             // Get template lines to check formulas
             APIResponse templateResponse = get("/api/templates/" + templateId);
             assertThat(templateResponse.ok()).isTrue();
-            JsonNode template = parse(templateResponse);
+            parse(templateResponse);
 
             // Verify all lines produce balanced debit/credit
             // Use amount 11,111,250 which gives 11,111,250 × 11% = 1,222,237.5

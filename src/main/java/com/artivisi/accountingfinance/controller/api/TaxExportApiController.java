@@ -1,6 +1,6 @@
 package com.artivisi.accountingfinance.controller.api;
 
-import com.artivisi.accountingfinance.controller.api.FinancialAnalysisApiController.AnalysisResponse;
+import com.artivisi.accountingfinance.controller.api.AnalysisResponse;
 import com.artivisi.accountingfinance.entity.FiscalAdjustment;
 import com.artivisi.accountingfinance.entity.TaxTransactionDetail;
 import com.artivisi.accountingfinance.enums.AuditEventType;
