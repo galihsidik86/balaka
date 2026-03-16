@@ -47,6 +47,10 @@ public class CoretaxExportService {
     private final CompanyConfigRepository companyConfigRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String COL_KETERANGAN = "Keterangan";
+    private static final String COL_KODE_AKUN = "Kode Akun";
+    private static final String COL_JUMLAH_RP = "Jumlah (Rp)";
+    private static final String PREFIX_TOTAL = "Total ";
 
     // Helper methods for cell creation with null handling
     private void setStringCell(Row row, int col, String value) {
@@ -210,7 +214,7 @@ public class CoretaxExportService {
 
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Kode");
-        headerRow.createCell(1).setCellValue("Keterangan");
+        headerRow.createCell(1).setCellValue(COL_KETERANGAN);
         headerRow.getCell(0).setCellStyle(headerStyle);
         headerRow.getCell(1).setCellStyle(headerStyle);
 
@@ -305,7 +309,7 @@ public class CoretaxExportService {
 
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Kode Objek Pajak");
-        headerRow.createCell(1).setCellValue("Keterangan");
+        headerRow.createCell(1).setCellValue(COL_KETERANGAN);
         headerRow.createCell(2).setCellValue("Tarif Default (%)");
         headerRow.getCell(0).setCellStyle(headerStyle);
         headerRow.getCell(1).setCellStyle(headerStyle);
@@ -407,7 +411,7 @@ public class CoretaxExportService {
 
             // Column headers
             Row colHeader = sheet.createRow(rowNum++);
-            String[] headers = {"Kode Akun", "Uraian", "Jumlah (Rp)"};
+            String[] headers = {COL_KODE_AKUN, "Uraian", COL_JUMLAH_RP};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = colHeader.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -678,7 +682,7 @@ public class CoretaxExportService {
             Sheet refSheet = workbook.createSheet("REF");
             Row refHeader = refSheet.createRow(0);
             refHeader.createCell(0).setCellValue("Kode");
-            refHeader.createCell(1).setCellValue("Keterangan");
+            refHeader.createCell(1).setCellValue(COL_KETERANGAN);
             refHeader.createCell(2).setCellValue("Masa Manfaat (Tahun)");
             refHeader.getCell(0).setCellStyle(headerStyle);
             refHeader.getCell(1).setCellStyle(headerStyle);
@@ -830,7 +834,7 @@ public class CoretaxExportService {
         }
 
         Row totalRow = sheet.createRow(rowNum++);
-        totalRow.createCell(1).setCellValue("Total " + title);
+        totalRow.createCell(1).setCellValue(PREFIX_TOTAL + title);
         totalRow.getCell(1).setCellStyle(boldStyle);
         setNumberCell(totalRow, 2, total, numberStyle);
         rowNum++; // blank
@@ -851,7 +855,7 @@ public class CoretaxExportService {
         }
 
         Row totalRow = sheet.createRow(rowNum++);
-        totalRow.createCell(1).setCellValue("Total " + title);
+        totalRow.createCell(1).setCellValue(PREFIX_TOTAL + title);
         totalRow.getCell(1).setCellStyle(boldStyle);
         setNumberCell(totalRow, 2, total, numberStyle);
         rowNum++; // blank
@@ -879,9 +883,9 @@ public class CoretaxExportService {
 
         // Headers
         Row colHeader = sheet.createRow(rowNum++);
-        colHeader.createCell(0).setCellValue("Kode Akun");
+        colHeader.createCell(0).setCellValue(COL_KODE_AKUN);
         colHeader.createCell(1).setCellValue("Nama Akun");
-        colHeader.createCell(2).setCellValue("Jumlah (Rp)");
+        colHeader.createCell(2).setCellValue(COL_JUMLAH_RP);
         colHeader.getCell(0).setCellStyle(headerStyle);
         colHeader.getCell(1).setCellStyle(headerStyle);
         colHeader.getCell(2).setCellStyle(headerStyle);
@@ -933,9 +937,9 @@ public class CoretaxExportService {
 
         // Headers
         Row colHeader = sheet.createRow(rowNum++);
-        colHeader.createCell(0).setCellValue("Kode Akun");
+        colHeader.createCell(0).setCellValue(COL_KODE_AKUN);
         colHeader.createCell(1).setCellValue("Nama Akun");
-        colHeader.createCell(2).setCellValue("Jumlah (Rp)");
+        colHeader.createCell(2).setCellValue(COL_JUMLAH_RP);
         colHeader.getCell(0).setCellStyle(headerStyle);
         colHeader.getCell(1).setCellStyle(headerStyle);
         colHeader.getCell(2).setCellStyle(headerStyle);
@@ -973,7 +977,7 @@ public class CoretaxExportService {
         }
 
         Row totalRow = sheet.createRow(rowNum++);
-        totalRow.createCell(1).setCellValue("Total " + title);
+        totalRow.createCell(1).setCellValue(PREFIX_TOTAL + title);
         totalRow.getCell(1).setCellStyle(boldStyle);
         setNumberCell(totalRow, 2, total, numberStyle);
         rowNum++;

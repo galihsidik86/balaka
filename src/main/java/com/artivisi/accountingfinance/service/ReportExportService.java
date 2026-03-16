@@ -1290,7 +1290,7 @@ public class ReportExportService {
             CellStyle numberStyle = createNumberStyle(workbook);
             CellStyle sectionStyle = createSectionStyle(workbook);
             CellStyle totalStyle = createTotalStyle(workbook);
-            String[] headers = {COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN"};
+            java.util.List<String> headers = java.util.List.of(COL_NO_FAKTUR, COL_TANGGAL, "Kode", COL_LAWAN_TRANSAKSI, "NPWP", "DPP", "PPN");
 
             ExcelStyles styles = new ExcelStyles(headerStyle, textStyle, numberStyle, sectionStyle, totalStyle);
 
@@ -1321,7 +1321,7 @@ public class ReportExportService {
         createCell(sectionRow, 0, data.sectionTitle(), styles.sectionStyle());
 
         Row hdrRow = sheet.createRow(rowNum++);
-        for (int i = 0; i < data.headers().length; i++) createCell(hdrRow, i, data.headers()[i], styles.headerStyle());
+        for (int i = 0; i < data.headers().size(); i++) createCell(hdrRow, i, data.headers().get(i), styles.headerStyle());
 
         for (TaxTransactionDetail item : data.items()) {
             Row row = sheet.createRow(rowNum++);
@@ -1990,7 +1990,7 @@ public class ReportExportService {
                                 CellStyle numberStyle, CellStyle sectionStyle, CellStyle totalStyle) {
     }
 
-    private record PpnSectionData(String sectionTitle, String[] headers,
+    private record PpnSectionData(String sectionTitle, java.util.List<String> headers,
                                    java.util.List<TaxTransactionDetail> items, String totalLabel,
                                    BigDecimal totalDpp, BigDecimal totalPpn) {
     }
