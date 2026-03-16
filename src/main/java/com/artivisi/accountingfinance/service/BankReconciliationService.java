@@ -196,20 +196,24 @@ public class BankReconciliationService {
         BigDecimal itemAmount = item.getNetAmount();
 
         for (JournalEntry entry : ctx.bookEntries()) {
-            if (ctx.matchedTransactionIds().contains(entry.getTransaction().getId())) {
-                continue;
-            }
-            BigDecimal entryAmount = computeEntryNetAmount(entry);
-            if (itemAmount.compareTo(entryAmount) != 0) {
-                continue;
-            }
-            long daysDiff = Math.abs(
-                    item.getTransactionDate().toEpochDay() - entry.getJournalDate().toEpochDay());
-            if (daysDiff <= dateToleranceDays) {
+            if (isAmountAndDateMatch(entry, itemAmount, item.getTransactionDate(), dateToleranceDays, ctx)) {
                 return entry;
             }
         }
         return null;
+    }
+
+    private boolean isAmountAndDateMatch(JournalEntry entry, BigDecimal itemAmount,
+                                         LocalDate itemDate, int dateToleranceDays, MatchContext ctx) {
+        if (ctx.matchedTransactionIds().contains(entry.getTransaction().getId())) {
+            return false;
+        }
+        BigDecimal entryAmount = computeEntryNetAmount(entry);
+        if (itemAmount.compareTo(entryAmount) != 0) {
+            return false;
+        }
+        long daysDiff = Math.abs(itemDate.toEpochDay() - entry.getJournalDate().toEpochDay());
+        return daysDiff <= dateToleranceDays;
     }
 
     private int keywordMatchPass(MatchContext ctx, List<BankStatementItem> unmatchedItems) {
@@ -239,24 +243,20 @@ public class BankReconciliationService {
         String itemDesc = item.getDescription() != null ? item.getDescription().toLowerCase() : "";
 
         for (JournalEntry entry : ctx.bookEntries()) {
-            if (ctx.matchedTransactionIds().contains(entry.getTransaction().getId())) {
-                continue;
-            }
-            BigDecimal entryAmount = computeEntryNetAmount(entry);
-            if (itemAmount.compareTo(entryAmount) != 0) {
-                continue;
-            }
-            long daysDiff = Math.abs(
-                    item.getTransactionDate().toEpochDay() - entry.getJournalDate().toEpochDay());
-            if (daysDiff > 3) {
-                continue;
-            }
-            String entryDesc = entry.getDescription() != null ? entry.getDescription().toLowerCase() : "";
-            if (hasKeywordOverlap(itemDesc, entryDesc)) {
+            if (isKeywordMatch(entry, itemAmount, item.getTransactionDate(), itemDesc, ctx)) {
                 return entry;
             }
         }
         return null;
+    }
+
+    private boolean isKeywordMatch(JournalEntry entry, BigDecimal itemAmount,
+                                    LocalDate itemDate, String itemDesc, MatchContext ctx) {
+        if (!isAmountAndDateMatch(entry, itemAmount, itemDate, 3, ctx)) {
+            return false;
+        }
+        String entryDesc = entry.getDescription() != null ? entry.getDescription().toLowerCase() : "";
+        return hasKeywordOverlap(itemDesc, entryDesc);
     }
 
     private boolean hasKeywordOverlap(String desc1, String desc2) {

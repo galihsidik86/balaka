@@ -1,6 +1,5 @@
 package com.artivisi.accountingfinance.service;
 
-import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.Employee;
 import com.artivisi.accountingfinance.entity.FiscalAdjustment;
 import com.artivisi.accountingfinance.entity.FiscalLossCarryforward;
