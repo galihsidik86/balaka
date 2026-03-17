@@ -64,7 +64,7 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .defaultSuccessUrl("/dashboard", false)
                 .permitAll()
             )
             .logout(logout -> logout
