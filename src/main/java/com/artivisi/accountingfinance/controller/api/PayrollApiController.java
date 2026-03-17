@@ -14,6 +14,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -512,9 +515,9 @@ public class PayrollApiController {
 
     // Schedule DTOs
     public record ScheduleRequest(
-            @NotNull Integer dayOfMonth,
-            @NotNull BigDecimal baseSalary,
-            @NotNull Integer jkkRiskClass,
+            @NotNull @Min(1) @Max(28) Integer dayOfMonth,
+            @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal baseSalary,
+            @NotNull @Min(1) @Max(5) Integer jkkRiskClass,
             @NotNull Boolean autoCalculate,
             Boolean autoApprove,
             Boolean active
