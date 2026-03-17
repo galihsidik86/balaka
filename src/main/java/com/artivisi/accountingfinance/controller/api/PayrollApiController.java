@@ -157,12 +157,14 @@ public class PayrollApiController {
 
     @PostMapping("/{id}/post")
     @Operation(summary = "Post payroll to accounting (create journal entry)",
-            description = "Requires APPROVED status. Creates a journal entry using the 'Post Gaji Bulanan' template "
-                    + "(UUID e0000000-...0014, loaded via industry seed data). "
-                    + "Transitions to POSTED. Only POSTED payroll appears in summary and 1721-A1 endpoints.")
-    @ApiResponse(responseCode = "200", description = "Payroll posted, journal entry created")
+            description = "Requires APPROVED status. Creates a journal entry using the payroll template "
+                    + "(configured via app.payroll.template-id). "
+                    + "Transitions to POSTED. Only POSTED payroll appears in summary and 1721-A1 endpoints. "
+                    + "To verify journal entries after posting, use GET /api/analysis/transactions/{transactionId}.")
+    @ApiResponse(responseCode = "200", description = "Payroll posted, journal entry created. "
+            + "Response includes transactionId — query via GET /api/analysis/transactions/{transactionId} for journal entries")
     @ApiResponse(responseCode = "400", description = "Payroll not in APPROVED status")
-    @ApiResponse(responseCode = "409", description = "Journal template 'Post Gaji Bulanan' not found — load industry seed data first")
+    @ApiResponse(responseCode = "500", description = "Payroll template not found — configure app.payroll.template-id")
     public ResponseEntity<PayrollRunResponse> post(@PathVariable UUID id) {
         log.info("API: Post payroll - id={}", id);
 
