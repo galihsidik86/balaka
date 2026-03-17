@@ -309,6 +309,11 @@ public class TransactionService {
             }
             BigDecimal amount = calculateAmount(line.getFormula(), context);
 
+            // Skip zero-amount lines (e.g., PPh21 = 0 for low-salary employees)
+            if (amount.compareTo(BigDecimal.ZERO) == 0) {
+                continue;
+            }
+
             JournalEntry entry = new JournalEntry();
             entry.setJournalNumber(journalNumber + "-" + String.format("%02d", ++lineIndex));
             entry.setAccount(account);
