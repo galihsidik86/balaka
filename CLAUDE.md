@@ -33,6 +33,7 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 - **Phase 17:** ✅ Complete (SPT Tahunan Badan Data Export — L1 rekonsiliasi fiskal, L4 penghasilan final, L9 penyusutan DJP format, transkrip 8A, e-Bupot PPh 21 annual, fiscal loss carryforward, SPT checklist dashboard)
 - **Phase 18:** ✅ Complete (PPh 21 TER Method — PMK 168/2023, TerCategory enum, monthly TER Jan–Nov, December reconciliation, web calculator)
 - **Phase 19:** ✅ Complete (Scheduled Payroll — automated monthly payroll run creation, CRUD API, daily scheduler with startup catch-up)
+- **Phase 20:** ✅ Complete (Free-Form Journal Entry API — `POST /api/transactions/journal-entry`, arbitrary debit/credit lines, no template required, for closing/adjusting/opening entries)
 - See `docs/06-implementation-plan.md` for full plan
 
 ## Key Files
@@ -124,6 +125,6 @@ User → Controller (MVC) → Service → Repository → PostgreSQL
 
 ## Current Focus
 
-Phases 0-19 complete.
+Phases 0-20 complete.
 
 See `docs/06-implementation-plan.md` for full plan

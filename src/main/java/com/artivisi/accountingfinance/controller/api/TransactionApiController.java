@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.controller.api;
 
 import com.artivisi.accountingfinance.dto.CreateTransactionRequest;
+import com.artivisi.accountingfinance.dto.JournalEntryRequest;
 import com.artivisi.accountingfinance.dto.TransactionResponse;
 import com.artivisi.accountingfinance.dto.UpdateTransactionRequest;
 import com.artivisi.accountingfinance.dto.VoidTransactionDto;
@@ -12,6 +13,8 @@ import com.artivisi.accountingfinance.service.SecurityAuditService;
 import com.artivisi.accountingfinance.service.TemplateExecutionEngine;
 import com.artivisi.accountingfinance.service.TransactionApiService;
 import com.artivisi.accountingfinance.service.TransactionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +45,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/transactions")
-@Tag(name = "Transactions", description = "Transaction creation, editing, posting, voiding, and bulk operations")
+@Tag(name = "Transactions", description = "Transaction creation, editing, posting, voiding, bulk operations, and free-form journal entries")
 @RequiredArgsConstructor
 @Slf4j
 public class TransactionApiController {
@@ -76,6 +79,36 @@ public class TransactionApiController {
         ));
 
         TransactionResponse response = transactionApiService.createTransactionDirect(request, username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Create a free-form journal entry (no template required).
+     * POST /api/transactions/journal-entry
+     */
+    @PostMapping("/journal-entry")
+    @PreAuthorize("hasAuthority('SCOPE_transactions:post')")
+    @Operation(summary = "Create free-form journal entry (no template)",
+               description = "Creates a DRAFT transaction with arbitrary debit/credit lines. "
+                           + "No template required. Use for closing journals, adjusting entries, "
+                           + "opening balances. Post via POST /api/transactions/{id}/post.")
+    @ApiResponse(responseCode = "201", description = "Journal entry draft created")
+    @ApiResponse(responseCode = "400", description = "Validation error (unbalanced, invalid lines, header account)")
+    public ResponseEntity<TransactionResponse> createJournalEntry(
+            @Valid @RequestBody JournalEntryRequest request) {
+
+        String username = getCurrentUsername();
+        log.info("API: Create journal entry - description={}, lines={}, user={}",
+                request.description(), request.lines().size(), username);
+
+        auditApiCall(Map.of(
+                KEY_ACTION, "journal-entry",
+                "description", request.description(),
+                "lineCount", String.valueOf(request.lines().size()),
+                KEY_SOURCE, "api"
+        ));
+
+        TransactionResponse response = transactionApiService.createJournalEntry(request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

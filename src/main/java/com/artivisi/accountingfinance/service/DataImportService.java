@@ -789,7 +789,8 @@ public class DataImportService {
             accountMap.put(a.getAccountCode(), a);
         }
 
-        // Second pass: set parents
+        // Second pass: set parents and mark header accounts
+        Set<String> parentCodeValues = new HashSet<>(parentCodes.values());
         for (ChartOfAccount account : accounts) {
             String parentCode = parentCodes.get(account.getAccountCode());
             if (parentCode != null && !parentCode.isEmpty()) {
@@ -798,6 +799,8 @@ public class DataImportService {
                     account.setParent(parent);
                 }
             }
+            // Accounts referenced as parent by other accounts are headers
+            account.setIsHeader(parentCodeValues.contains(account.getAccountCode()));
         }
         accountRepository.saveAll(accounts);
 

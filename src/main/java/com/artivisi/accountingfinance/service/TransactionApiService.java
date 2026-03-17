@@ -6,10 +6,12 @@ import com.artivisi.accountingfinance.dto.CreateFromReceiptRequest;
 import com.artivisi.accountingfinance.dto.CreateFromTextRequest;
 import com.artivisi.accountingfinance.dto.CreateTransactionRequest;
 import com.artivisi.accountingfinance.dto.DraftResponse;
+import com.artivisi.accountingfinance.dto.JournalEntryRequest;
 import com.artivisi.accountingfinance.dto.TemplateSuggestion;
 import com.artivisi.accountingfinance.dto.TransactionResponse;
 import com.artivisi.accountingfinance.dto.UpdateDraftRequest;
 import com.artivisi.accountingfinance.dto.UpdateTransactionRequest;
+import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.Document;
 import com.artivisi.accountingfinance.entity.DraftTransaction;
 import com.artivisi.accountingfinance.entity.JournalEntry;
@@ -19,7 +21,9 @@ import com.artivisi.accountingfinance.entity.MerchantMapping;
 import com.artivisi.accountingfinance.entity.Project;
 import com.artivisi.accountingfinance.entity.Transaction;
 import com.artivisi.accountingfinance.entity.TransactionAccountMapping;
+import com.artivisi.accountingfinance.repository.ChartOfAccountRepository;
 import com.artivisi.accountingfinance.repository.DocumentRepository;
+import com.artivisi.accountingfinance.repository.JournalTemplateRepository;
 import com.artivisi.accountingfinance.repository.MerchantMappingRepository;
 import com.artivisi.accountingfinance.security.LogSanitizer;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +56,8 @@ public class TransactionApiService {
     private static final String ERR_DRAFT_NOT_FOUND = "Draft not found: ";
     private static final String META_CATEGORY = "category";
 
+    private static final String MANUAL_ENTRY_TEMPLATE_NAME = "Jurnal Manual";
+
     private final DraftTransactionService draftTransactionService;
     private final TransactionService transactionService;
     private final JournalEntryService journalEntryService;
@@ -60,6 +66,8 @@ public class TransactionApiService {
     private final MerchantMappingRepository merchantMappingRepository;
     private final DocumentStorageService documentStorageService;
     private final DocumentRepository documentRepository;
+    private final ChartOfAccountRepository chartOfAccountRepository;
+    private final JournalTemplateRepository journalTemplateRepository;
 
     /**
      * Create draft transaction from AI-parsed receipt data.
@@ -307,12 +315,34 @@ public class TransactionApiService {
      */
     @Transactional(readOnly = true)
     public TemplateExecutionEngine.PreviewResult previewJournalEntries(UUID transactionId) {
-        Transaction transaction = transactionService.findByIdWithMappingsAndVariables(transactionId);
+        Transaction transaction = transactionService.findByIdWithJournalEntries(transactionId);
 
         if (!transaction.isDraft()) {
             throw new IllegalStateException("Journal preview is only available for DRAFT transactions: " + transaction.getStatus());
         }
 
+        // If transaction already has pre-created journal entries (free-form journal entry),
+        // return them directly instead of running TemplateExecutionEngine
+        if (!transaction.getJournalEntries().isEmpty()) {
+            List<TemplateExecutionEngine.PreviewEntry> entries = transaction.getJournalEntries().stream()
+                    .map(je -> new TemplateExecutionEngine.PreviewEntry(
+                            je.getAccount().getAccountCode(),
+                            je.getAccount().getAccountName(),
+                            je.getDescription(),
+                            je.getDebitAmount(),
+                            je.getCreditAmount()))
+                    .toList();
+            BigDecimal totalDebit = entries.stream()
+                    .map(TemplateExecutionEngine.PreviewEntry::debitAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalCredit = entries.stream()
+                    .map(TemplateExecutionEngine.PreviewEntry::creditAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            return new TemplateExecutionEngine.PreviewResult(true, List.of(), entries, totalDebit, totalCredit);
+        }
+
+        // Traditional template-based preview
+        transaction = transactionService.findByIdWithMappingsAndVariables(transactionId);
         JournalTemplate template = journalTemplateService.findByIdWithLines(transaction.getJournalTemplate().getId());
 
         // Build account mappings from stored TransactionAccountMappings (lineOrder → accountId)
@@ -553,6 +583,95 @@ public class TransactionApiService {
                 clarificationQuestion,
                 transactionId
         );
+    }
+
+    /**
+     * Create a free-form journal entry (no template formulas).
+     * Creates a DRAFT transaction with pre-created JournalEntry records.
+     * The existing postWithContext() handles pre-created entries — it assigns
+     * journal numbers and validates balance without running template formulas.
+     */
+    public TransactionResponse createJournalEntry(JournalEntryRequest request, String username) {
+        log.info("Creating free-form journal entry: description={}, lines={}",
+                request.description(), request.lines().size());
+
+        // Validate each line: exactly one of debit/credit must be > 0
+        for (int i = 0; i < request.lines().size(); i++) {
+            JournalEntryRequest.JournalLineRequest line = request.lines().get(i);
+            boolean hasDebit = line.debit().compareTo(BigDecimal.ZERO) > 0;
+            boolean hasCredit = line.credit().compareTo(BigDecimal.ZERO) > 0;
+            if (hasDebit && hasCredit) {
+                throw new IllegalArgumentException(
+                        "Line " + (i + 1) + ": cannot have both debit and credit > 0");
+            }
+            if (!hasDebit && !hasCredit) {
+                throw new IllegalArgumentException(
+                        "Line " + (i + 1) + ": must have either debit or credit > 0");
+            }
+        }
+
+        // Validate balance: sum debits == sum credits
+        BigDecimal totalDebits = request.lines().stream()
+                .map(JournalEntryRequest.JournalLineRequest::debit)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalCredits = request.lines().stream()
+                .map(JournalEntryRequest.JournalLineRequest::credit)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (totalDebits.compareTo(totalCredits) != 0) {
+            throw new IllegalArgumentException(
+                    "Journal entry is unbalanced: total debits=" + totalDebits + ", total credits=" + totalCredits);
+        }
+
+        // Validate accounts: each must exist, not be header, and be active
+        List<ChartOfAccount> accounts = new ArrayList<>();
+        for (int i = 0; i < request.lines().size(); i++) {
+            JournalEntryRequest.JournalLineRequest line = request.lines().get(i);
+            ChartOfAccount account = chartOfAccountRepository.findById(line.accountId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Account not found: " + line.accountId()));
+            if (Boolean.TRUE.equals(account.getIsHeader())) {
+                throw new IllegalArgumentException(
+                        "Line " + (i + 1) + ": account '" + account.getAccountCode()
+                                + "' is a header account and cannot be used in journal entries");
+            }
+            if (!Boolean.TRUE.equals(account.getActive())) {
+                throw new IllegalArgumentException(
+                        "Line " + (i + 1) + ": account '" + account.getAccountCode() + "' is inactive");
+            }
+            accounts.add(account);
+        }
+
+        // Look up "Jurnal Manual" template
+        JournalTemplate template = journalTemplateRepository
+                .findByTemplateNameAndIsCurrentVersionTrue(MANUAL_ENTRY_TEMPLATE_NAME)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Manual entry template '" + MANUAL_ENTRY_TEMPLATE_NAME + "' not found"));
+
+        // Create transaction
+        Transaction transaction = new Transaction();
+        transaction.setTransactionNumber(null); // deferred to posting
+        transaction.setTransactionDate(request.transactionDate());
+        transaction.setJournalTemplate(template);
+        transaction.setAmount(totalDebits);
+        transaction.setDescription(request.description());
+        transaction.setNotes(request.category());
+        transaction.setCreatedBy(username);
+
+        // Create JournalEntry per line (pre-created, journalNumber deferred to posting)
+        for (int i = 0; i < request.lines().size(); i++) {
+            JournalEntryRequest.JournalLineRequest line = request.lines().get(i);
+            JournalEntry entry = new JournalEntry();
+            entry.setAccount(accounts.get(i));
+            entry.setDebitAmount(line.debit());
+            entry.setCreditAmount(line.credit());
+            entry.setJournalNumber(null); // deferred to posting
+            transaction.addJournalEntry(entry);
+        }
+
+        Transaction saved = transactionService.saveDirectly(transaction);
+        log.info("Created free-form journal entry draft: id={}", saved.getId());
+
+        return buildTransactionResponse(saved);
     }
 
     /**

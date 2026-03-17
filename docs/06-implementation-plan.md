@@ -1654,6 +1654,40 @@ Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regim
 
 ---
 
+## Phase 20: Free-Form Journal Entry API ✅
+
+**Goal:** Allow creating journal entries with arbitrary debit/credit lines without requiring a template. Needed for year-end closing journals, correction/adjusting entries, and opening balance entries.
+
+**Feature request ref:** `~/workspace/artivisi/artivisi-hq/finance/feature-request-journal-entry.md`
+
+### 20.1 Journal Entry DTO ✅
+- [x] `JournalEntryRequest` record with `JournalLineRequest` nested record
+- [x] Bean validation: @NotNull date, @NotBlank description, @Size(min=2) lines, @DecimalMin debit/credit
+- [x] OpenAPI `@Schema` annotations for Swagger UI documentation
+
+### 20.2 Service Method ✅
+- [x] `TransactionApiService.createJournalEntry()` — validates lines (exactly one of debit/credit > 0), balance (debits == credits), accounts (exist, not header, active)
+- [x] Looks up "Jurnal Manual" template automatically (no templateId from caller)
+- [x] Pre-creates JournalEntry records at draft time (journal numbers deferred to posting)
+- [x] Reuses existing `TransactionService.postWithContext()` pre-created entries path
+
+### 20.3 API Endpoint ✅
+- [x] `POST /api/transactions/journal-entry` — creates DRAFT with pre-created journal entries
+- [x] `@PreAuthorize("hasAuthority('SCOPE_transactions:post')")` — reuses existing scope
+- [x] Returns 201 CREATED with TransactionResponse (status=DRAFT)
+- [x] OpenAPI `@Operation` and `@ApiResponse` annotations
+
+### 20.4 Preview Support ✅
+- [x] Updated `previewJournalEntries()` — returns pre-created entries directly instead of running TemplateExecutionEngine
+
+### 20.5 Data Import Fix ✅
+- [x] `DataImportService.importChartOfAccounts()` now sets `isHeader=true` for accounts referenced as parent by other accounts
+
+### 20.6 Functional Tests ✅
+- [x] 11 tests in `JournalEntryApiTest`: create (happy path, multi-line, category), post lifecycle, preview, validation errors (unbalanced, both debit+credit, neither, <2 lines, header account, non-existent account)
+
+---
+
 ## Future Enhancements (As Needed)
 
 Items below are not planned phases. They are implemented only when a concrete client need arises.
