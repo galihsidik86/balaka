@@ -37,7 +37,19 @@ public class PayrollService {
     private static final int DEFAULT_JKK_RISK_CLASS = 1; // IT Services
     private static final String PAYROLL_RUN_NOT_FOUND = "Payroll run tidak ditemukan";
 
-    private static final String PAYROLL_TEMPLATE_NAME = "Post Gaji Bulanan";
+    // Formula variable names used in payroll journal template
+    static final String VAR_GROSS_SALARY = "grossSalary";
+    static final String VAR_COMPANY_BPJS = "companyBpjs";
+    static final String VAR_COMPANY_BPJS_KES = "companyBpjsKes";
+    static final String VAR_COMPANY_BPJS_TK = "companyBpjsTk";
+    static final String VAR_TOTAL_BPJS = "totalBpjs";
+    static final String VAR_TOTAL_BPJS_KES = "totalBpjsKes";
+    static final String VAR_TOTAL_BPJS_TK = "totalBpjsTk";
+    static final String VAR_PPH21 = "pph21";
+    static final String VAR_NET_PAY = "netPay";
+
+    @org.springframework.beans.factory.annotation.Value("${app.payroll.template-id}")
+    private UUID payrollTemplateId;
 
     private final PayrollRunRepository payrollRunRepository;
     private final PayrollDetailRepository payrollDetailRepository;
@@ -227,28 +239,42 @@ public class PayrollService {
             throw new IllegalStateException("Payroll harus dalam status APPROVED untuk di-posting");
         }
 
-        // Get payroll template by name (UUID varies between test and production environments)
-        JournalTemplate payrollTemplate = journalTemplateRepository.findByTemplateNameAndIsCurrentVersionTrue(PAYROLL_TEMPLATE_NAME)
-            .orElseThrow(() -> new IllegalStateException("Template '" + PAYROLL_TEMPLATE_NAME + "' tidak ditemukan"));
+        // Get payroll template by configured UUID (app.payroll.template-id)
+        JournalTemplate payrollTemplate = journalTemplateRepository.findById(payrollTemplateId)
+            .orElseThrow(() -> new IllegalStateException("Template payroll tidak ditemukan (id: " + payrollTemplateId + "). Set app.payroll.template-id di application.properties"));
 
-        // Calculate total employee BPJS from details
+        // Calculate BPJS totals split by Kesehatan vs Ketenagakerjaan from details
         List<PayrollDetail> details = payrollDetailRepository.findByPayrollRunIdWithEmployee(payrollRunId);
-        BigDecimal totalEmployeeBpjs = details.stream()
-            .map(PayrollDetail::getTotalEmployeeBpjs)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal companyBpjsKes = BigDecimal.ZERO;
+        BigDecimal companyBpjsTk = BigDecimal.ZERO;
+        BigDecimal employeeBpjsKes = BigDecimal.ZERO;
+        BigDecimal employeeBpjsTk = BigDecimal.ZERO;
+        for (PayrollDetail d : details) {
+            companyBpjsKes = companyBpjsKes.add(d.getBpjsKesCompany());
+            companyBpjsTk = companyBpjsTk.add(d.getBpjsJkk()).add(d.getBpjsJkm())
+                    .add(d.getBpjsJhtCompany()).add(d.getBpjsJpCompany());
+            employeeBpjsKes = employeeBpjsKes.add(d.getBpjsKesEmployee());
+            employeeBpjsTk = employeeBpjsTk.add(d.getBpjsJhtEmployee()).add(d.getBpjsJpEmployee());
+        }
+
+        BigDecimal totalBpjsKes = companyBpjsKes.add(employeeBpjsKes);
+        BigDecimal totalBpjsTk = companyBpjsTk.add(employeeBpjsTk);
 
         // Create payroll-specific FormulaContext with extended variables
-        BigDecimal totalBpjs = payrollRun.getTotalCompanyBpjs().add(totalEmployeeBpjs);
-        FormulaContext payrollContext = FormulaContext.of(
-            payrollRun.getTotalGross(), // amount = grossSalary for display
-            Map.of(
-                "grossSalary", payrollRun.getTotalGross(),
-                "companyBpjs", payrollRun.getTotalCompanyBpjs(),
-                "totalBpjs", totalBpjs,
-                "pph21", payrollRun.getTotalPph21(),
-                "netPay", payrollRun.getTotalNetPay()
-            )
-        );
+        // Templates can use either combined (companyBpjs, totalBpjs) or split (companyBpjsKes/Tk, totalBpjsKes/Tk)
+        Map<String, BigDecimal> variables = new java.util.HashMap<>();
+        variables.put(VAR_GROSS_SALARY, payrollRun.getTotalGross());
+        variables.put(VAR_COMPANY_BPJS, payrollRun.getTotalCompanyBpjs());
+        variables.put(VAR_COMPANY_BPJS_KES, companyBpjsKes);
+        variables.put(VAR_COMPANY_BPJS_TK, companyBpjsTk);
+        variables.put(VAR_TOTAL_BPJS, totalBpjsKes.add(totalBpjsTk));
+        variables.put(VAR_TOTAL_BPJS_KES, totalBpjsKes);
+        variables.put(VAR_TOTAL_BPJS_TK, totalBpjsTk);
+        variables.put(VAR_PPH21, payrollRun.getTotalPph21());
+        variables.put(VAR_NET_PAY, payrollRun.getTotalNetPay());
+
+        FormulaContext payrollContext = FormulaContext.of(payrollRun.getTotalGross(), variables);
 
         // Create transaction
         String description = "Payroll " + payrollRun.getPeriodDisplayName();

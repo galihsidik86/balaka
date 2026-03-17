@@ -208,7 +208,7 @@ INSERT INTO journal_template_lines (id, id_journal_template, id_account, positio
 
 -- Template: Post Gaji Bulanan (Payroll Posting)
 INSERT INTO journal_templates (id, template_name, category, cash_flow_category, template_type, description, is_system, active) VALUES
-('e0000000-0000-0000-0000-000000000014', 'Post Gaji Bulanan', 'EXPENSE', 'OPERATING', 'SIMPLE', 'Template sistem untuk posting payroll bulanan. Menggunakan variabel: grossSalary, companyBpjs, netPay, totalBpjs, pph21', TRUE, TRUE);
+('e0000000-0000-0000-0000-000000000014', 'Post Gaji Bulanan', 'EXPENSE', 'OPERATING', 'SIMPLE', 'Template sistem untuk posting payroll bulanan. Variabel: grossSalary, companyBpjs (atau companyBpjsKes+companyBpjsTk), netPay, totalBpjs (atau totalBpjsKes+totalBpjsTk), pph21', TRUE, TRUE);
 
 INSERT INTO journal_template_lines (id, id_journal_template, id_account, position, formula, line_order, description) VALUES
 ('e1000000-0000-0000-0000-000000000027', 'e0000000-0000-0000-0000-000000000014', '50000000-0000-0000-0000-000000000101', 'DEBIT', 'grossSalary', 1, 'Beban gaji karyawan'),

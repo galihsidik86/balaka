@@ -80,6 +80,11 @@ google.cloud.vision.credentials-path=/opt/{{ app_name }}/gcp-credentials.json
 app.encryption.key={{ document_encryption_key }}
 {% endif %}
 
+# Payroll configuration
+{% if app_payroll_template_id is defined %}
+app.payroll.template-id={{ app_payroll_template_id }}
+{% endif %}
+
 # Theme configuration
 app.theme.name={{ app_theme_name | default('artivisi') }}
 app.theme.footer-text={{ app_theme_footer_text | default('ArtiVisi Intermedia') }}
