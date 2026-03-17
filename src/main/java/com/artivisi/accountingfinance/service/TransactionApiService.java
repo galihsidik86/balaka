@@ -655,6 +655,7 @@ public class TransactionApiService {
         transaction.setAmount(totalDebits);
         transaction.setDescription(request.description());
         transaction.setNotes(request.category());
+        transaction.setClosingEntry("CLOSING".equals(request.category()));
         transaction.setCreatedBy(username);
 
         // Create JournalEntry per line (pre-created, journalNumber deferred to posting)

@@ -106,6 +106,26 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, UUID
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
+    // BUG-014: Exclude closing entries from P&L for tax export calculations.
+    // Closing entries are identified by transaction.closingEntry = true.
+    @Query("SELECT COALESCE(SUM(j.debitAmount), 0) FROM JournalEntry j JOIN j.transaction t " +
+           "WHERE j.account.id = :accountId AND t.status = 'POSTED' AND " +
+           "t.transactionDate BETWEEN :startDate AND :endDate AND " +
+           "t.closingEntry = false")
+    BigDecimal sumDebitByAccountAndDateRangeExcludingClosing(
+            @Param("accountId") UUID accountId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(j.creditAmount), 0) FROM JournalEntry j JOIN j.transaction t " +
+           "WHERE j.account.id = :accountId AND t.status = 'POSTED' AND " +
+           "t.transactionDate BETWEEN :startDate AND :endDate AND " +
+           "t.closingEntry = false")
+    BigDecimal sumCreditByAccountAndDateRangeExcludingClosing(
+            @Param("accountId") UUID accountId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
     List<JournalEntry> findAllByJournalNumberOrderByIdAsc(String journalNumber);
 
     @Query("SELECT j FROM JournalEntry j LEFT JOIN FETCH j.account WHERE j.journalNumber = :journalNumber ORDER BY j.id ASC")

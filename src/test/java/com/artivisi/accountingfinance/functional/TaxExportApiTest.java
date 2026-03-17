@@ -276,6 +276,84 @@ class TaxExportApiTest extends PlaywrightTestBase {
         log.info("Invalid date params test passed");
     }
 
+    // ==================== BUG-014: CLOSING JOURNAL EXCLUSION ====================
+
+    @Test
+    @DisplayName("BUG-014: Tax export excludes closing journal from P&L")
+    void testClosingJournalExcludedFromTaxExport() throws Exception {
+        // Step 1: Get pre-closing P&L via rekonsiliasi-fiskal
+        APIResponse preClosing = get("/api/tax-export/rekonsiliasi-fiskal?year=2025");
+        assertThat(preClosing.status()).isEqualTo(200);
+        JsonNode preData = parse(preClosing).get("data");
+        double preNetIncome = preData.get("commercialNetIncome").asDouble();
+        double prePkp = preData.get("pkp").asDouble();
+        log.info("Pre-closing: commercialNetIncome={}, pkp={}", preNetIncome, prePkp);
+
+        // Step 2: Resolve account IDs for closing journal
+        APIResponse accountsResponse = get("/api/drafts/accounts");
+        assertThat(accountsResponse.status()).isEqualTo(200);
+        JsonNode accounts = parse(accountsResponse);
+
+        String revenueAccountId = null;
+        String bankAccountId = null;
+        for (JsonNode account : accounts) {
+            String code = account.get("code").asText();
+            if ("4.1.02".equals(code)) revenueAccountId = account.get("id").asText();
+            if ("1.1.02".equals(code)) bankAccountId = account.get("id").asText();
+        }
+        assertThat(revenueAccountId).as("Revenue account 4.1.02 must exist").isNotNull();
+        assertThat(bankAccountId).as("Bank account 1.1.02 must exist").isNotNull();
+
+        // Step 3: Create closing journal entry (debit revenue, credit bank)
+        Map<String, Object> closingRequest = new HashMap<>();
+        closingRequest.put("transactionDate", "2025-12-31");
+        closingRequest.put("description", "BUG-014 Test: Closing journal");
+        closingRequest.put("category", "CLOSING");
+
+        List<Map<String, Object>> lines = List.of(
+                Map.of("accountId", revenueAccountId, "debit", 1000000, "credit", 0),
+                Map.of("accountId", bankAccountId, "debit", 0, "credit", 1000000)
+        );
+        closingRequest.put("lines", lines);
+
+        APIResponse createResponse = post("/api/transactions/journal-entry", closingRequest);
+        assertThat(createResponse.status())
+                .as("Create closing journal: " + createResponse.text())
+                .isEqualTo(201);
+        String closingTxId = parse(createResponse).get("transactionId").asText();
+
+        // Step 4: Post the closing journal
+        APIResponse postResponse = post("/api/transactions/" + closingTxId + "/post", Map.of());
+        assertThat(postResponse.status())
+                .as("Post closing journal: " + postResponse.text())
+                .isEqualTo(200);
+
+        // Step 5: Verify tax export P&L is unchanged (closing entry excluded)
+        APIResponse postClosing = get("/api/tax-export/rekonsiliasi-fiskal?year=2025");
+        assertThat(postClosing.status()).isEqualTo(200);
+        JsonNode postData = parse(postClosing).get("data");
+        double postNetIncome = postData.get("commercialNetIncome").asDouble();
+        double postPkp = postData.get("pkp").asDouble();
+        log.info("Post-closing: commercialNetIncome={}, pkp={}", postNetIncome, postPkp);
+
+        assertThat(postNetIncome)
+                .as("commercialNetIncome should be unchanged after closing journal")
+                .isEqualTo(preNetIncome);
+        assertThat(postPkp)
+                .as("PKP should be unchanged after closing journal")
+                .isEqualTo(prePkp);
+
+        // Step 6: Also verify transkrip-8a P&L is non-zero
+        APIResponse transkrip = get("/api/tax-export/spt-tahunan/transkrip-8a?year=2025");
+        assertThat(transkrip.status()).isEqualTo(200);
+        JsonNode transkripData = parse(transkrip).get("data");
+        assertThat(transkripData.get("totalRevenue").asDouble())
+                .as("Transkrip 8A revenue must not be zero after closing")
+                .isGreaterThan(0);
+
+        log.info("BUG-014 test passed: closing journal excluded from tax export P&L");
+    }
+
     // ==================== HELPERS ====================
 
     private String findTransactionId(String transactionNumber) throws Exception {

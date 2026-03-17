@@ -144,9 +144,9 @@ public class TaxReportDetailService {
         LocalDate startDate = LocalDate.of(year, 1, 1);
         LocalDate endDate = LocalDate.of(year, 12, 31);
 
-        // Get commercial income statement
+        // Get commercial income statement excluding closing entries (BUG-014)
         ReportService.IncomeStatementReport incomeStatement =
-                reportService.generateIncomeStatement(startDate, endDate);
+                reportService.generateIncomeStatementExcludingClosing(startDate, endDate);
 
         // Get fiscal adjustments
         List<FiscalAdjustment> adjustments = fiscalAdjustmentRepository

@@ -74,6 +74,9 @@ public class Transaction extends BaseEntity {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "closing_entry", nullable = false)
+    private Boolean closingEntry = false;
+
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

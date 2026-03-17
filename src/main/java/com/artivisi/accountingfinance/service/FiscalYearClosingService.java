@@ -326,6 +326,7 @@ public class FiscalYearClosingService {
         transaction.setAmount(amount);
         transaction.setDescription(description);
         transaction.setReferenceNumber(referenceNumber);
+        transaction.setClosingEntry(true);
         transaction.setStatus(TransactionStatus.POSTED);
         transaction.setPostedAt(LocalDateTime.now());
         transaction.setPostedBy(username);

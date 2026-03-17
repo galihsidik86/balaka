@@ -71,7 +71,7 @@ public class SptChecklistController {
         BigDecimal totalRevenue = BigDecimal.ZERO;
         BigDecimal netIncome = BigDecimal.ZERO;
         try {
-            var incomeStatement = reportService.generateIncomeStatement(startDate, endDate);
+            var incomeStatement = reportService.generateIncomeStatementExcludingClosing(startDate, endDate);
             totalRevenue = incomeStatement.totalRevenue();
             netIncome = incomeStatement.netIncome();
             hasIncomeStatement = totalRevenue.compareTo(BigDecimal.ZERO) != 0

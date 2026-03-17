@@ -299,6 +299,7 @@ CREATE TABLE transactions (
     description VARCHAR(500) NOT NULL,
     reference_number VARCHAR(100),
     notes TEXT,
+    closing_entry BOOLEAN NOT NULL DEFAULT FALSE,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     void_reason VARCHAR(50),
     void_notes TEXT,

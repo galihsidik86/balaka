@@ -28,6 +28,8 @@
 | **14** | Fiscal Adjustments API | ✅ Complete |
 | **15** | Payroll API + PPh 21 | ✅ Complete |
 | **—** | Bug Fixes (BUG-001–004) | ✅ Complete |
+| **—** | Bug Fix (BUG-014) | 🔧 In Progress |
+| **—** | SPT Lampiran Export | Planned |
 | **17** | SPT Tahunan Badan Data Export | ✅ Complete |
 | **18** | PPh 21 TER Method (PMK 168/2023) | ✅ Complete |
 | **—** | Future Enhancements | As needed |
@@ -1685,6 +1687,62 @@ Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regim
 
 ### 20.6 Functional Tests ✅
 - [x] 11 tests in `JournalEntryApiTest`: create (happy path, multi-line, category), post lifecycle, preview, validation errors (unbalanced, both debit+credit, neither, <2 lines, header account, non-existent account)
+
+---
+
+## Bug Fix: BUG-014 — Tax Export Reads Post-Closing P&L (Zeroed Out)
+
+**Severity:** CRITICAL — all SPT Tahunan exports produce wrong numbers after closing journal is posted
+**Bug report ref:** `~/workspace/artivisi/artivisi-hq/finance/bugs-akunting-app.md`
+
+**Root cause:** After posting year-end closing journal (via Phase 20 journal entry API with `category: "CLOSING"`), all tax export endpoints that depend on P&L return zero revenue/expense. The closing journal debits all revenue accounts and credits all expense accounts, zeroing them out. Tax endpoints then compute fiscal adjustments on top of 0.
+
+**Fix:** Exclude closing entries from P&L queries used by tax export services. Closing entries are identified by `transaction.notes = 'CLOSING'` (Phase 20 journal entry API stores category in notes) or `transaction.referenceNumber LIKE 'CLOSING-%'` (FiscalYearClosingService pattern).
+
+### BUG-014.1 Schema & Entity
+- [x] Add `closing_entry BOOLEAN NOT NULL DEFAULT FALSE` to `transactions` table (V002)
+- [x] Add `closingEntry` field to Transaction entity
+- [x] Set `closingEntry = true` in `FiscalYearClosingService.createClosingTransaction()`
+- [x] Set `closingEntry = true` in `TransactionApiService.createJournalEntry()` when category is "CLOSING"
+
+### BUG-014.2 Repository Methods
+- [x] Add `sumDebitByAccountAndDateRangeExcludingClosing()` to JournalEntryRepository
+- [x] Add `sumCreditByAccountAndDateRangeExcludingClosing()` to JournalEntryRepository
+- [x] Filter: `AND t.closingEntry = false`
+
+### BUG-014.3 ReportService
+- [x] Add `generateIncomeStatementExcludingClosing(startDate, endDate)` method
+- [x] Uses new repository methods to exclude closing entries from P&L
+
+### BUG-014.4 Tax Export Services
+- [x] `TaxReportDetailService.generateRekonsiliasiFiskal()` → use `generateIncomeStatementExcludingClosing()`
+- [x] `SptTahunanExportService.generateTranskrip8A()` → use `generateIncomeStatementExcludingClosing()`
+- [x] `SptTahunanExportService.generateL1()` → inherits fix via `generateRekonsiliasiFiskal()`
+- [x] `SptChecklistController.generateChecklist()` → use `generateIncomeStatementExcludingClosing()`
+
+### BUG-014.5 Production Data Fix
+- [ ] Run `UPDATE transactions SET closing_entry = true WHERE notes = 'CLOSING' OR reference_number LIKE 'CLOSING-%'` on production after migration
+
+### BUG-014.6 Functional Test
+- [ ] Test that creates closing journal, posts it, then verifies tax export endpoints return pre-closing P&L figures
+
+---
+
+## Feature Request: SPT Lampiran Export (Coretax-ready)
+
+**Priority:** HIGH — needed for SPT 2025 filing (deadline 30 April 2026)
+**Prerequisite:** BUG-014 must be fixed first
+**Feature request ref:** `~/workspace/artivisi/artivisi-hq/finance/feature-request-spt-lampiran-export.md`
+
+**Goal:** Consolidated endpoint `GET /api/tax-export/spt-tahunan/lampiran?year=2025` returning all lampiran data mapped to Coretax field numbers, ready for direct input into Coretax DJP.
+
+### Scope
+- [ ] Transkrip 8A: balance sheet + P&L mapped to Coretax 8A-Jasa field numbers
+- [ ] Lampiran I: rekonsiliasi fiskal with fiscal adjustments
+- [ ] Lampiran II: expense breakdown (beban usaha vs beban luar usaha)
+- [ ] Lampiran III: kredit pajak PPh 23 from tax_transaction_details
+- [ ] Lampiran V: placeholder (manual shareholder data)
+- [ ] PPh Badan: PKP calculation with Pasal 31E
 
 ---
 

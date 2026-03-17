@@ -202,7 +202,8 @@ public class SptTahunanExportService {
         LocalDate startDate = LocalDate.of(year, 1, 1);
         LocalDate endDate = LocalDate.of(year, 12, 31);
 
-        IncomeStatementReport incomeStatement = reportService.generateIncomeStatement(startDate, endDate);
+        // Exclude closing entries from P&L for tax purposes (BUG-014)
+        IncomeStatementReport incomeStatement = reportService.generateIncomeStatementExcludingClosing(startDate, endDate);
         BalanceSheetReport balanceSheet = reportService.generateBalanceSheet(endDate);
 
         // Map income statement items to transcript lines

@@ -115,6 +115,33 @@ public class ReportService {
                 totalRevenue, totalExpense, netIncome);
     }
 
+    /**
+     * Generate income statement excluding closing entries (BUG-014).
+     * Used by tax export services to get pre-closing P&L figures.
+     */
+    public IncomeStatementReport generateIncomeStatementExcludingClosing(LocalDate startDate, LocalDate endDate) {
+        List<ChartOfAccount> revenueAccounts = chartOfAccountRepository
+                .findByAccountTypeAndActiveOrderByAccountCodeAsc(AccountType.REVENUE, true);
+        List<ChartOfAccount> expenseAccounts = chartOfAccountRepository
+                .findByAccountTypeAndActiveOrderByAccountCodeAsc(AccountType.EXPENSE, true);
+
+        List<IncomeStatementItem> revenueItems = calculateAccountBalancesExcludingClosing(revenueAccounts, startDate, endDate);
+        List<IncomeStatementItem> expenseItems = calculateAccountBalancesExcludingClosing(expenseAccounts, startDate, endDate);
+
+        BigDecimal totalRevenue = revenueItems.stream()
+                .map(IncomeStatementItem::balance)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = expenseItems.stream()
+                .map(IncomeStatementItem::balance)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal netIncome = totalRevenue.subtract(totalExpense);
+
+        return new IncomeStatementReport(startDate, endDate, revenueItems, expenseItems,
+                totalRevenue, totalExpense, netIncome);
+    }
+
     public BalanceSheetReport generateBalanceSheet(LocalDate asOfDate) {
         List<ChartOfAccount> assetAccounts = chartOfAccountRepository
                 .findByAccountTypeAndActiveOrderByAccountCodeAsc(AccountType.ASSET, true);
@@ -171,6 +198,33 @@ public class ReportService {
             BigDecimal debit = journalEntryRepository.sumDebitByAccountAndDateRange(
                     account.getId(), startDate, endDate);
             BigDecimal credit = journalEntryRepository.sumCreditByAccountAndDateRange(
+                    account.getId(), startDate, endDate);
+
+            BigDecimal balance;
+            if (account.getNormalBalance() == NormalBalance.DEBIT) {
+                balance = debit.subtract(credit);
+            } else {
+                balance = credit.subtract(debit);
+            }
+
+            if (balance.compareTo(BigDecimal.ZERO) != 0) {
+                items.add(new IncomeStatementItem(account, balance));
+            }
+        }
+
+        return items;
+    }
+
+    private List<IncomeStatementItem> calculateAccountBalancesExcludingClosing(List<ChartOfAccount> accounts,
+                                                                               LocalDate startDate, LocalDate endDate) {
+        List<IncomeStatementItem> items = new ArrayList<>();
+
+        for (ChartOfAccount account : accounts) {
+            if (account.getIsHeader()) continue;
+
+            BigDecimal debit = journalEntryRepository.sumDebitByAccountAndDateRangeExcludingClosing(
+                    account.getId(), startDate, endDate);
+            BigDecimal credit = journalEntryRepository.sumCreditByAccountAndDateRangeExcludingClosing(
                     account.getId(), startDate, endDate);
 
             BigDecimal balance;
