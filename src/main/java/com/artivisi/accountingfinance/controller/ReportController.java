@@ -10,6 +10,7 @@ import com.artivisi.accountingfinance.service.ProjectProfitabilityService;
 import com.artivisi.accountingfinance.service.ProjectService;
 import com.artivisi.accountingfinance.service.ReportExportService;
 import com.artivisi.accountingfinance.service.DepreciationReportService;
+import com.artivisi.accountingfinance.service.FiscalPeriodService;
 import com.artivisi.accountingfinance.service.FiscalYearClosingService;
 import com.artivisi.accountingfinance.service.ReportService;
 import com.artivisi.accountingfinance.service.TaxReportDetailService;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 import static com.artivisi.accountingfinance.controller.ViewConstants.*;
@@ -63,6 +65,7 @@ public class ReportController {
     private final TaxReportDetailService taxReportDetailService;
     private final DepreciationReportService depreciationReportService;
     private final FiscalYearClosingService fiscalYearClosingService;
+    private final FiscalPeriodService fiscalPeriodService;
 
     private static final DateTimeFormatter FILE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -140,6 +143,49 @@ public class ReportController {
         model.addAttribute(ATTR_REPORT, reportService.generateCashFlowStatement(start, end));
 
         return "reports/cash-flow";
+    }
+
+    // ==================== PERIOD REPORTS (CLOSING-ENTRY EXCLUDED) ====================
+
+    @GetMapping("/period")
+    public String periodReport(
+            @RequestParam(required = false) String period,
+            Model model) {
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_REPORTS);
+        model.addAttribute(ATTR_REPORT_TYPE, "period");
+
+        // Build period options: yearly + monthly from fiscal periods
+        List<Integer> years = fiscalPeriodService.findDistinctYears();
+        model.addAttribute("years", years);
+
+        if (period != null && !period.isBlank()) {
+            model.addAttribute("selectedPeriod", period);
+            LocalDate start;
+            LocalDate end;
+
+            if (period.length() == 4) {
+                // Yearly: "2025"
+                int year = Integer.parseInt(period);
+                start = LocalDate.of(year, 1, 1);
+                end = LocalDate.of(year, 12, 31);
+            } else {
+                // Monthly: "2025-01"
+                String[] parts = period.split("-");
+                int year = Integer.parseInt(parts[0]);
+                int month = Integer.parseInt(parts[1]);
+                start = LocalDate.of(year, month, 1);
+                end = start.withDayOfMonth(start.lengthOfMonth());
+            }
+
+            model.addAttribute(ATTR_START_DATE, start);
+            model.addAttribute(ATTR_END_DATE, end);
+            model.addAttribute("incomeStatement",
+                    reportService.generateIncomeStatementExcludingClosing(start, end));
+            model.addAttribute("balanceSheet",
+                    reportService.generateBalanceSheet(end));
+        }
+
+        return "reports/period";
     }
 
     // REST API Endpoints
