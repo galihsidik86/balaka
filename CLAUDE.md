@@ -36,6 +36,9 @@ Indonesian accounting application for small businesses. Spring Boot 4.0 + Thymel
 - **Phase 20:** ✅ Complete (Free-Form Journal Entry API — `POST /api/transactions/journal-entry`, arbitrary debit/credit lines, no template required, for closing/adjusting/opening entries)
 - **BUG-014:** ✅ Complete (Tax export excluded closing journal from P&L via `closingEntry` boolean)
 - **SPT Lampiran Export:** ✅ Complete (`GET /api/tax-export/spt-tahunan/lampiran?year=`, consolidated Coretax-ready data)
+- **BUG-016/017/018:** ✅ Complete (Transkrip 8A asset mapping, Lampiran I pasal field, accountSlots lineOrder fallback)
+- **Period Report:** ✅ Complete (`/reports/period` — fiscal period dropdown, closing-entry-excluded P&L)
+- **Sidebar Reorg:** ✅ Complete (Master Data separated from Pengaturan)
 - See `docs/06-implementation-plan.md` for full plan
 
 ## Key Files

@@ -30,6 +30,8 @@
 | **—** | Bug Fixes (BUG-001–004) | ✅ Complete |
 | **—** | Bug Fix (BUG-014) | ✅ Complete |
 | **—** | SPT Lampiran Export | ✅ Complete |
+| **—** | Bug Fixes (BUG-016–018) | ✅ Complete |
+| **—** | Period Report + Sidebar Reorg | ✅ Complete |
 | **17** | SPT Tahunan Badan Data Export | ✅ Complete |
 | **18** | PPh 21 TER Method (PMK 168/2023) | ✅ Complete |
 | **—** | Future Enhancements | As needed |
@@ -1744,6 +1746,44 @@ Update PPN rate description in app and docs to reflect 2025 DPP Nilai Lain regim
 - [x] PPh Badan: PKP calculation with Pasal 31E
 - [x] Taxpayer info from CompanyConfig (NPWP, NITKU, company name)
 - [x] Functional test in TaxExportApiTest
+
+---
+
+## Bug Fixes: BUG-016, BUG-017, BUG-018 ✅
+
+**Reported:** 2026-03-18
+
+### BUG-016: Transkrip 8A asset grouping ✅
+- [x] Account 1.1.21 (Logam Mulia) moved from 8A.I.7 (tax assets) to 8A.I.6 (short-term investments)
+
+### BUG-017: Lampiran I pasal field ✅
+- [x] Added `pasal` column to `fiscal_adjustments` table (V003)
+- [x] `FiscalAdjustment.pasal` entity field
+- [x] CRUD API updated (request/response DTOs)
+- [x] `buildLampiranI()` uses `pasal` instead of `accountCode` for tax article references
+
+### BUG-018: accountSlots not persisted for BANK-hint lines ✅
+- [x] `resolveAccountSlots()` now matches by `accountHint` (e.g., "BANK") OR `lineOrder` (e.g., "2")
+- [x] Updated Javadoc on `CreateDraftRequest`, `CreateTransactionRequest`, `UpdateTransactionRequest`
+
+---
+
+## Period Report Page ✅
+
+**Goal:** Display financial reports for closed periods without manual date input.
+
+- [x] `GET /reports/period?period=2025` — period selector with fiscal period dropdown (yearly + monthly)
+- [x] Shows Income Statement (excluding closing entries) + Balance Sheet for selected period
+- [x] Uses `generateIncomeStatementExcludingClosing()` so P&L shows pre-closing figures
+- [x] Link on reports index page ("Laporan Periode")
+
+---
+
+## Sidebar Reorganization ✅
+
+- [x] **Master Data** group: Bagan Akun, Template Jurnal, Label Transaksi, Periode Fiskal
+- [x] **Pengaturan** group (new): Perusahaan, Profil Pajak, Pengguna, Peran, Keamanan, Perangkat API, Import Data, Log Audit
+- [x] Both desktop and mobile sidebar updated
 
 ---
 
