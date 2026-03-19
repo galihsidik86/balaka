@@ -339,10 +339,14 @@ public class FinancialAnalysisApiController {
      * Examples: month=2025-12 OR month=12&year=2025
      */
     private YearMonth parseYearMonth(String month, Integer year) {
-        if (year != null) {
-            return YearMonth.of(year, Integer.parseInt(month));
+        try {
+            if (year != null) {
+                return YearMonth.of(year, Integer.parseInt(month));
+            }
+            return YearMonth.parse(month);
+        } catch (NumberFormatException | java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid month format: " + month, e);
         }
-        return YearMonth.parse(month);
     }
 
     private void auditAccess(String reportType, Map<String, String> params) {
