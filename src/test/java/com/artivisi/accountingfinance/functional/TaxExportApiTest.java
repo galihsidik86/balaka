@@ -398,8 +398,8 @@ class TaxExportApiTest extends PlaywrightTestBase {
 
         // 8A.I.6 (Investasi Jangka Pendek) — test data has no 1.1.21, so should be 0
         // This test documents the mapping behavior; production has 1.1.21 which should go here
-        assertThat(fieldAmounts.containsKey("8A.I.6")).isTrue();
-        assertThat(fieldAmounts.containsKey("8A.I.7")).isTrue();
+        assertThat(fieldAmounts).containsKey("8A.I.6");
+        assertThat(fieldAmounts).containsKey("8A.I.7");
 
         log.info("BUG-016 test passed: field mapping verified");
     }

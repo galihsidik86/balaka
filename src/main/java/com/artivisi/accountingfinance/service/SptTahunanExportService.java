@@ -55,6 +55,25 @@ public class SptTahunanExportService {
     private final FiscalLossCarryforwardRepository fiscalLossCarryforwardRepository;
     private final CompanyConfigRepository companyConfigRepository;
 
+    // Transkrip 8A slot identifiers
+    private static final String SLOT_8A_I_1 = "8A.I.1";
+    private static final String SLOT_8A_I_2 = "8A.I.2";
+    private static final String SLOT_8A_I_3 = "8A.I.3";
+    private static final String SLOT_8A_I_4 = "8A.I.4";
+    private static final String SLOT_8A_I_5 = "8A.I.5";
+    private static final String SLOT_8A_I_6 = "8A.I.6";
+    private static final String SLOT_8A_I_7 = "8A.I.7";
+    private static final String SLOT_8A_I_8 = "8A.I.8";
+    private static final String SLOT_8A_I_9 = "8A.I.9";
+    private static final String SLOT_8A_I_10 = "8A.I.10";
+    private static final String SLOT_8A_II_1 = "8A.II.1";
+    private static final String SLOT_8A_II_2 = "8A.II.2";
+    private static final String SLOT_8A_II_3 = "8A.II.3";
+    private static final String SLOT_8A_II_4 = "8A.II.4";
+    private static final String SLOT_8A_II_5 = "8A.II.5";
+    private static final String SLOT_8A_II_6 = "8A.II.6";
+    private static final String SLOT_8A_II_7 = "8A.II.7";
+
     // Account code prefixes for categorization
     private static final String OPERATING_REVENUE_PREFIX = "4.1";
     private static final String OTHER_INCOME_PREFIX = "4.2";
@@ -604,16 +623,16 @@ public class SptTahunanExportService {
     private List<SptFieldItem> mapAssetItems(BalanceSheetReport bs) {
         // Group asset accounts into Coretax 8A.I fields
         Map<String, SptFieldItem> groups = new LinkedHashMap<>();
-        groups.put("8A.I.1", new SptFieldItem("8A.I.1", "Kas dan Setara Kas", BigDecimal.ZERO));
-        groups.put("8A.I.2", new SptFieldItem("8A.I.2", "Piutang Usaha", BigDecimal.ZERO));
-        groups.put("8A.I.3", new SptFieldItem("8A.I.3", "Piutang Lain-lain", BigDecimal.ZERO));
-        groups.put("8A.I.4", new SptFieldItem("8A.I.4", "Persediaan", BigDecimal.ZERO));
-        groups.put("8A.I.5", new SptFieldItem("8A.I.5", "Biaya Dibayar Dimuka", BigDecimal.ZERO));
-        groups.put("8A.I.6", new SptFieldItem("8A.I.6", "Investasi Jangka Pendek", BigDecimal.ZERO));
-        groups.put("8A.I.7", new SptFieldItem("8A.I.7", "Aset Pajak Tangguhan", BigDecimal.ZERO));
-        groups.put("8A.I.8", new SptFieldItem("8A.I.8", "Aset Tetap", BigDecimal.ZERO));
-        groups.put("8A.I.9", new SptFieldItem("8A.I.9", "Akumulasi Penyusutan", BigDecimal.ZERO));
-        groups.put("8A.I.10", new SptFieldItem("8A.I.10", "Aset Lainnya", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_1, new SptFieldItem(SLOT_8A_I_1, "Kas dan Setara Kas", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_2, new SptFieldItem(SLOT_8A_I_2, "Piutang Usaha", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_3, new SptFieldItem(SLOT_8A_I_3, "Piutang Lain-lain", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_4, new SptFieldItem(SLOT_8A_I_4, "Persediaan", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_5, new SptFieldItem(SLOT_8A_I_5, "Biaya Dibayar Dimuka", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_6, new SptFieldItem(SLOT_8A_I_6, "Investasi Jangka Pendek", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_7, new SptFieldItem(SLOT_8A_I_7, "Aset Pajak Tangguhan", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_8, new SptFieldItem(SLOT_8A_I_8, "Aset Tetap", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_9, new SptFieldItem(SLOT_8A_I_9, "Akumulasi Penyusutan", BigDecimal.ZERO));
+        groups.put(SLOT_8A_I_10, new SptFieldItem(SLOT_8A_I_10, "Aset Lainnya", BigDecimal.ZERO));
 
         for (BalanceSheetItem item : bs.assetItems()) {
             String code = item.account().getAccountCode();
@@ -628,35 +647,35 @@ public class SptTahunanExportService {
 
     private String mapAssetCodeToField(String code, NormalBalance normalBalance) {
         // Cash & equivalents: 1.1.01-1.1.09
-        if (code.startsWith("1.1.0")) return "8A.I.1";
+        if (code.startsWith("1.1.0")) return SLOT_8A_I_1;
         // Trade receivables: 1.1.10
-        if (code.equals("1.1.10")) return "8A.I.2";
+        if (code.equals("1.1.10")) return SLOT_8A_I_2;
         // Other receivables: 1.1.11-1.1.14
-        if (code.startsWith("1.1.1") && !code.equals("1.1.10") && !code.equals("1.1.15")) return "8A.I.3";
+        if (code.startsWith("1.1.1") && !code.equals("1.1.10") && !code.equals("1.1.15")) return SLOT_8A_I_3;
         // Prepaid expenses: 1.1.15-1.1.19
         if (code.equals("1.1.15") || code.startsWith("1.1.16") || code.startsWith("1.1.17")
-                || code.startsWith("1.1.18") || code.startsWith("1.1.19")) return "8A.I.5";
+                || code.startsWith("1.1.18") || code.startsWith("1.1.19")) return SLOT_8A_I_5;
         // Short-term investments: 1.1.21 (Logam Mulia), 1.1.4x
-        if (code.equals("1.1.21") || code.startsWith("1.1.4")) return "8A.I.6";
+        if (code.equals("1.1.21") || code.startsWith("1.1.4")) return SLOT_8A_I_6;
         // Tax assets: 1.1.25+ (PPN Masukan, Kredit Pajak PPh 23, PPN Dipungut Pemungut, etc.)
-        if (code.startsWith("1.1.2")) return "8A.I.7";
+        if (code.startsWith("1.1.2")) return SLOT_8A_I_7;
         // Inventory: 1.1.3x
-        if (code.startsWith("1.1.3")) return "8A.I.4";
+        if (code.startsWith("1.1.3")) return SLOT_8A_I_4;
         // Fixed assets (contra-assets with CREDIT normal balance = accumulated depreciation)
-        if ((code.startsWith("1.2") || code.startsWith("1.3")) && normalBalance == NormalBalance.CREDIT) return "8A.I.9";
-        if (code.startsWith("1.2") || code.startsWith("1.3")) return "8A.I.8";
-        return "8A.I.10";
+        if ((code.startsWith("1.2") || code.startsWith("1.3")) && normalBalance == NormalBalance.CREDIT) return SLOT_8A_I_9;
+        if (code.startsWith("1.2") || code.startsWith("1.3")) return SLOT_8A_I_8;
+        return SLOT_8A_I_10;
     }
 
     private List<SptFieldItem> mapLiabilityEquityItems(BalanceSheetReport bs) {
         Map<String, SptFieldItem> groups = new LinkedHashMap<>();
-        groups.put("8A.II.1", new SptFieldItem("8A.II.1", "Hutang Usaha", BigDecimal.ZERO));
-        groups.put("8A.II.2", new SptFieldItem("8A.II.2", "Hutang Pajak", BigDecimal.ZERO));
-        groups.put("8A.II.3", new SptFieldItem("8A.II.3", "Hutang Lain-lain", BigDecimal.ZERO));
-        groups.put("8A.II.4", new SptFieldItem("8A.II.4", "Hutang Jangka Panjang", BigDecimal.ZERO));
-        groups.put("8A.II.5", new SptFieldItem("8A.II.5", "Modal Disetor", BigDecimal.ZERO));
-        groups.put("8A.II.6", new SptFieldItem("8A.II.6", "Laba Ditahan", BigDecimal.ZERO));
-        groups.put("8A.II.7", new SptFieldItem("8A.II.7", "Laba Tahun Berjalan", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_1, new SptFieldItem(SLOT_8A_II_1, "Hutang Usaha", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_2, new SptFieldItem(SLOT_8A_II_2, "Hutang Pajak", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_3, new SptFieldItem(SLOT_8A_II_3, "Hutang Lain-lain", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_4, new SptFieldItem(SLOT_8A_II_4, "Hutang Jangka Panjang", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_5, new SptFieldItem(SLOT_8A_II_5, "Modal Disetor", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_6, new SptFieldItem(SLOT_8A_II_6, "Laba Ditahan", BigDecimal.ZERO));
+        groups.put(SLOT_8A_II_7, new SptFieldItem(SLOT_8A_II_7, "Laba Tahun Berjalan", BigDecimal.ZERO));
 
         for (BalanceSheetItem item : bs.liabilityItems()) {
             String code = item.account().getAccountCode();
@@ -671,26 +690,26 @@ public class SptTahunanExportService {
         }
 
         // Current year earnings from balance sheet
-        groups.computeIfPresent("8A.II.7", (k, v) ->
+        groups.computeIfPresent(SLOT_8A_II_7, (k, v) ->
                 new SptFieldItem(k, v.label(), v.amount().add(bs.currentYearEarnings())));
 
         return new ArrayList<>(groups.values());
     }
 
     private String mapLiabilityCodeToField(String code) {
-        if (code.equals("2.1.01")) return "8A.II.1";
+        if (code.equals("2.1.01")) return SLOT_8A_II_1;
         // Tax payables: 2.1.02, 2.1.03, 2.1.20-2.1.24
-        if (code.equals("2.1.02") || code.equals("2.1.03") || code.startsWith("2.1.2")) return "8A.II.2";
+        if (code.equals("2.1.02") || code.equals("2.1.03") || code.startsWith("2.1.2")) return SLOT_8A_II_2;
         // Long-term liabilities: 2.2.x
-        if (code.startsWith("2.2")) return "8A.II.4";
+        if (code.startsWith("2.2")) return SLOT_8A_II_4;
         // Other current liabilities
-        return "8A.II.3";
+        return SLOT_8A_II_3;
     }
 
     private String mapEquityCodeToField(String code) {
-        if (code.startsWith("3.1")) return "8A.II.5";
-        if (code.equals("3.2.02")) return "8A.II.7";
-        return "8A.II.6";
+        if (code.startsWith("3.1")) return SLOT_8A_II_5;
+        if (code.equals("3.2.02")) return SLOT_8A_II_7;
+        return SLOT_8A_II_6;
     }
 
     private SptLampiranI buildLampiranI(L1Report l1) {

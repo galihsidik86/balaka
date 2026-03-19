@@ -769,7 +769,7 @@ class DataExportImportTest {
             byte[] zipData = buildZipWithFiles("99_unknown_table.csv", csv);
             // Unknown CSV files are logged as warnings but do not fail
             DataImportService.ImportResult result = dataImportService.importAllData(zipData);
-            assertThat(result.totalRecords()).isEqualTo(0);
+            assertThat(result.totalRecords()).isZero();
         }
 
         @Test

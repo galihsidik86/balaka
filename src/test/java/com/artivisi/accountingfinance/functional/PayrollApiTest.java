@@ -402,7 +402,7 @@ class PayrollApiTest extends PlaywrightTestBase {
 
     @Test
     @DisplayName("Schedule validation rejects invalid dayOfMonth")
-    void scheduleValidation() throws Exception {
+    void scheduleValidation() {
         // dayOfMonth = 0 (invalid)
         Map<String, Object> request = new HashMap<>();
         request.put("dayOfMonth", 0);

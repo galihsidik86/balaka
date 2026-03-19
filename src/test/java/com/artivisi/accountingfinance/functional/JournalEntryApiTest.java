@@ -158,7 +158,7 @@ class JournalEntryApiTest extends PlaywrightTestBase {
 
         @Test
         @DisplayName("Category stored in notes")
-        void categoryInNotes() throws Exception {
+        void categoryInNotes() {
             Map<String, Object> request = buildJournalEntryRequest(
                     "2025-12-31",
                     "Closing accrued expenses",
@@ -264,7 +264,7 @@ class JournalEntryApiTest extends PlaywrightTestBase {
 
         @Test
         @DisplayName("Unbalanced entry returns 400")
-        void unbalanced() throws Exception {
+        void unbalanced() {
             Map<String, Object> request = buildJournalEntryRequest(
                     "2025-12-31",
                     "Unbalanced entry",
@@ -281,7 +281,7 @@ class JournalEntryApiTest extends PlaywrightTestBase {
 
         @Test
         @DisplayName("Both debit and credit on same line returns 400")
-        void bothDebitAndCredit() throws Exception {
+        void bothDebitAndCredit() {
             Map<String, Object> request = buildJournalEntryRequest(
                     "2025-12-31",
                     "Both sides entry",
@@ -298,7 +298,7 @@ class JournalEntryApiTest extends PlaywrightTestBase {
 
         @Test
         @DisplayName("Neither debit nor credit returns 400")
-        void neitherDebitNorCredit() throws Exception {
+        void neitherDebitNorCredit() {
             Map<String, Object> request = buildJournalEntryRequest(
                     "2025-12-31",
                     "Zero entry",
@@ -315,7 +315,7 @@ class JournalEntryApiTest extends PlaywrightTestBase {
 
         @Test
         @DisplayName("Fewer than 2 lines returns 400")
-        void fewerThan2Lines() throws Exception {
+        void fewerThan2Lines() {
             Map<String, Object> request = buildJournalEntryRequest(
                     "2025-12-31",
                     "Single line entry",
@@ -353,7 +353,7 @@ class JournalEntryApiTest extends PlaywrightTestBase {
 
         @Test
         @DisplayName("Non-existent account returns 400")
-        void nonExistentAccount() throws Exception {
+        void nonExistentAccount() {
             String fakeAccountId = UUID.randomUUID().toString();
 
             Map<String, Object> request = buildJournalEntryRequest(

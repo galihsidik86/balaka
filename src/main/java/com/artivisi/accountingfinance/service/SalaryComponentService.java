@@ -161,7 +161,7 @@ public class SalaryComponentService {
     public EmployeeSalaryComponent assignComponentToEmployee(Employee employee, SalaryComponent component,
                                                               LocalDate effectiveDate, java.math.BigDecimal rate,
                                                               java.math.BigDecimal amount, String notes) {
-        return assignComponentToEmployee(employee, component, effectiveDate, null, rate, amount, notes);
+        return doAssignComponentToEmployee(employee, component, effectiveDate, null, rate, amount, notes);
     }
 
     @Transactional
@@ -169,6 +169,13 @@ public class SalaryComponentService {
                                                               LocalDate effectiveDate, LocalDate endDate,
                                                               java.math.BigDecimal rate,
                                                               java.math.BigDecimal amount, String notes) {
+        return doAssignComponentToEmployee(employee, component, effectiveDate, endDate, rate, amount, notes);
+    }
+
+    private EmployeeSalaryComponent doAssignComponentToEmployee(Employee employee, SalaryComponent component,
+                                                                 LocalDate effectiveDate, LocalDate endDate,
+                                                                 java.math.BigDecimal rate,
+                                                                 java.math.BigDecimal amount, String notes) {
         // Check for overlapping date range with existing assignments of the same component
         LocalDate overlapEnd = (endDate != null) ? endDate : LocalDate.of(9999, 12, 31);
         if (employeeSalaryComponentRepository.existsOverlappingAssignment(employee, component, effectiveDate, overlapEnd)) {

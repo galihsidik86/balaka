@@ -497,7 +497,7 @@ public class PayrollApiController {
         schedule.setJkkRiskClass(request.jkkRiskClass());
         schedule.setAutoCalculate(request.autoCalculate());
         schedule.setAutoApprove(request.autoApprove());
-        schedule.setActive(request.active() != null ? request.active() : true);
+        schedule.setActive(request.active() == null || request.active());
 
         PayrollSchedule saved = payrollService.saveSchedule(schedule);
         return ResponseEntity.ok(ScheduleResponse.from(saved));

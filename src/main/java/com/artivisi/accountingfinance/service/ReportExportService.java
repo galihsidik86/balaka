@@ -71,6 +71,18 @@ public class ReportExportService {
     private static final String COL_LABA_BERSIH_KOMERSIAL = "Laba Bersih Komersial";
     private static final String COL_KOREKSI_FISKAL_NETO = "Koreksi Fiskal Neto";
     private static final String EXCEL_NUMBER_FORMAT = "#,##0";
+    private static final String LABEL_TOTAL_ASET = "Total Aset";
+    private static final String LABEL_LIABILITAS = "LIABILITAS";
+    private static final String LABEL_TOTAL_LIABILITAS = "Total Liabilitas";
+    private static final String LABEL_EKUITAS = "EKUITAS";
+    private static final String LABEL_LABA_TAHUN_BERJALAN = "  Laba Tahun Berjalan";
+    private static final String LABEL_TOTAL_EKUITAS = "Total Ekuitas";
+    private static final String LABEL_LAPORAN_LABA_RUGI = "LAPORAN LABA RUGI";
+    private static final String LABEL_PENDAPATAN = "PENDAPATAN";
+    private static final String LABEL_TOTAL_PENDAPATAN = "Total Pendapatan";
+    private static final String LABEL_TOTAL_BEBAN = "Total Beban";
+    private static final String LABEL_LABA_BERSIH = "LABA BERSIH";
+    private static final String LABEL_RUGI_BERSIH = "RUGI BERSIH";
     private static final DecimalFormat NUMBER_FORMAT;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.of("id", "ID"));
 
@@ -205,25 +217,25 @@ public class ReportExportService {
                 addTableCell(table, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(table, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(table, "Total Aset", formatNumber(report.totalAssets()));
+            addSubtotalRow(table, LABEL_TOTAL_ASET, formatNumber(report.totalAssets()));
 
             // LIABILITIES
-            addSectionHeader(table, "LIABILITAS");
+            addSectionHeader(table, LABEL_LIABILITAS);
             for (ReportService.BalanceSheetItem item : report.liabilityItems()) {
                 addTableCell(table, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(table, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(table, "Total Liabilitas", formatNumber(report.totalLiabilities()));
+            addSubtotalRow(table, LABEL_TOTAL_LIABILITAS, formatNumber(report.totalLiabilities()));
 
             // EQUITY
-            addSectionHeader(table, "EKUITAS");
+            addSectionHeader(table, LABEL_EKUITAS);
             for (ReportService.BalanceSheetItem item : report.equityItems()) {
                 addTableCell(table, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(table, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addTableCell(table, "  Laba Tahun Berjalan", Element.ALIGN_LEFT);
+            addTableCell(table, LABEL_LABA_TAHUN_BERJALAN, Element.ALIGN_LEFT);
             addTableCell(table, formatNumber(report.currentYearEarnings()), Element.ALIGN_RIGHT);
-            addSubtotalRow(table, "Total Ekuitas", formatNumber(report.totalEquity()));
+            addSubtotalRow(table, LABEL_TOTAL_EKUITAS, formatNumber(report.totalEquity()));
 
             // TOTAL LIABILITIES + EQUITY
             BigDecimal totalLiabilitiesAndEquity = report.totalLiabilities().add(report.totalEquity());
@@ -263,36 +275,36 @@ public class ReportExportService {
                 createNumericCell(row, 1, item.balance(), numberStyle);
             }
             Row assetTotal = sheet.createRow(rowNum++);
-            createCell(assetTotal, 0, "Total Aset", totalStyle);
+            createCell(assetTotal, 0, LABEL_TOTAL_ASET, totalStyle);
             createNumericCell(assetTotal, 1, report.totalAssets(), totalStyle);
             rowNum++;
 
             // LIABILITIES
             Row liabilityHeader = sheet.createRow(rowNum++);
-            createCell(liabilityHeader, 0, "LIABILITAS", sectionStyle);
+            createCell(liabilityHeader, 0, LABEL_LIABILITAS, sectionStyle);
             for (ReportService.BalanceSheetItem item : report.liabilityItems()) {
                 Row row = sheet.createRow(rowNum++);
                 createCell(row, 0, "  " + item.account().getAccountName(), textStyle);
                 createNumericCell(row, 1, item.balance(), numberStyle);
             }
             Row liabilityTotal = sheet.createRow(rowNum++);
-            createCell(liabilityTotal, 0, "Total Liabilitas", totalStyle);
+            createCell(liabilityTotal, 0, LABEL_TOTAL_LIABILITAS, totalStyle);
             createNumericCell(liabilityTotal, 1, report.totalLiabilities(), totalStyle);
             rowNum++;
 
             // EQUITY
             Row equityHeader = sheet.createRow(rowNum++);
-            createCell(equityHeader, 0, "EKUITAS", sectionStyle);
+            createCell(equityHeader, 0, LABEL_EKUITAS, sectionStyle);
             for (ReportService.BalanceSheetItem item : report.equityItems()) {
                 Row row = sheet.createRow(rowNum++);
                 createCell(row, 0, "  " + item.account().getAccountName(), textStyle);
                 createNumericCell(row, 1, item.balance(), numberStyle);
             }
             Row earningsRow = sheet.createRow(rowNum++);
-            createCell(earningsRow, 0, "  Laba Tahun Berjalan", textStyle);
+            createCell(earningsRow, 0, LABEL_LABA_TAHUN_BERJALAN, textStyle);
             createNumericCell(earningsRow, 1, report.currentYearEarnings(), numberStyle);
             Row equityTotal = sheet.createRow(rowNum++);
-            createCell(equityTotal, 0, "Total Ekuitas", totalStyle);
+            createCell(equityTotal, 0, LABEL_TOTAL_EKUITAS, totalStyle);
             createNumericCell(equityTotal, 1, report.totalEquity(), totalStyle);
             rowNum++;
 
@@ -318,7 +330,7 @@ public class ReportExportService {
             PdfWriter.getInstance(document, baos);
             document.open();
 
-            addReportHeader(document, "LAPORAN LABA RUGI", "Income Statement",
+            addReportHeader(document, LABEL_LAPORAN_LABA_RUGI, "Income Statement",
                     LABEL_PERIODE + report.startDate().format(DATE_FORMAT) + " - " + report.endDate().format(DATE_FORMAT));
 
             PdfPTable table = new PdfPTable(2);
@@ -327,12 +339,12 @@ public class ReportExportService {
             table.setSpacingBefore(20);
 
             // REVENUE
-            addSectionHeader(table, "PENDAPATAN");
+            addSectionHeader(table, LABEL_PENDAPATAN);
             for (ReportService.IncomeStatementItem item : report.revenueItems()) {
                 addTableCell(table, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(table, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(table, "Total Pendapatan", formatNumber(report.totalRevenue()));
+            addSubtotalRow(table, LABEL_TOTAL_PENDAPATAN, formatNumber(report.totalRevenue()));
 
             // EXPENSES
             addSectionHeader(table, "BEBAN OPERASIONAL");
@@ -340,10 +352,10 @@ public class ReportExportService {
                 addTableCell(table, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(table, "(" + formatNumber(item.balance()) + ")", Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(table, "Total Beban", "(" + formatNumber(report.totalExpense()) + ")");
+            addSubtotalRow(table, LABEL_TOTAL_BEBAN, "(" + formatNumber(report.totalExpense()) + ")");
 
             // NET INCOME
-            String netIncomeLabel = report.netIncome().compareTo(BigDecimal.ZERO) >= 0 ? "LABA BERSIH" : "RUGI BERSIH";
+            String netIncomeLabel = report.netIncome().compareTo(BigDecimal.ZERO) >= 0 ? LABEL_LABA_BERSIH : LABEL_RUGI_BERSIH;
             addTotalRow(table, netIncomeLabel, formatNumber(report.netIncome()), null);
 
             document.add(table);
@@ -363,7 +375,7 @@ public class ReportExportService {
             Sheet sheet = workbook.createSheet("Laporan Laba Rugi");
             int rowNum = 0;
 
-            rowNum = addExcelHeader(workbook, sheet, rowNum, "LAPORAN LABA RUGI",
+            rowNum = addExcelHeader(workbook, sheet, rowNum, LABEL_LAPORAN_LABA_RUGI,
                     LABEL_PERIODE + report.startDate().format(DATE_FORMAT) + " - " + report.endDate().format(DATE_FORMAT), 2);
 
             CellStyle sectionStyle = createSectionStyle(workbook);
@@ -373,14 +385,14 @@ public class ReportExportService {
 
             // REVENUE
             Row revenueHeader = sheet.createRow(rowNum++);
-            createCell(revenueHeader, 0, "PENDAPATAN", sectionStyle);
+            createCell(revenueHeader, 0, LABEL_PENDAPATAN, sectionStyle);
             for (ReportService.IncomeStatementItem item : report.revenueItems()) {
                 Row row = sheet.createRow(rowNum++);
                 createCell(row, 0, "  " + item.account().getAccountName(), textStyle);
                 createNumericCell(row, 1, item.balance(), numberStyle);
             }
             Row revenueTotal = sheet.createRow(rowNum++);
-            createCell(revenueTotal, 0, "Total Pendapatan", totalStyle);
+            createCell(revenueTotal, 0, LABEL_TOTAL_PENDAPATAN, totalStyle);
             createNumericCell(revenueTotal, 1, report.totalRevenue(), totalStyle);
             rowNum++;
 
@@ -393,12 +405,12 @@ public class ReportExportService {
                 createNumericCell(row, 1, item.balance().negate(), numberStyle);
             }
             Row expenseTotal = sheet.createRow(rowNum++);
-            createCell(expenseTotal, 0, "Total Beban", totalStyle);
+            createCell(expenseTotal, 0, LABEL_TOTAL_BEBAN, totalStyle);
             createNumericCell(expenseTotal, 1, report.totalExpense().negate(), totalStyle);
             rowNum++;
 
             // NET INCOME
-            String netIncomeLabel = report.netIncome().compareTo(BigDecimal.ZERO) >= 0 ? "LABA BERSIH" : "RUGI BERSIH";
+            String netIncomeLabel = report.netIncome().compareTo(BigDecimal.ZERO) >= 0 ? LABEL_LABA_BERSIH : LABEL_RUGI_BERSIH;
             Row netIncomeRow = sheet.createRow(rowNum);
             createCell(netIncomeRow, 0, netIncomeLabel, totalStyle);
             createNumericCell(netIncomeRow, 1, report.netIncome(), totalStyle);
@@ -466,23 +478,23 @@ public class ReportExportService {
                 addTableCell(bsTable, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(bsTable, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(bsTable, "Total Aset", formatNumber(balanceSheet.totalAssets()));
+            addSubtotalRow(bsTable, LABEL_TOTAL_ASET, formatNumber(balanceSheet.totalAssets()));
 
-            addSectionHeader(bsTable, "LIABILITAS");
+            addSectionHeader(bsTable, LABEL_LIABILITAS);
             for (ReportService.BalanceSheetItem item : balanceSheet.liabilityItems()) {
                 addTableCell(bsTable, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(bsTable, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(bsTable, "Total Liabilitas", formatNumber(balanceSheet.totalLiabilities()));
+            addSubtotalRow(bsTable, LABEL_TOTAL_LIABILITAS, formatNumber(balanceSheet.totalLiabilities()));
 
-            addSectionHeader(bsTable, "EKUITAS");
+            addSectionHeader(bsTable, LABEL_EKUITAS);
             for (ReportService.BalanceSheetItem item : balanceSheet.equityItems()) {
                 addTableCell(bsTable, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(bsTable, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addTableCell(bsTable, "  Laba Tahun Berjalan", Element.ALIGN_LEFT);
+            addTableCell(bsTable, LABEL_LABA_TAHUN_BERJALAN, Element.ALIGN_LEFT);
             addTableCell(bsTable, formatNumber(balanceSheet.currentYearEarnings()), Element.ALIGN_RIGHT);
-            addSubtotalRow(bsTable, "Total Ekuitas", formatNumber(balanceSheet.totalEquity()));
+            addSubtotalRow(bsTable, LABEL_TOTAL_EKUITAS, formatNumber(balanceSheet.totalEquity()));
 
             BigDecimal totalLiabilitiesAndEquity = balanceSheet.totalLiabilities().add(balanceSheet.totalEquity());
             addTotalRow(bsTable, TOTAL_LIABILITIES_EQUITY, formatNumber(totalLiabilitiesAndEquity), null);
@@ -503,7 +515,7 @@ public class ReportExportService {
             document.add(npwpPara2);
 
             // ---- LABA RUGI (Income Statement) ----
-            Paragraph plTitle = new Paragraph("LAPORAN LABA RUGI", getBoldFont());
+            Paragraph plTitle = new Paragraph(LABEL_LAPORAN_LABA_RUGI, getBoldFont());
             plTitle.setAlignment(Element.ALIGN_CENTER);
             document.add(plTitle);
 
@@ -517,22 +529,22 @@ public class ReportExportService {
             plTable.setWidthPercentage(100);
             plTable.setWidths(new float[]{70, 30});
 
-            addSectionHeader(plTable, "PENDAPATAN");
+            addSectionHeader(plTable, LABEL_PENDAPATAN);
             for (ReportService.IncomeStatementItem item : incomeStatement.revenueItems()) {
                 addTableCell(plTable, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(plTable, formatNumber(item.balance()), Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(plTable, "Total Pendapatan", formatNumber(incomeStatement.totalRevenue()));
+            addSubtotalRow(plTable, LABEL_TOTAL_PENDAPATAN, formatNumber(incomeStatement.totalRevenue()));
 
             addSectionHeader(plTable, "BEBAN");
             for (ReportService.IncomeStatementItem item : incomeStatement.expenseItems()) {
                 addTableCell(plTable, "  " + item.account().getAccountName(), Element.ALIGN_LEFT);
                 addTableCell(plTable, "(" + formatNumber(item.balance()) + ")", Element.ALIGN_RIGHT);
             }
-            addSubtotalRow(plTable, "Total Beban", "(" + formatNumber(incomeStatement.totalExpense()) + ")");
+            addSubtotalRow(plTable, LABEL_TOTAL_BEBAN, "(" + formatNumber(incomeStatement.totalExpense()) + ")");
 
             String netIncomeLabel = incomeStatement.netIncome().compareTo(BigDecimal.ZERO) >= 0
-                    ? "LABA BERSIH" : "RUGI BERSIH";
+                    ? LABEL_LABA_BERSIH : LABEL_RUGI_BERSIH;
             addTotalRow(plTable, netIncomeLabel, formatNumber(incomeStatement.netIncome()), null);
 
             document.add(plTable);
