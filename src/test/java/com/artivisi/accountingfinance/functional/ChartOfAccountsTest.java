@@ -309,25 +309,67 @@ class ChartOfAccountsTest extends PlaywrightTestBase {
     class AccountActionsTests {
 
         @Test
-        @DisplayName("Should create new account successfully")
+        @DisplayName("Should create new account successfully and persist boolean fields")
         void shouldCreateNewAccountSuccessfully() {
             navigateTo("/accounts/new");
             waitForPageLoad();
 
-            // Fill account code with unique value
-            String uniqueCode = "TEST-" + System.currentTimeMillis() % 10000;
+            // Fill form matching the bug report scenario:
+            // LIABILITY type, permanent checked, isHeader unchecked, with parent
+            String uniqueCode = "2.1.99";
             page.locator("#accountCode").fill(uniqueCode);
-            page.locator("#accountName").fill("Test Account " + uniqueCode);
-            page.getByTestId("account-type").selectOption("EXPENSE");
+            page.locator("#accountName").fill("Hutang Test");
+            page.getByTestId("account-type").selectOption("LIABILITY");
+
+            // Select parent "2.1 - Liabilitas Jangka Pendek"
+            page.locator("#parentId").selectOption(
+                    new com.microsoft.playwright.options.SelectOption().setLabel("2.1 - Liabilitas Jangka Pendek"));
+
+            // Permanent should be auto-checked for LIABILITY; verify it
+            assertThat(page.locator("#permanent").isChecked())
+                .as("Permanent should be auto-checked for LIABILITY")
+                .isTrue();
+
+            // isHeader should be unchecked
+            assertThat(page.locator("#isHeader").isChecked())
+                .as("isHeader should be unchecked by default")
+                .isFalse();
 
             // Submit
             page.locator("#btn-simpan").click();
             waitForPageLoad();
 
-            // Should redirect to list on success
+            // Should redirect to list on success (not stay on form with error)
             assertThat(page.url())
                 .as("Should redirect to accounts list after successful create")
                 .contains("/accounts");
+            assertThat(page.url())
+                .as("Should not stay on /new form (which would indicate an error)")
+                .doesNotContain("/new");
+
+            // Verify the account appears in the list
+            String accountRowId = "#account-row-" + uniqueCode.replace(".", "-");
+            page.locator("#btn-expand-2").click();
+            page.waitForTimeout(300);
+            page.locator("#btn-expand-2-1").click();
+            page.waitForTimeout(300);
+
+            assertThat(page.locator(accountRowId)).isVisible();
+
+            // Edit the created account to verify boolean fields were persisted correctly
+            String editBtnId = "#btn-edit-" + uniqueCode.replace(".", "-");
+            page.locator(editBtnId).click();
+            waitForPageLoad();
+
+            assertThat(page.locator("#permanent").isChecked())
+                .as("Permanent should be true after save")
+                .isTrue();
+            assertThat(page.locator("#isHeader").isChecked())
+                .as("isHeader should be false after save")
+                .isFalse();
+            assertThat(page.locator("input[name='active']").isChecked())
+                .as("Active should be true for newly created account")
+                .isTrue();
         }
 
         @Test

@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.entity.CompanyBankAccount;
+import com.artivisi.accountingfinance.util.FormUtils;
 import com.artivisi.accountingfinance.entity.CompanyConfig;
 import com.artivisi.accountingfinance.entity.DeviceToken;
 import com.artivisi.accountingfinance.entity.SecurityAuditLog;
@@ -175,7 +176,8 @@ public class SettingsController {
 
     private CompanyBankAccount toEntity(BankAccountForm form) {
         CompanyBankAccount entity = new CompanyBankAccount();
-        BeanUtils.copyProperties(form, entity, "id");
+        BeanUtils.copyProperties(form, entity, "id", "isDefault");
+        entity.setIsDefault(FormUtils.checkboxValue(form.getIsDefault()));
         return entity;
     }
 

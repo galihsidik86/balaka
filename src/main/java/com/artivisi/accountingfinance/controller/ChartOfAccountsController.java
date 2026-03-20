@@ -5,6 +5,7 @@ import com.artivisi.accountingfinance.enums.AccountType;
 import com.artivisi.accountingfinance.enums.NormalBalance;
 import com.artivisi.accountingfinance.security.Permission;
 import com.artivisi.accountingfinance.service.ChartOfAccountService;
+import com.artivisi.accountingfinance.util.FormUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -77,7 +78,10 @@ public class ChartOfAccountsController {
 
     private ChartOfAccount toEntity(AccountForm form) {
         ChartOfAccount entity = new ChartOfAccount();
-        BeanUtils.copyProperties(form, entity, "id", "parent");
+        BeanUtils.copyProperties(form, entity, "id", "parent", "isHeader", "permanent", "active");
+        entity.setIsHeader(FormUtils.checkboxValue(form.getIsHeader()));
+        entity.setPermanent(FormUtils.checkboxValue(form.getPermanent()));
+        entity.setActive(FormUtils.checkboxValue(form.getActive()));
         return entity;
     }
 
@@ -129,6 +133,7 @@ public class ChartOfAccountsController {
 
         try {
             ChartOfAccount account = toEntity(form);
+            account.setActive(true); // new accounts are always active
             // Set parent - service will inherit accountType and normalBalance from parent
             if (parentId != null) {
                 ChartOfAccount parent = chartOfAccountService.findById(parentId);

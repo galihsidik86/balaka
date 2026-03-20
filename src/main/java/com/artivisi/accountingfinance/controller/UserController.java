@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.entity.User;
+import com.artivisi.accountingfinance.util.FormUtils;
 import com.artivisi.accountingfinance.enums.AuditEventType;
 import com.artivisi.accountingfinance.enums.Role;
 import com.artivisi.accountingfinance.security.PasswordValidator;
@@ -79,7 +80,8 @@ public class UserController {
 
     private User toEntity(UserForm form) {
         User entity = new User();
-        BeanUtils.copyProperties(form, entity, "id");
+        BeanUtils.copyProperties(form, entity, "id", "active");
+        entity.setActive(FormUtils.checkboxValue(form.getActive()));
         return entity;
     }
 
@@ -154,6 +156,7 @@ public class UserController {
             }
 
             User user = toEntity(form);
+            user.setActive(true); // new users are always active
             user.setPassword(password);
             userService.create(user, roles);
             securityAuditService.log(AuditEventType.USER_CREATED,

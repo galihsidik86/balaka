@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.controller;
 
 import com.artivisi.accountingfinance.entity.SalaryComponent;
+import com.artivisi.accountingfinance.util.FormUtils;
 import com.artivisi.accountingfinance.entity.SalaryComponentType;
 import com.artivisi.accountingfinance.service.SalaryComponentService;
 import jakarta.validation.Valid;
@@ -130,7 +131,9 @@ public class SalaryComponentController {
 
         try {
             SalaryComponent component = new SalaryComponent();
-            BeanUtils.copyProperties(form, component, "id");
+            BeanUtils.copyProperties(form, component, "id", "isPercentage", "isTaxable");
+            component.setIsPercentage(FormUtils.checkboxValue(form.getIsPercentage()));
+            component.setIsTaxable(FormUtils.checkboxValue(form.getIsTaxable()));
             SalaryComponent saved = salaryComponentService.create(component);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Komponen gaji berhasil ditambahkan");
             return REDIRECT_SALARY_COMPONENTS + "/" + saved.getId();
@@ -181,7 +184,9 @@ public class SalaryComponentController {
 
         try {
             SalaryComponent component = new SalaryComponent();
-            BeanUtils.copyProperties(form, component, "id");
+            BeanUtils.copyProperties(form, component, "id", "isPercentage", "isTaxable");
+            component.setIsPercentage(FormUtils.checkboxValue(form.getIsPercentage()));
+            component.setIsTaxable(FormUtils.checkboxValue(form.getIsTaxable()));
             salaryComponentService.update(id, component);
             redirectAttributes.addFlashAttribute(ATTR_SUCCESS_MESSAGE, "Komponen gaji berhasil diperbarui");
             return REDIRECT_SALARY_COMPONENTS + "/" + id;
