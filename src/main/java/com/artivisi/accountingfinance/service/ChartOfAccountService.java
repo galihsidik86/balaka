@@ -46,6 +46,14 @@ public class ChartOfAccountService {
         return chartOfAccountRepository.findByAccountTypeAndActiveOrderByAccountCodeAsc(accountType, true);
     }
 
+    public Page<ChartOfAccount> findAll(Pageable pageable) {
+        return chartOfAccountRepository.findByActiveOrderByAccountCodeAsc(true, pageable);
+    }
+
+    public Page<ChartOfAccount> findByAccountType(AccountType accountType, Pageable pageable) {
+        return chartOfAccountRepository.findByAccountTypeAndActiveOrderByAccountCodeAsc(accountType, true, pageable);
+    }
+
     public List<ChartOfAccount> findTransactableAccounts() {
         return chartOfAccountRepository.findAllTransactableAccounts();
     }

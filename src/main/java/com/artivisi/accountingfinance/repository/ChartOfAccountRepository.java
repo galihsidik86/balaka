@@ -42,6 +42,10 @@ public interface ChartOfAccountRepository extends JpaRepository<ChartOfAccount, 
            "c.accountType IN :types ORDER BY c.accountCode")
     List<ChartOfAccount> findByAccountTypeIn(@Param("types") List<AccountType> types);
 
+    Page<ChartOfAccount> findByActiveOrderByAccountCodeAsc(Boolean active, Pageable pageable);
+
+    Page<ChartOfAccount> findByAccountTypeAndActiveOrderByAccountCodeAsc(AccountType accountType, Boolean active, Pageable pageable);
+
     long countByParentId(UUID parentId);
 
     List<ChartOfAccount> findByAccountCodeIn(List<String> accountCodes);
