@@ -379,7 +379,7 @@ function registerFormComponents() {
                 if (response.ok) {
                     const result = await response.json()
                     document.getElementById('quick-transaction-modal')?.close()
-                    globalThis.location.href = '/transactions/' + result.id
+                    window.location.href = '/transactions/' + result.transactionId
                 } else {
                     const errorText = await response.text()
                     alert('Gagal menyimpan: ' + errorText)
@@ -394,6 +394,298 @@ function registerFormComponents() {
         // Method - dispatch account changed event
         dispatchAccountChanged() {
             this.$dispatch('account-changed')
+        }
+    }))
+
+    // Free-form journal entry form
+    Alpine.data('journalEntryForm', () => ({
+        transactionDate: new Date().toISOString().split('T')[0],
+        description: '',
+        category: '',
+        totalDebit: 0,
+        totalCredit: 0,
+        submitting: false,
+        errorMessage: '',
+        lineCount: 2,
+        accountsData: [],
+        optionsHtml: '',
+
+        init() {
+            // Parse accounts JSON from data attribute
+            const dataEl = document.getElementById('journal-entry-accounts')
+            if (dataEl) {
+                try {
+                    this.accountsData = JSON.parse(dataEl.dataset.accounts || '[]')
+                } catch (_) {
+                    this.accountsData = []
+                }
+            }
+            // Cache the options HTML from the first server-rendered select
+            const firstSelect = document.querySelector('.journal-account-select')
+            if (firstSelect) {
+                this.optionsHtml = firstSelect.innerHTML
+            }
+            this.recalcTotals()
+        },
+
+        get isBalanced() {
+            return this.totalDebit === this.totalCredit && this.totalDebit > 0
+        },
+        get hasAmounts() {
+            return this.totalDebit > 0 || this.totalCredit > 0
+        },
+        get showDifference() {
+            return this.hasAmounts && !this.isBalanced
+        },
+        get balanceClass() {
+            return this.isBalanced ? 'text-gray-900' : 'text-red-600'
+        },
+        get formattedTotalDebit() {
+            return new Intl.NumberFormat('id-ID').format(this.totalDebit)
+        },
+        get formattedTotalCredit() {
+            return new Intl.NumberFormat('id-ID').format(this.totalCredit)
+        },
+        get formattedDifference() {
+            return new Intl.NumberFormat('id-ID').format(Math.abs(this.totalDebit - this.totalCredit))
+        },
+        get saveButtonText() {
+            return this.submitting ? 'Menyimpan...' : 'Simpan Draft'
+        },
+        get postButtonText() {
+            return this.submitting ? 'Menyimpan...' : 'Simpan & Posting'
+        },
+
+        recalcTotals() {
+            let debit = 0
+            let credit = 0
+            const container = document.getElementById('journal-lines-container')
+            if (!container) return
+            for (const input of container.querySelectorAll('.journal-debit')) {
+                debit += Number.parseInt(input.value.replaceAll(/\D/g, ''), 10) || 0
+            }
+            for (const input of container.querySelectorAll('.journal-credit')) {
+                credit += Number.parseInt(input.value.replaceAll(/\D/g, ''), 10) || 0
+            }
+            this.totalDebit = debit
+            this.totalCredit = credit
+        },
+
+        onDebitInput(e) {
+            const raw = Number.parseInt(e.target.value.replaceAll(/\D/g, ''), 10) || 0
+            e.target.value = raw > 0 ? new Intl.NumberFormat('id-ID').format(raw) : '0'
+            // Clear credit on same line if debit > 0
+            if (raw > 0) {
+                const line = e.target.closest('.journal-line')
+                const creditInput = line.querySelector('.journal-credit')
+                if (creditInput) {
+                    creditInput.value = '0'
+                    creditInput.disabled = true
+                    creditInput.classList.add('bg-gray-100', 'text-gray-400')
+                }
+            } else {
+                const line = e.target.closest('.journal-line')
+                const creditInput = line.querySelector('.journal-credit')
+                if (creditInput) {
+                    creditInput.disabled = false
+                    creditInput.classList.remove('bg-gray-100', 'text-gray-400')
+                }
+            }
+            this.recalcTotals()
+        },
+
+        onCreditInput(e) {
+            const raw = Number.parseInt(e.target.value.replaceAll(/\D/g, ''), 10) || 0
+            e.target.value = raw > 0 ? new Intl.NumberFormat('id-ID').format(raw) : '0'
+            // Clear debit on same line if credit > 0
+            if (raw > 0) {
+                const line = e.target.closest('.journal-line')
+                const debitInput = line.querySelector('.journal-debit')
+                if (debitInput) {
+                    debitInput.value = '0'
+                    debitInput.disabled = true
+                    debitInput.classList.add('bg-gray-100', 'text-gray-400')
+                }
+            } else {
+                const line = e.target.closest('.journal-line')
+                const debitInput = line.querySelector('.journal-debit')
+                if (debitInput) {
+                    debitInput.disabled = false
+                    debitInput.classList.remove('bg-gray-100', 'text-gray-400')
+                }
+            }
+            this.recalcTotals()
+        },
+
+        onAmountFocus(e) {
+            const raw = Number.parseInt(e.target.value.replaceAll(/\D/g, ''), 10) || 0
+            if (raw === 0) e.target.value = ''
+        },
+
+        onAmountBlur(e) {
+            const raw = Number.parseInt(e.target.value.replaceAll(/\D/g, ''), 10) || 0
+            if (raw === 0) e.target.value = '0'
+        },
+
+        onAccountChange() {
+            // No-op, value is read at submit time from DOM
+        },
+
+        addLine() {
+            const container = document.getElementById('journal-lines-container')
+            const idx = this.lineCount
+            this.lineCount++
+
+            const div = document.createElement('div')
+            div.className = 'grid grid-cols-12 gap-3 px-2 py-3 items-center border-b border-gray-100 journal-line'
+            div.setAttribute('data-testid', 'journal-line-' + idx)
+            div.innerHTML = '<div class="col-span-5">'
+                + '<select data-testid="account-select-' + idx + '" data-line-index="' + idx + '"'
+                + ' class="journal-account-select w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">'
+                + this.optionsHtml
+                + '</select></div>'
+                + '<div class="col-span-3">'
+                + '<input type="text" data-testid="debit-input-' + idx + '" data-line-index="' + idx + '" inputmode="numeric" value="0"'
+                + ' class="journal-debit w-full px-2 py-2 text-sm text-right border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></div>'
+                + '<div class="col-span-3">'
+                + '<input type="text" data-testid="credit-input-' + idx + '" data-line-index="' + idx + '" inputmode="numeric" value="0"'
+                + ' class="journal-credit w-full px-2 py-2 text-sm text-right border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></div>'
+                + '<div class="col-span-1 text-center">'
+                + '<button type="button" data-testid="remove-line-' + idx + '"'
+                + ' class="journal-remove-btn p-1 text-gray-400 hover:text-red-500 transition-colors">'
+                + '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>'
+                + '</button></div>'
+
+            // Attach event listeners
+            const self = this
+            div.querySelector('.journal-debit').addEventListener('input', function(e) { self.onDebitInput(e) })
+            div.querySelector('.journal-debit').addEventListener('focus', function(e) { self.onAmountFocus(e) })
+            div.querySelector('.journal-debit').addEventListener('blur', function(e) { self.onAmountBlur(e) })
+            div.querySelector('.journal-credit').addEventListener('input', function(e) { self.onCreditInput(e) })
+            div.querySelector('.journal-credit').addEventListener('focus', function(e) { self.onAmountFocus(e) })
+            div.querySelector('.journal-credit').addEventListener('blur', function(e) { self.onAmountBlur(e) })
+            div.querySelector('.journal-remove-btn').addEventListener('click', function() {
+                if (container.querySelectorAll('.journal-line').length > 2) {
+                    div.remove()
+                    self.recalcTotals()
+                }
+            })
+
+            container.appendChild(div)
+        },
+
+        collectLines() {
+            const container = document.getElementById('journal-lines-container')
+            const lines = []
+            for (const lineEl of container.querySelectorAll('.journal-line')) {
+                const accountId = lineEl.querySelector('.journal-account-select').value
+                const debit = Number.parseInt(lineEl.querySelector('.journal-debit').value.replaceAll(/\D/g, ''), 10) || 0
+                const credit = Number.parseInt(lineEl.querySelector('.journal-credit').value.replaceAll(/\D/g, ''), 10) || 0
+                lines.push({ accountId, debit, credit })
+            }
+            return lines
+        },
+
+        validate() {
+            this.errorMessage = ''
+            if (!this.transactionDate) {
+                this.errorMessage = 'Tanggal transaksi wajib diisi'
+                return false
+            }
+            if (!this.description.trim()) {
+                this.errorMessage = 'Deskripsi wajib diisi'
+                return false
+            }
+            const lines = this.collectLines()
+            for (let i = 0; i < lines.length; i++) {
+                if (!lines[i].accountId) {
+                    this.errorMessage = 'Baris ' + (i + 1) + ': pilih akun'
+                    return false
+                }
+                if (lines[i].debit === 0 && lines[i].credit === 0) {
+                    this.errorMessage = 'Baris ' + (i + 1) + ': isi debit atau kredit'
+                    return false
+                }
+            }
+            if (!this.isBalanced) {
+                this.errorMessage = 'Jurnal tidak seimbang. Total debit harus sama dengan total kredit.'
+                return false
+            }
+            return true
+        },
+
+        buildHeaders() {
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content
+            const headers = { 'Content-Type': 'application/json' }
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken
+            }
+            return headers
+        },
+
+        buildPayload() {
+            return {
+                transactionDate: this.transactionDate,
+                description: this.description.trim(),
+                category: this.category || null,
+                lines: this.collectLines()
+            }
+        },
+
+        async saveDraft() {
+            if (!this.validate()) return
+            this.submitting = true
+            try {
+                const response = await fetch('/transactions/journal-entry', {
+                    method: 'POST',
+                    headers: this.buildHeaders(),
+                    body: JSON.stringify(this.buildPayload())
+                })
+                if (!response.ok) {
+                    const err = await response.json()
+                    throw new Error(err.message || err.error || 'Gagal menyimpan jurnal')
+                }
+                const result = await response.json()
+                window.location.href = '/transactions/' + result.transactionId
+            } catch (e) {
+                this.errorMessage = e.message
+            } finally {
+                this.submitting = false
+            }
+        },
+
+        async saveAndPost() {
+            if (!this.validate()) return
+            this.submitting = true
+            try {
+                const createResponse = await fetch('/transactions/journal-entry', {
+                    method: 'POST',
+                    headers: this.buildHeaders(),
+                    body: JSON.stringify(this.buildPayload())
+                })
+                if (!createResponse.ok) {
+                    const err = await createResponse.json()
+                    throw new Error(err.message || err.error || 'Gagal menyimpan jurnal')
+                }
+                const draft = await createResponse.json()
+
+                const postHeaders = this.buildHeaders()
+                delete postHeaders['Content-Type']
+                const postResponse = await fetch('/transactions/api/' + draft.transactionId + '/post', {
+                    method: 'POST',
+                    headers: postHeaders
+                })
+                if (!postResponse.ok) {
+                    const err = await postResponse.json()
+                    throw new Error(err.message || err.error || 'Gagal posting jurnal')
+                }
+                window.location.href = '/transactions/' + draft.transactionId
+            } catch (e) {
+                this.errorMessage = e.message
+            } finally {
+                this.submitting = false
+            }
         }
     }))
 

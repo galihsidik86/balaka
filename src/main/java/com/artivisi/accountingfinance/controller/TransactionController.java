@@ -1,6 +1,8 @@
 package com.artivisi.accountingfinance.controller;
 
+import com.artivisi.accountingfinance.dto.JournalEntryRequest;
 import com.artivisi.accountingfinance.dto.TransactionDto;
+import com.artivisi.accountingfinance.dto.TransactionResponse;
 import com.artivisi.accountingfinance.dto.VoidTransactionDto;
 import com.artivisi.accountingfinance.entity.ChartOfAccount;
 import com.artivisi.accountingfinance.entity.Invoice;
@@ -20,6 +22,7 @@ import com.artivisi.accountingfinance.service.ProjectService;
 import com.artivisi.accountingfinance.service.TemplateExecutionEngine;
 import com.artivisi.accountingfinance.service.TagService;
 import com.artivisi.accountingfinance.service.TaxTransactionDetailService;
+import com.artivisi.accountingfinance.service.TransactionApiService;
 import com.artivisi.accountingfinance.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +79,7 @@ public class TransactionController {
     private final TagService tagService;
     private final TaxTransactionDetailService taxTransactionDetailService;
     private final TemplateExecutionEngine templateExecutionEngine;
+    private final TransactionApiService transactionApiService;
     private final com.artivisi.accountingfinance.service.DashboardService dashboardService;
 
     @GetMapping
@@ -403,6 +407,42 @@ public class TransactionController {
                 entry.debitAmount(),
                 entry.creditAmount()
         );
+    }
+
+    // ========== Free-Form Journal Entry ==========
+
+    @GetMapping("/journal-entry/new")
+    @PreAuthorize("hasAuthority('" + Permission.TRANSACTION_CREATE + "')")
+    public String journalEntryForm(Model model) {
+        model.addAttribute(ATTR_CURRENT_PAGE, PAGE_TRANSACTIONS);
+        model.addAttribute(ATTR_ACCOUNTS, chartOfAccountService.findTransactableAccounts());
+
+        // JSON for Alpine data attribute (used by journalEntryForm component to add dynamic lines)
+        List<ChartOfAccount> accounts = chartOfAccountService.findTransactableAccounts();
+        List<Map<String, String>> accountsList = accounts.stream()
+                .map(a -> Map.of(
+                        "id", a.getId().toString(),
+                        "code", a.getAccountCode(),
+                        "name", a.getAccountName()))
+                .toList();
+        try {
+            model.addAttribute("accountsJson", new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(accountsList));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            model.addAttribute("accountsJson", "[]");
+        }
+
+        return "transactions/journal-entry-form";
+    }
+
+    @PostMapping("/journal-entry")
+    @ResponseBody
+    @PreAuthorize("hasAuthority('" + Permission.TRANSACTION_CREATE + "')")
+    public ResponseEntity<TransactionResponse> journalEntryCreate(
+            @Valid @RequestBody JournalEntryRequest request,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : USER_SYSTEM;
+        TransactionResponse response = transactionApiService.createJournalEntry(request, username);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/api")

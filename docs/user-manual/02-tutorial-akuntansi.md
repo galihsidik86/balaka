@@ -390,6 +390,60 @@ TOTAL KEWAJIBAN + EKUITAS Rp 150.000.000
 
 ---
 
+## Jurnal Manual (Free-Form Journal Entry)
+
+Untuk transaksi yang tidak cocok dengan template yang ada, gunakan fitur **Jurnal Manual**. Fitur ini memungkinkan input baris debit/kredit langsung tanpa template.
+
+### Kapan Menggunakan Jurnal Manual?
+
+- Jurnal penutup (closing entries)
+- Jurnal penyesuaian (adjusting entries)
+- Jurnal pembuka (opening balances)
+- Jurnal koreksi
+- Transaksi non-standar lainnya
+
+### Cara Membuat Jurnal Manual
+
+1. Buka menu **Transaksi**
+2. Klik tombol **Jurnal Manual** di sebelah kolom pencarian template
+
+![Form Jurnal Manual Kosong](screenshots/journal-entry/form-empty.png)
+
+3. Isi field:
+   - **Tanggal Transaksi**: Tanggal jurnal
+   - **Kategori**: Pilih jenis jurnal (Penutup, Penyesuaian, Pembuka, Koreksi) — opsional
+   - **Deskripsi**: Keterangan jurnal
+4. Tambahkan baris jurnal:
+   - Pilih **Akun** dari dropdown
+   - Isi nominal di kolom **Debit** atau **Kredit**
+   - Klik **Tambah Baris** untuk menambah baris
+5. Pastikan indikator menunjukkan **Jurnal seimbang** (total debit = total kredit)
+
+![Form Jurnal Manual Terisi](screenshots/journal-entry/form-filled.png)
+
+6. Klik **Simpan Draft** atau **Simpan & Posting**
+
+![Hasil Jurnal Manual Posted](screenshots/journal-entry/result-posted.png)
+
+### Contoh: Jurnal Penyesuaian Beban Dibayar Dimuka
+
+Perusahaan membayar sewa kantor Rp 12.000.000 untuk 12 bulan. Setiap bulan perlu penyesuaian:
+
+```
+Dr. 5.1.03 Beban Sewa           Rp 1.000.000
+    Cr. 1.3.01 Sewa Dibayar Dimuka  Rp 1.000.000
+```
+
+Langkah:
+1. Klik **Jurnal Manual**
+2. Pilih kategori **Jurnal Penyesuaian**
+3. Isi deskripsi: "Penyesuaian sewa kantor bulan Januari"
+4. Baris 1: Akun **Beban Sewa**, Debit **1.000.000**
+5. Baris 2: Akun **Sewa Dibayar Dimuka**, Kredit **1.000.000**
+6. Klik **Simpan & Posting**
+
+---
+
 ## Tutup Buku (Fiscal Closing)
 
 ### Apa Itu Tutup Buku?

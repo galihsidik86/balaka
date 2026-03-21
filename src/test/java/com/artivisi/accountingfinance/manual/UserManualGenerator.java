@@ -84,6 +84,7 @@ public class UserManualGenerator {
                 new Section("transaksi-harian", "Transaksi Harian", "02-tutorial-akuntansi.md", List.of("service/transaction-list")),
                 new Section("jurnal-buku-besar", "Jurnal & Buku Besar", "02-tutorial-akuntansi.md", List.of("service/journals-list")),
                 new Section("penyesuaian", "Penyesuaian", "02-tutorial-akuntansi.md", List.of("amortization-list", "amortization-form")),
+                new Section("jurnal-manual", "Jurnal Manual", "02-tutorial-akuntansi.md", List.of("journal-entry/form-empty", "journal-entry/form-filled", "journal-entry/result-posted")),
                 new Section("laporan-keuangan", "Laporan Keuangan", "02-tutorial-akuntansi.md", List.of("service/report-trial-balance", "service/report-balance-sheet", "service/report-income-statement")),
                 new Section("tutup-buku", "Tutup Buku", "02-tutorial-akuntansi.md", List.of("reports-fiscal-closing"))
             )),

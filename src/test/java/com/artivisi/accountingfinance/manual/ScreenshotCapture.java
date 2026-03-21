@@ -99,6 +99,16 @@ public class ScreenshotCapture {
             new PageDefinition("10-vendor-statement", "Laporan Vendor", "/statements/vendor", true,
                     "Laporan per vendor dengan saldo berjalan", "faktur-tagihan"),
 
+            // Free-Form Journal Entry (screenshots taken by JournalEntryUiTest)
+            new PageDefinition("journal-entry/form-empty", "Form Jurnal Manual (Kosong)", "/transactions/journal-entry/new", true,
+                    "Form jurnal manual dengan baris debit/kredit kosong", "jurnal-manual"),
+            new PageDefinition("journal-entry/form-filled", "Form Jurnal Manual (Terisi)", "/transactions/journal-entry/new", true,
+                    "Form jurnal manual dengan data terisi dan jurnal seimbang", "jurnal-manual"),
+            new PageDefinition("journal-entry/result-draft", "Hasil Jurnal Manual (Draft)", "/transactions", true,
+                    "Halaman detail transaksi jurnal manual berstatus Draft", "jurnal-manual"),
+            new PageDefinition("journal-entry/result-posted", "Hasil Jurnal Manual (Posted)", "/transactions", true,
+                    "Halaman detail transaksi jurnal manual berstatus Posted", "jurnal-manual"),
+
             // Recurring Transactions (screenshot taken by RecurringTransactionTest)
             new PageDefinition("recurring/detail", "Detail Transaksi Berulang", "/recurring", true,
                     "Halaman detail transaksi berulang dengan jadwal dan riwayat eksekusi", "transaksi-berulang"),
