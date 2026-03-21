@@ -110,7 +110,7 @@ class OpenApiTest extends PlaywrightTestBase {
         JsonNode workflows = body.get("x-workflows");
         assertThat(workflows).as("x-workflows present").isNotNull();
         assertThat(workflows.isArray()).isTrue();
-        assertThat(workflows.size()).isEqualTo(18);
+        assertThat(workflows.size()).isEqualTo(19);
 
         log.info("x-workflows: {} workflows", workflows.size());
     }
