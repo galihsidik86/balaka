@@ -89,5 +89,17 @@ Be careful with short or generic titles that might accidentally match multiple H
 2. Add `Section` entry in `getSectionGroups()` with title matching the H2 heading
 3. If the markdown file already has other sections defined, verify no title conflicts
 4. Add screenshot definitions if needed (ScreenshotCapture + functional test)
-5. Run `UserManualGenerator.main()` locally to verify output
-6. Check the generated HTML for duplicate content before committing
+5. **Add the test class to `publish-manual.yml`** workflow's `-Dtest=` list so screenshots are captured in CI (see below)
+6. Run `UserManualGenerator.main()` locally to verify output
+7. Check the generated HTML for duplicate content before committing
+
+## CI Screenshot Generation
+
+The `publish-manual.yml` workflow captures screenshots by running specific functional tests. If your new section includes screenshots captured by a functional test, you **must** add that test class to the `-Dtest=` parameter in the workflow:
+
+```yaml
+# .github/workflows/publish-manual.yml
+run: ./mvnw test -Dtest="Service*Test,...,YourNewTest"
+```
+
+Without this, screenshots will appear locally but show "Screenshot belum tersedia" on the live site at artivisi.com/balaka/.
