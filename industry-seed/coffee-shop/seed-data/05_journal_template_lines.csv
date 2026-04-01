@@ -54,3 +54,5 @@ Penjualan Online (GrabFood/GoFood),2,6.2.11,,DEBIT,adminFee,Potongan platform
 Penjualan Online (GrabFood/GoFood),3,4.1.01,,CREDIT,grossSales,Pendapatan penjualan minuman
 Pembelian Aset Tetap,1,,ASET_TETAP,DEBIT,assetCost,Aset tetap yang dibeli
 Pembelian Aset Tetap,2,,BANK,CREDIT,assetCost,Pembayaran dari bank
+Penyusutan Aset,1,,BEBAN_PENYUSUTAN,DEBIT,depreciationAmount,Beban penyusutan
+Penyusutan Aset,2,,AKUM_PENYUSUTAN,CREDIT,depreciationAmount,Akumulasi penyusutan

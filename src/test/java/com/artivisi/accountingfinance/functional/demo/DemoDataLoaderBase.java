@@ -4,6 +4,7 @@ import com.artivisi.accountingfinance.entity.JournalTemplate;
 import com.artivisi.accountingfinance.entity.PayrollRun;
 import com.artivisi.accountingfinance.entity.User;
 import com.artivisi.accountingfinance.enums.Role;
+import com.artivisi.accountingfinance.repository.JournalEntryRepository;
 import com.artivisi.accountingfinance.repository.JournalTemplateRepository;
 import com.artivisi.accountingfinance.repository.PayrollRunRepository;
 import com.artivisi.accountingfinance.repository.UserRepository;
@@ -238,15 +239,58 @@ public abstract class DemoDataLoaderBase extends PlaywrightTestBase {
             }
         }
 
-        // 5. Generate depreciation entries (posting is done at the end)
+        // 5. Setor PPN — deposit PPN for previous month (on 15th of current month)
+        depositPpn(month);
+
+        // 6. Generate and post depreciation entries
         generateDepreciation(month);
 
-        // 6. Close fiscal period (only for months before March 2026)
+        // 7. Close fiscal period (only for months before March 2026)
         if (month.isBefore(YearMonth.of(2026, 3))) {
             closeFiscalPeriod(month);
         }
 
         log.info("Completed month: {}", month);
+    }
+
+    @Autowired
+    private com.artivisi.accountingfinance.repository.ChartOfAccountRepository chartOfAccountRepository;
+
+    @Autowired
+    private JournalEntryRepository journalEntryRepository;
+
+    /**
+     * Deposit PPN for the previous month. Only for PKP companies.
+     * Override ppnEnabled() to return false for non-PKP industries.
+     */
+    protected boolean ppnEnabled() { return true; }
+
+    private void depositPpn(YearMonth currentMonth) {
+        if (!ppnEnabled()) return;
+
+        // PPN is deposited on the 15th of the following month for the previous month's PPN
+        YearMonth ppnMonth = currentMonth.minusMonths(1);
+        if (ppnMonth.isBefore(YearMonth.of(2025, 1))) return;
+
+        var ppnAccount = chartOfAccountRepository.findByAccountCode("2.1.03");
+        if (ppnAccount.isEmpty()) return;
+
+        // Calculate PPN credit (keluaran) for the PPN month
+        LocalDate start = ppnMonth.atDay(1);
+        LocalDate end = ppnMonth.atEndOfMonth();
+        BigDecimal ppnCredit = journalEntryRepository.sumCreditByAccountAndDateRange(
+                ppnAccount.get().getId(), start, end);
+        BigDecimal ppnDebit = journalEntryRepository.sumDebitByAccountAndDateRange(
+                ppnAccount.get().getId(), start, end);
+
+        BigDecimal ppnPayable = ppnCredit.subtract(ppnDebit);
+        if (ppnPayable.signum() > 0) {
+            LocalDate depositDate = currentMonth.atDay(Math.min(15, currentMonth.atEndOfMonth().getDayOfMonth()));
+            createTransactionViaForm("Setor PPN", depositDate,
+                    ppnPayable.longValue(),
+                    "Setor PPN " + getIndonesianMonthName(ppnMonth.getMonthValue()) + " " + ppnMonth.getYear(),
+                    "PPN-" + ppnMonth);
+        }
     }
 
     /**
@@ -444,12 +488,44 @@ public abstract class DemoDataLoaderBase extends PlaywrightTestBase {
     }
 
     private void generateDepreciation(YearMonth month) {
-        // Generate depreciation entries via form submit (entries stay in PENDING status)
+        // Step 1: Generate depreciation entries
         navigateTo("/assets/depreciation");
         waitForPageLoad();
         page.locator("#period").fill(month.toString());
         page.locator("form[action*='/depreciation/generate'] button[type='submit']").click();
         waitForPageLoad();
+
+        // Step 2: Re-navigate to get a clean page with pending entries
+        navigateTo("/assets/depreciation");
+        waitForPageLoad();
+
+        // Step 3: Post entries for this month only (max 5 attempts to avoid infinite loop)
+        int posted = 0;
+        for (int attempt = 0; attempt < 5; attempt++) {
+            navigateTo("/assets/depreciation");
+            waitForPageLoad();
+
+            var postForms = page.locator("form[method='post']").all().stream()
+                    .filter(f -> {
+                        String action = f.getAttribute("action");
+                        return action != null && action.matches(".*/assets/depreciation/[0-9a-f-]+/post");
+                    })
+                    .toList();
+
+            if (postForms.isEmpty()) break;
+
+            // Only post the first entry (for this month's asset)
+            postForms.get(0).locator("button[type='submit']").click();
+            waitForPageLoad();
+            posted++;
+
+            // If we've posted enough for the expected number of assets, stop
+            if (posted >= 2) break;
+        }
+
+        if (posted > 0) {
+            log.info("Depreciation: generated and posted {} entries for {}", posted, month);
+        }
     }
 
     private void closeFiscalPeriod(YearMonth month) {

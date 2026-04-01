@@ -90,3 +90,5 @@ Pendapatan Jasa BUMN (FP 03),2,1.1.26,,DEBIT,amount * 0.02,Kredit Pajak PPh 23 (
 Pendapatan Jasa BUMN (FP 03),3,,PENDAPATAN,CREDIT,amount,Pendapatan jasa (Harga Jual)
 Jurnal Manual,1,,Akun Debit,DEBIT,amount,Akun yang didebit
 Jurnal Manual,2,,Akun Kredit,CREDIT,amount,Akun yang dikredit
+Penyusutan Aset,1,,BEBAN_PENYUSUTAN,DEBIT,depreciationAmount,Beban penyusutan
+Penyusutan Aset,2,,AKUM_PENYUSUTAN,CREDIT,depreciationAmount,Akumulasi penyusutan

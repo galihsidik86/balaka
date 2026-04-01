@@ -52,6 +52,7 @@ public class FixedAssetService {
     private final DepreciationEntryRepository depreciationEntryRepository;
     private final ChartOfAccountRepository chartOfAccountRepository;
     private final JournalTemplateService journalTemplateService;
+    private final com.artivisi.accountingfinance.repository.JournalTemplateRepository journalTemplateRepository;
     private final TransactionService transactionService;
 
     // ============================================
@@ -306,8 +307,12 @@ public class FixedAssetService {
 
         FixedAsset asset = entry.getFixedAsset();
 
-        // Get depreciation template with lines loaded
-        JournalTemplate template = journalTemplateService.findByIdWithLines(DEPRECIATION_TEMPLATE_ID);
+        // Get depreciation template with lines loaded, fall back to name lookup
+        JournalTemplate template = journalTemplateRepository.findById(DEPRECIATION_TEMPLATE_ID)
+                .map(t -> journalTemplateService.findByIdWithLines(t.getId()))
+                .orElseGet(() -> journalTemplateRepository.findByTemplateNameAndIsCurrentVersionTrue("Penyusutan Aset")
+                        .map(t -> journalTemplateService.findByIdWithLines(t.getId()))
+                        .orElseThrow(() -> new IllegalStateException("Template penyusutan tidak ditemukan")));
 
         // Create FormulaContext with depreciation variables
         FormulaContext context = FormulaContext.of(

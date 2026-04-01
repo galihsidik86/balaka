@@ -88,3 +88,5 @@ Pembelian Aset Tetap,1,,ASET_TETAP,DEBIT,assetCost,Aset tetap yang dibeli
 Pembelian Aset Tetap,2,,BANK,CREDIT,assetCost,Pembayaran dari bank
 Jurnal Manual,1,,Akun Debit,DEBIT,amount,Akun yang didebit
 Jurnal Manual,2,,Akun Kredit,CREDIT,amount,Akun yang dikredit
+Penyusutan Aset,1,,BEBAN_PENYUSUTAN,DEBIT,depreciationAmount,Beban penyusutan
+Penyusutan Aset,2,,AKUM_PENYUSUTAN,CREDIT,depreciationAmount,Akumulasi penyusutan

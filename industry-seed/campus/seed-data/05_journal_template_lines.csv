@@ -79,3 +79,5 @@ Pembelian Aset Tetap,1,,ASET_TETAP,DEBIT,assetCost,Aset tetap yang dibeli
 Pembelian Aset Tetap,2,,BANK,CREDIT,assetCost,Pembayaran dari bank
 Bayar Beban Operasional,1,5.2.99,,DEBIT,amount,Beban operasional lainnya
 Bayar Beban Operasional,2,,BANK,CREDIT,amount,Pembayaran dari bank
+Penyusutan Aset,1,,BEBAN_PENYUSUTAN,DEBIT,depreciationAmount,Beban penyusutan
+Penyusutan Aset,2,,AKUM_PENYUSUTAN,CREDIT,depreciationAmount,Akumulasi penyusutan
