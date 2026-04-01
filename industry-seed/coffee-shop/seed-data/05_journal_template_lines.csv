@@ -7,8 +7,8 @@ Pembelian Bahan Baku - Kredit,1,1.1.20,,DEBIT,amount,Persediaan bahan baku
 Pembelian Bahan Baku - Kredit,2,2.1.02,,CREDIT,amount,Hutang usaha
 Produksi Barang Jadi,1,1.1.21,,DEBIT,amount,Persediaan barang jadi
 Produksi Barang Jadi,2,1.1.20,,CREDIT,amount,Persediaan bahan baku
-Penjualan Tunai + COGS,1,1.1.01,,DEBIT,amount,Penerimaan kas penjualan
-Penjualan Tunai + COGS,2,4.1.01,,CREDIT,amount,Pendapatan penjualan
+Penjualan Tunai + COGS,1,1.1.01,,DEBIT,revenueAmount,Penerimaan kas penjualan
+Penjualan Tunai + COGS,2,4.1.01,,CREDIT,revenueAmount,Pendapatan penjualan
 Penjualan Tunai + COGS,3,5.1.01,,DEBIT,cogs,Harga Pokok Penjualan
 Penjualan Tunai + COGS,4,1.1.21,,CREDIT,cogs,Persediaan barang jadi
 Bayar Gaji,1,6.1.01,,DEBIT,amount,Beban gaji

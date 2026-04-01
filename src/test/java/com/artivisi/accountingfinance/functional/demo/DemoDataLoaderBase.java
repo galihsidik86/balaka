@@ -337,6 +337,9 @@ public abstract class DemoDataLoaderBase extends PlaywrightTestBase {
                 if (key.equals("amount")) {
                     page.locator("#amount").fill(value);
                 } else if (key.startsWith("var_")) {
+                    // Wait for DETAILED template variable inputs to render
+                    page.locator("#" + key).waitFor(
+                            new com.microsoft.playwright.Locator.WaitForOptions().setTimeout(5000));
                     page.locator("#" + key).fill(value);
                 } else if (isAccountHint(key)) {
                     selectAccountByHint(key, value);
@@ -352,6 +355,7 @@ public abstract class DemoDataLoaderBase extends PlaywrightTestBase {
 
         // Auto-select dynamic account mappings based on hint type
         var accountSelects = page.locator("select[id^='accountMapping_']").all();
+        Set<String> usedValues = new java.util.HashSet<>();
         for (var select : accountSelects) {
             String selectId = select.getAttribute("id");
             var label = page.locator("label[for='" + selectId + "']");
@@ -367,8 +371,8 @@ public abstract class DemoDataLoaderBase extends PlaywrightTestBase {
                 String text = option.textContent();
                 if (val == null || val.isEmpty() || text == null) continue;
 
-                // Match by hint type
-                if (hint.contains("BANK") && text.startsWith("1.1.02")) {
+                // Match by hint type, skip already-used values for same hint
+                if (hint.contains("BANK") && text.startsWith("1.1.0") && !usedValues.contains(val)) {
                     selectedValue = val; break;
                 } else if (hint.contains("PENDAPATAN") && text.startsWith("4.1.")) {
                     selectedValue = val; break;
@@ -394,6 +398,7 @@ public abstract class DemoDataLoaderBase extends PlaywrightTestBase {
 
             if (selectedValue != null) {
                 select.selectOption(selectedValue);
+                usedValues.add(selectedValue);
             }
         }
 
