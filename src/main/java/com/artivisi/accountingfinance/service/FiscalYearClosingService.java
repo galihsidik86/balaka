@@ -175,6 +175,7 @@ public class FiscalYearClosingService {
 
     private JournalTemplate getClosingTemplate() {
         return journalTemplateRepository.findById(CLOSING_TEMPLATE_ID)
+                .or(() -> journalTemplateRepository.findByTemplateNameAndIsCurrentVersionTrue("Jurnal Penutup Tahun"))
                 .orElseThrow(() -> new IllegalStateException("Fiscal year closing template not found"));
     }
 
@@ -353,10 +354,12 @@ public class FiscalYearClosingService {
     }
 
     private String generateJournalNumber(LocalDate date) {
-        // Format: JV-YYYYMMDD-XXXX where XXXX is sequence
-        String prefix = "JV-" + date.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-";
-        Integer maxSeq = journalEntryRepository.findMaxSequenceByPrefix(prefix + "%");
-        int nextSeq = (maxSeq != null ? maxSeq : 0) + 1;
+        // Format: FC-YYYY-XXXX (Fiscal Closing year-sequence)
+        // Uses a simple format that doesn't conflict with findMaxSequenceByPrefix
+        String prefix = "FC-" + date.getYear() + "-";
+        // Count existing closing entries for this year to determine next sequence
+        long existing = journalEntryRepository.countByReferenceNumberLike("CLOSING-" + date.getYear() + "%");
+        int nextSeq = (int) existing + 1;
         return prefix + String.format("%04d", nextSeq);
     }
 

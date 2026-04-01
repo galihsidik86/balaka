@@ -1,0 +1,164 @@
+date,template_name,amount,inputs,description,reference,project,status
+# === JANUARY 2025 ===
+2025-01-02,Setoran Modal,200000000,,Setoran modal awal tahun 2025,CAP-2025-001,,POST
+2025-01-05,Pembelian Barang Dagangan,45000000,,Pembelian stok smartphone Q1,PO-2025-001,,POST
+2025-01-08,Penjualan Tokopedia,0,var_grossSales:25000000|var_adminFee:1250000,Penjualan Tokopedia minggu 1,ORD-TOKPED-0101,,POST
+2025-01-15,Penjualan Shopee,0,var_grossSales:18000000|var_adminFee:1080000,Penjualan Shopee minggu 2,ORD-SHOPEE-0102,,POST
+2025-01-22,Penjualan TikTok Shop,0,var_grossSales:12000000|var_adminFee:480000,Penjualan TikTok minggu 3,ORD-TIKTOK-0103,,POST
+2025-01-25,Withdraw Saldo Tokopedia,23750000,,Withdraw saldo Tokopedia Januari,WD-TOKPED-0101,,POST
+2025-01-25,Withdraw Saldo Shopee,16920000,,Withdraw saldo Shopee Januari,WD-SHOPEE-0101,,POST
+2025-01-28,Bayar Sewa Gudang,5000000,,Sewa gudang Januari,SEWA-2025-01,,POST
+2025-01-28,Bayar Beban Listrik,800000,,Listrik gudang Januari,PLN-2025-01,,POST
+2025-01-29,Ongkir Ditanggung Penjual,2000000,,Ongkir free ongkir Januari,ONGKIR-2025-01,,POST
+2025-01-29,Biaya Packing,500000,,Kardus bubble wrap Januari,PACK-2025-01,,POST
+2025-01-30,Bayar Iklan Marketplace,3000000,,TopAds + Shopee Ads Januari,ADS-2025-01,,POST
+2025-01-31,Beban Admin Bank,15000,,Biaya admin BCA Januari,ADM-2025-01,,POST
+# === FEBRUARY 2025 ===
+2025-02-05,Penjualan Tokopedia,0,var_grossSales:22000000|var_adminFee:1100000,Penjualan Tokopedia minggu 1 Feb,ORD-TOKPED-0201,,POST
+2025-02-10,Penjualan Shopee,0,var_grossSales:20000000|var_adminFee:1200000,Penjualan Shopee minggu 2 Feb,ORD-SHOPEE-0202,,POST
+2025-02-15,Bayar PPh Final UMKM,275000,,PPh Final 0.5% revenue Januari,PPHFINAL-2025-01,,POST
+2025-02-18,Penjualan TikTok Shop,0,var_grossSales:15000000|var_adminFee:600000,Penjualan TikTok minggu 3 Feb,ORD-TIKTOK-0203,,POST
+2025-02-20,Pembelian Barang Dagangan,30000000,,Restock aksesoris dan kabel,PO-2025-002,,POST
+2025-02-25,Withdraw Saldo Tokopedia,20900000,,Withdraw Tokopedia Februari,WD-TOKPED-0201,,POST
+2025-02-25,Withdraw Saldo Shopee,18800000,,Withdraw Shopee Februari,WD-SHOPEE-0201,,POST
+2025-02-28,Bayar Sewa Gudang,5000000,,Sewa gudang Februari,SEWA-2025-02,,POST
+2025-02-28,Bayar Beban Listrik,800000,,Listrik gudang Februari,PLN-2025-02,,POST
+2025-02-28,Ongkir Ditanggung Penjual,2200000,,Ongkir free ongkir Februari,ONGKIR-2025-02,,POST
+2025-02-28,Biaya Packing,550000,,Kardus bubble wrap Februari,PACK-2025-02,,POST
+2025-02-28,Bayar Iklan Marketplace,2500000,,TopAds + Shopee Ads Februari,ADS-2025-02,,POST
+2025-02-28,Beban Admin Bank,15000,,Biaya admin BCA Februari,ADM-2025-02,,POST
+# === MARCH 2025 ===
+2025-03-03,Pembelian Barang Dagangan,50000000,,Pembelian stok smartphone Q1 restock,PO-2025-003,,POST
+2025-03-05,Penjualan Tokopedia,0,var_grossSales:28000000|var_adminFee:1400000,Penjualan Tokopedia W1 Maret,ORD-TOKPED-0301,,POST
+2025-03-10,__ASSET__,,AST-RAK-001|Rak Gudang Heavy Duty|GUDANG|8000000|48|0|STRAIGHT_LINE,Rak penyimpanan baru,PO-AST-001,,POST
+2025-03-12,Penjualan Shopee,0,var_grossSales:22000000|var_adminFee:1320000,Penjualan Shopee W2 Maret,ORD-SHOPEE-0302,,POST
+2025-03-15,Bayar PPh Final UMKM,285000,,PPh Final 0.5% revenue Februari,PPHFINAL-2025-02,,POST
+2025-03-20,Penjualan TikTok Shop,0,var_grossSales:18000000|var_adminFee:720000,Penjualan TikTok W3 Maret,ORD-TIKTOK-0303,,POST
+2025-03-25,Withdraw Saldo Tokopedia,26600000,,Withdraw Tokopedia Maret,WD-TOKPED-0301,,POST
+2025-03-25,Withdraw Saldo Shopee,20680000,,Withdraw Shopee Maret,WD-SHOPEE-0301,,POST
+2025-03-28,Bayar Sewa Gudang,5000000,,Sewa gudang Maret,SEWA-2025-03,,POST
+2025-03-28,Bayar Beban Listrik,850000,,Listrik gudang Maret,PLN-2025-03,,POST
+2025-03-29,Ongkir Ditanggung Penjual,2500000,,Ongkir free ongkir Maret,ONGKIR-2025-03,,POST
+2025-03-29,Biaya Packing,600000,,Kardus bubble wrap Maret,PACK-2025-03,,POST
+2025-03-30,Bayar Iklan Marketplace,3500000,,TopAds + Shopee Ads Maret,ADS-2025-03,,POST
+2025-03-31,Beban Admin Bank,15000,,Biaya admin BCA Maret,ADM-2025-03,,POST
+# === APRIL 2025 ===
+2025-04-05,Penjualan Tokopedia,0,var_grossSales:20000000|var_adminFee:1000000,Penjualan Tokopedia W1 April,ORD-TOKPED-0401,,POST
+2025-04-10,Penjualan Shopee,0,var_grossSales:16000000|var_adminFee:960000,Penjualan Shopee W2 April,ORD-SHOPEE-0402,,POST
+2025-04-15,Bayar PPh Final UMKM,340000,,PPh Final 0.5% revenue Maret,PPHFINAL-2025-03,,POST
+2025-04-20,Penjualan TikTok Shop,0,var_grossSales:14000000|var_adminFee:560000,Penjualan TikTok W3 April,ORD-TIKTOK-0403,,POST
+2025-04-25,Withdraw Saldo Tokopedia,19000000,,Withdraw Tokopedia April,WD-TOKPED-0401,,POST
+2025-04-28,Bayar Sewa Gudang,5000000,,Sewa gudang April,SEWA-2025-04,,POST
+2025-04-28,Bayar Beban Listrik,800000,,Listrik gudang April,PLN-2025-04,,POST
+2025-04-29,Ongkir Ditanggung Penjual,1800000,,Ongkir free ongkir April,ONGKIR-2025-04,,POST
+2025-04-29,Biaya Packing,450000,,Kardus bubble wrap April,PACK-2025-04,,POST
+2025-04-30,Bayar Iklan Marketplace,2800000,,TopAds + Shopee Ads April,ADS-2025-04,,POST
+2025-04-30,Beban Admin Bank,15000,,Biaya admin BCA April,ADM-2025-04,,POST
+# === MAY 2025 ===
+2025-05-05,Pembelian Barang Dagangan,35000000,,Restock earbuds dan charger,PO-2025-004,,POST
+2025-05-08,Penjualan Tokopedia,0,var_grossSales:24000000|var_adminFee:1200000,Penjualan Tokopedia W1 Mei,ORD-TOKPED-0501,,POST
+2025-05-12,Penjualan Shopee,0,var_grossSales:19000000|var_adminFee:1140000,Penjualan Shopee W2 Mei,ORD-SHOPEE-0502,,POST
+2025-05-15,Bayar PPh Final UMKM,250000,,PPh Final 0.5% revenue April,PPHFINAL-2025-04,,POST
+2025-05-20,Penjualan TikTok Shop,0,var_grossSales:16000000|var_adminFee:640000,Penjualan TikTok W3 Mei,ORD-TIKTOK-0503,,POST
+2025-05-25,Withdraw Saldo Tokopedia,22800000,,Withdraw Tokopedia Mei,WD-TOKPED-0501,,POST
+2025-05-25,Withdraw Saldo Shopee,17860000,,Withdraw Shopee Mei,WD-SHOPEE-0501,,POST
+2025-05-28,Bayar Sewa Gudang,5000000,,Sewa gudang Mei,SEWA-2025-05,,POST
+2025-05-28,Bayar Beban Listrik,800000,,Listrik gudang Mei,PLN-2025-05,,POST
+2025-05-29,Ongkir Ditanggung Penjual,2100000,,Ongkir free ongkir Mei,ONGKIR-2025-05,,POST
+2025-05-29,Biaya Packing,520000,,Kardus bubble wrap Mei,PACK-2025-05,,POST
+2025-05-30,Bayar Iklan Marketplace,3200000,,TopAds + Shopee Ads Mei,ADS-2025-05,,POST
+2025-05-31,Beban Admin Bank,15000,,Biaya admin BCA Mei,ADM-2025-05,,POST
+# === JUNE 2025 ===
+2025-06-05,Penjualan Tokopedia,0,var_grossSales:26000000|var_adminFee:1300000,Penjualan Tokopedia W1 Juni,ORD-TOKPED-0601,,POST
+2025-06-10,Penjualan Shopee,0,var_grossSales:21000000|var_adminFee:1260000,Penjualan Shopee W2 Juni,ORD-SHOPEE-0602,,POST
+2025-06-15,Bayar PPh Final UMKM,295000,,PPh Final 0.5% revenue Mei,PPHFINAL-2025-05,,POST
+2025-06-20,Penjualan TikTok Shop,0,var_grossSales:17000000|var_adminFee:680000,Penjualan TikTok W3 Juni,ORD-TIKTOK-0603,,POST
+2025-06-25,Withdraw Saldo Tokopedia,24700000,,Withdraw Tokopedia Juni,WD-TOKPED-0601,,POST
+2025-06-25,Withdraw Saldo Shopee,19740000,,Withdraw Shopee Juni,WD-SHOPEE-0601,,POST
+2025-06-28,Bayar Sewa Gudang,5000000,,Sewa gudang Juni,SEWA-2025-06,,POST
+2025-06-28,Bayar Beban Listrik,850000,,Listrik gudang Juni,PLN-2025-06,,POST
+2025-06-29,Ongkir Ditanggung Penjual,2300000,,Ongkir free ongkir Juni,ONGKIR-2025-06,,POST
+2025-06-29,Biaya Packing,560000,,Kardus bubble wrap Juni,PACK-2025-06,,POST
+2025-06-30,Bayar Iklan Marketplace,3000000,,TopAds + Shopee Ads Juni,ADS-2025-06,,POST
+2025-06-30,Beban Admin Bank,15000,,Biaya admin BCA Juni,ADM-2025-06,,POST
+# === JULY 2025 ===
+2025-07-05,Penjualan Tokopedia,0,var_grossSales:23000000|var_adminFee:1150000,Penjualan Tokopedia W1 Juli,ORD-TOKPED-0701,,POST
+2025-07-10,Penjualan Shopee,0,var_grossSales:17000000|var_adminFee:1020000,Penjualan Shopee W2 Juli,ORD-SHOPEE-0702,,POST
+2025-07-15,Bayar PPh Final UMKM,320000,,PPh Final 0.5% revenue Juni,PPHFINAL-2025-06,,POST
+2025-07-20,Pembelian Barang Dagangan,40000000,,Restock smartphone midrange,PO-2025-005,,POST
+2025-07-25,Withdraw Saldo Tokopedia,21850000,,Withdraw Tokopedia Juli,WD-TOKPED-0701,,POST
+2025-07-28,Bayar Sewa Gudang,5000000,,Sewa gudang Juli,SEWA-2025-07,,POST
+2025-07-28,Bayar Beban Listrik,800000,,Listrik gudang Juli,PLN-2025-07,,POST
+2025-07-29,Ongkir Ditanggung Penjual,1900000,,Ongkir free ongkir Juli,ONGKIR-2025-07,,POST
+2025-07-29,Biaya Packing,480000,,Kardus bubble wrap Juli,PACK-2025-07,,POST
+2025-07-30,Bayar Iklan Marketplace,2800000,,TopAds + Shopee Ads Juli,ADS-2025-07,,POST
+2025-07-31,Beban Admin Bank,15000,,Biaya admin BCA Juli,ADM-2025-07,,POST
+# === AUGUST 2025 ===
+2025-08-05,Penjualan Tokopedia,0,var_grossSales:27000000|var_adminFee:1350000,Penjualan Tokopedia W1 Agustus,ORD-TOKPED-0801,,POST
+2025-08-10,Penjualan Shopee,0,var_grossSales:21000000|var_adminFee:1260000,Penjualan Shopee W2 Agustus,ORD-SHOPEE-0802,,POST
+2025-08-15,Bayar PPh Final UMKM,200000,,PPh Final 0.5% revenue Juli,PPHFINAL-2025-07,,POST
+2025-08-20,Penjualan TikTok Shop,0,var_grossSales:15000000|var_adminFee:600000,Penjualan TikTok W3 Agustus,ORD-TIKTOK-0803,,POST
+2025-08-25,Withdraw Saldo Tokopedia,25650000,,Withdraw Tokopedia Agustus,WD-TOKPED-0801,,POST
+2025-08-25,Withdraw Saldo Shopee,19740000,,Withdraw Shopee Agustus,WD-SHOPEE-0801,,POST
+2025-08-28,Bayar Sewa Gudang,5000000,,Sewa gudang Agustus,SEWA-2025-08,,POST
+2025-08-28,Bayar Beban Listrik,850000,,Listrik gudang Agustus,PLN-2025-08,,POST
+2025-08-29,Ongkir Ditanggung Penjual,2400000,,Ongkir free ongkir Agustus,ONGKIR-2025-08,,POST
+2025-08-29,Biaya Packing,580000,,Kardus bubble wrap Agustus,PACK-2025-08,,POST
+2025-08-30,Bayar Iklan Marketplace,3200000,,TopAds + Shopee Ads Agustus,ADS-2025-08,,POST
+2025-08-31,Beban Admin Bank,15000,,Biaya admin BCA Agustus,ADM-2025-08,,POST
+# === SEPTEMBER 2025 ===
+2025-09-05,Penjualan Tokopedia,0,var_grossSales:25000000|var_adminFee:1250000,Penjualan Tokopedia W1 September,ORD-TOKPED-0901,,POST
+2025-09-10,Penjualan Shopee,0,var_grossSales:19000000|var_adminFee:1140000,Penjualan Shopee W2 September,ORD-SHOPEE-0902,,POST
+2025-09-15,Bayar PPh Final UMKM,315000,,PPh Final 0.5% revenue Agustus,PPHFINAL-2025-08,,POST
+2025-09-20,Penjualan TikTok Shop,0,var_grossSales:14000000|var_adminFee:560000,Penjualan TikTok W3 September,ORD-TIKTOK-0903,,POST
+2025-09-25,Withdraw Saldo Tokopedia,23750000,,Withdraw Tokopedia September,WD-TOKPED-0901,,POST
+2025-09-25,Withdraw Saldo Shopee,17860000,,Withdraw Shopee September,WD-SHOPEE-0901,,POST
+2025-09-28,Bayar Sewa Gudang,5000000,,Sewa gudang September,SEWA-2025-09,,POST
+2025-09-28,Bayar Beban Listrik,800000,,Listrik gudang September,PLN-2025-09,,POST
+2025-09-29,Ongkir Ditanggung Penjual,2100000,,Ongkir free ongkir September,ONGKIR-2025-09,,POST
+2025-09-29,Biaya Packing,520000,,Kardus bubble wrap September,PACK-2025-09,,POST
+2025-09-30,Bayar Iklan Marketplace,2800000,,TopAds + Shopee Ads September,ADS-2025-09,,POST
+2025-09-30,Beban Admin Bank,15000,,Biaya admin BCA September,ADM-2025-09,,POST
+# === OCTOBER 2025 ===
+2025-10-03,Pembelian Barang Dagangan,55000000,,Restock besar pra-promo 10.10,PO-2025-006,,POST
+2025-10-08,Penjualan Tokopedia,0,var_grossSales:35000000|var_adminFee:1750000,Penjualan Tokopedia promo 10.10,ORD-TOKPED-1001,,POST
+2025-10-12,Penjualan Shopee,0,var_grossSales:28000000|var_adminFee:1680000,Penjualan Shopee promo 10.10,ORD-SHOPEE-1002,,POST
+2025-10-15,Bayar PPh Final UMKM,290000,,PPh Final 0.5% revenue September,PPHFINAL-2025-09,,POST
+2025-10-18,Penjualan TikTok Shop,0,var_grossSales:20000000|var_adminFee:800000,Penjualan TikTok promo 10.10,ORD-TIKTOK-1003,,POST
+2025-10-25,Withdraw Saldo Tokopedia,33250000,,Withdraw Tokopedia Oktober,WD-TOKPED-1001,,POST
+2025-10-25,Withdraw Saldo Shopee,26320000,,Withdraw Shopee Oktober,WD-SHOPEE-1001,,POST
+2025-10-28,Bayar Sewa Gudang,5000000,,Sewa gudang Oktober,SEWA-2025-10,,POST
+2025-10-28,Bayar Beban Listrik,900000,,Listrik gudang Oktober (naik),PLN-2025-10,,POST
+2025-10-29,Ongkir Ditanggung Penjual,3000000,,Ongkir free ongkir Oktober (promo),ONGKIR-2025-10,,POST
+2025-10-29,Biaya Packing,700000,,Kardus bubble wrap Oktober (promo),PACK-2025-10,,POST
+2025-10-30,Bayar Iklan Marketplace,5000000,,TopAds + Shopee Ads Oktober (promo boost),ADS-2025-10,,POST
+2025-10-31,Beban Admin Bank,15000,,Biaya admin BCA Oktober,ADM-2025-10,,POST
+# === NOVEMBER 2025 ===
+2025-11-01,Pembelian Barang Dagangan,65000000,,Restock besar pra-promo 11.11,PO-2025-007,,POST
+2025-11-05,Penjualan Tokopedia,0,var_grossSales:40000000|var_adminFee:2000000,Penjualan Tokopedia promo 11.11,ORD-TOKPED-1101,,POST
+2025-11-10,Penjualan Shopee,0,var_grossSales:32000000|var_adminFee:1920000,Penjualan Shopee promo 11.11,ORD-SHOPEE-1102,,POST
+2025-11-15,Bayar PPh Final UMKM,415000,,PPh Final 0.5% revenue Oktober,PPHFINAL-2025-10,,POST
+2025-11-18,Penjualan TikTok Shop,0,var_grossSales:25000000|var_adminFee:1000000,Penjualan TikTok promo 11.11,ORD-TIKTOK-1103,,POST
+2025-11-25,Withdraw Saldo Tokopedia,38000000,,Withdraw Tokopedia November,WD-TOKPED-1101,,POST
+2025-11-25,Withdraw Saldo Shopee,30080000,,Withdraw Shopee November,WD-SHOPEE-1101,,POST
+2025-11-28,Bayar Sewa Gudang,5000000,,Sewa gudang November,SEWA-2025-11,,POST
+2025-11-28,Bayar Beban Listrik,900000,,Listrik gudang November,PLN-2025-11,,POST
+2025-11-29,Ongkir Ditanggung Penjual,3500000,,Ongkir free ongkir November (promo),ONGKIR-2025-11,,POST
+2025-11-29,Biaya Packing,800000,,Kardus bubble wrap November (promo),PACK-2025-11,,POST
+2025-11-30,Bayar Iklan Marketplace,6000000,,TopAds + Shopee Ads November (promo 11.11),ADS-2025-11,,POST
+2025-11-30,Beban Admin Bank,15000,,Biaya admin BCA November,ADM-2025-11,,POST
+# === DECEMBER 2025 ===
+2025-12-01,Pembelian Barang Dagangan,70000000,,Restock besar pra-promo 12.12 + Natal,PO-2025-008,,POST
+2025-12-05,Penjualan Tokopedia,0,var_grossSales:45000000|var_adminFee:2250000,Penjualan Tokopedia promo 12.12,ORD-TOKPED-1201,,POST
+2025-12-10,Penjualan Shopee,0,var_grossSales:35000000|var_adminFee:2100000,Penjualan Shopee promo 12.12,ORD-SHOPEE-1202,,POST
+2025-12-15,Bayar PPh Final UMKM,485000,,PPh Final 0.5% revenue November,PPHFINAL-2025-11,,POST
+2025-12-18,Penjualan TikTok Shop,0,var_grossSales:28000000|var_adminFee:1120000,Penjualan TikTok promo Natal,ORD-TIKTOK-1203,,POST
+2025-12-22,Cashback dari Marketplace,2000000,,Cashback reward seller Desember,CB-2025-12,,POST
+2025-12-25,Withdraw Saldo Tokopedia,42750000,,Withdraw Tokopedia Desember,WD-TOKPED-1201,,POST
+2025-12-25,Withdraw Saldo Shopee,32900000,,Withdraw Shopee Desember,WD-SHOPEE-1201,,POST
+2025-12-28,Bayar Sewa Gudang,5000000,,Sewa gudang Desember,SEWA-2025-12,,POST
+2025-12-28,Bayar Beban Listrik,950000,,Listrik gudang Desember,PLN-2025-12,,POST
+2025-12-29,Ongkir Ditanggung Penjual,4000000,,Ongkir free ongkir Desember (peak),ONGKIR-2025-12,,POST
+2025-12-29,Biaya Packing,900000,,Kardus bubble wrap Desember (peak),PACK-2025-12,,POST
+2025-12-30,Bayar Iklan Marketplace,7000000,,TopAds + Shopee Ads Desember (12.12),ADS-2025-12,,POST
+2025-12-31,Beban Admin Bank,15000,,Biaya admin BCA Desember,ADM-2025-12,,POST
