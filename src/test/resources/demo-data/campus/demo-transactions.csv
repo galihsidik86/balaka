@@ -1,0 +1,139 @@
+date,template_name,amount,inputs,description,reference,project,status
+# === JANUARY 2025 — Semester Genap 2024/2025 starts ===
+2025-01-02,Setoran Modal Yayasan,200000000,,Dana operasional dari yayasan Q1,YAY-2025-Q1,,POST
+2025-01-10,Tagihan SPP Mahasiswa,900000000,,Tagihan SPP Angkatan 2023 - Genap 2024/2025,SPP-2023-GNP,,POST
+2025-01-10,Tagihan SPP Mahasiswa,900000000,,Tagihan SPP Angkatan 2024 - Genap 2024/2025,SPP-2024-GNP,,POST
+2025-01-15,Tagihan Biaya Praktikum,120000000,,Tagihan Praktikum Angkatan 2023 - Genap,PRKT-2023-GNP,,POST
+2025-01-15,Tagihan Biaya Praktikum,120000000,,Tagihan Praktikum Angkatan 2024 - Genap,PRKT-2024-GNP,,POST
+2025-01-20,Pembayaran SPP,450000000,,Pembayaran SPP Angkatan 2023 - Cicilan 1,RCV-SPP-2023-01,,POST
+2025-01-25,Pembayaran SPP,400000000,,Pembayaran SPP Angkatan 2024 - Cicilan 1,RCV-SPP-2024-01,,POST
+2025-01-28,Bayar Listrik Kampus,8000000,,Listrik kampus Januari,PLN-2025-01,,POST
+2025-01-28,Bayar Air Kampus,2000000,,Air PDAM Januari,PDAM-2025-01,,POST
+2025-01-29,Bayar Internet & Telepon,5000000,,Internet dedicated Januari,NET-2025-01,,POST
+2025-01-30,Beban Keamanan,3000000,,Jasa keamanan Januari,SEC-2025-01,,POST
+2025-01-30,Beban Kebersihan,2500000,,Jasa kebersihan Januari,CLN-2025-01,,POST
+2025-01-31,Beban Admin Bank,25000,,Biaya admin BCA Januari,ADM-2025-01,,POST
+# === FEBRUARY 2025 ===
+2025-02-05,Pembayaran SPP,300000000,,Pembayaran SPP Angkatan 2023 - Cicilan 2,RCV-SPP-2023-02,,POST
+2025-02-10,Pembayaran SPP,350000000,,Pembayaran SPP Angkatan 2024 - Cicilan 2,RCV-SPP-2024-02,,POST
+2025-02-15,Pembayaran Biaya Praktikum,60000000,,Pembayaran Praktikum Akt 2023 - Cicilan 1,RCV-PRKT-2023-01,,POST
+2025-02-20,Bayar ATK,1500000,,ATK dan supplies Februari,ATK-2025-02,,POST
+2025-02-25,Bayar Bahan Praktikum,2000000,,Bahan praktikum lab komputer,LAB-2025-02,,POST
+2025-02-28,Bayar Listrik Kampus,8200000,,Listrik kampus Februari,PLN-2025-02,,POST
+2025-02-28,Bayar Air Kampus,2100000,,Air PDAM Februari,PDAM-2025-02,,POST
+2025-02-28,Bayar Internet & Telepon,5000000,,Internet dedicated Februari,NET-2025-02,,POST
+2025-02-28,Beban Keamanan,3000000,,Jasa keamanan Februari,SEC-2025-02,,POST
+2025-02-28,Beban Kebersihan,2500000,,Jasa kebersihan Februari,CLN-2025-02,,POST
+2025-02-28,Beban Admin Bank,25000,,Biaya admin BCA Februari,ADM-2025-02,,POST
+# === MARCH 2025 ===
+2025-03-05,Pembayaran SPP,150000000,,Pembayaran SPP Angkatan 2023 - Cicilan 3,RCV-SPP-2023-03,,POST
+2025-03-10,Pembayaran SPP,150000000,,Pembayaran SPP Angkatan 2024 - Cicilan 3,RCV-SPP-2024-03,,POST
+2025-03-15,Terima Hibah,500000000,,Hibah Kemendikbud program MBKM,HIBAH-2025-01,,POST
+2025-03-20,Pembayaran Biaya Praktikum,60000000,,Pembayaran Praktikum Akt 2024 - Cicilan 1,RCV-PRKT-2024-01,,POST
+2025-03-25,__ASSET__,,AST-LAB-001|Server Lab Komputer|LAB|35000000|48|0|STRAIGHT_LINE,Server lab untuk praktikum,PO-AST-001,,POST
+2025-03-28,Bayar Listrik Kampus,8500000,,Listrik kampus Maret,PLN-2025-03,,POST
+2025-03-28,Bayar Air Kampus,2200000,,Air PDAM Maret,PDAM-2025-03,,POST
+2025-03-29,Bayar Internet & Telepon,5000000,,Internet dedicated Maret,NET-2025-03,,POST
+2025-03-30,Beban Keamanan,3000000,,Jasa keamanan Maret,SEC-2025-03,,POST
+2025-03-30,Beban Kebersihan,2500000,,Jasa kebersihan Maret,CLN-2025-03,,POST
+2025-03-31,Pemeliharaan Gedung,10000000,,Pengecatan kampus Q1,MNT-GDG-2025-Q1,,POST
+2025-03-31,Beban Admin Bank,25000,,Biaya admin BCA Maret,ADM-2025-03,,POST
+# === APRIL 2025 ===
+2025-04-05,Bayar ATK,1200000,,ATK April,ATK-2025-04,,POST
+2025-04-15,Beasiswa Prestasi,7500000,,Beasiswa prestasi semester genap (3 mahasiswa),BEA-P-2025-GNP,,POST
+2025-04-15,Beasiswa Tidak Mampu,12500000,,Beasiswa tidak mampu semester genap (5 mahasiswa),BEA-TM-2025-GNP,,POST
+2025-04-28,Bayar Listrik Kampus,7800000,,Listrik kampus April,PLN-2025-04,,POST
+2025-04-28,Bayar Air Kampus,2000000,,Air PDAM April,PDAM-2025-04,,POST
+2025-04-29,Bayar Internet & Telepon,5000000,,Internet dedicated April,NET-2025-04,,POST
+2025-04-30,Beban Keamanan,3000000,,Jasa keamanan April,SEC-2025-04,,POST
+2025-04-30,Beban Kebersihan,2500000,,Jasa kebersihan April,CLN-2025-04,,POST
+2025-04-30,Beban Admin Bank,25000,,Biaya admin BCA April,ADM-2025-04,,POST
+# === MAY 2025 ===
+2025-05-10,Pembayaran Biaya Praktikum,60000000,,Pembayaran Praktikum Akt 2023 - Cicilan 2,RCV-PRKT-2023-02,,POST
+2025-05-15,Bayar Bahan Praktikum,2500000,,Bahan praktikum lab jaringan,LAB-2025-05,,POST
+2025-05-20,Pemeliharaan Lab,5000000,,Service peralatan lab,MNT-LAB-2025-05,,POST
+2025-05-28,Bayar Listrik Kampus,7500000,,Listrik kampus Mei,PLN-2025-05,,POST
+2025-05-28,Bayar Air Kampus,1900000,,Air PDAM Mei,PDAM-2025-05,,POST
+2025-05-29,Bayar Internet & Telepon,5000000,,Internet dedicated Mei,NET-2025-05,,POST
+2025-05-30,Beban Keamanan,3000000,,Jasa keamanan Mei,SEC-2025-05,,POST
+2025-05-30,Beban Kebersihan,2500000,,Jasa kebersihan Mei,CLN-2025-05,,POST
+2025-05-31,Beban Admin Bank,25000,,Biaya admin BCA Mei,ADM-2025-05,,POST
+# === JUNE 2025 ===
+2025-06-10,Pembayaran Biaya Praktikum,60000000,,Pembayaran Praktikum Akt 2024 - Cicilan 2,RCV-PRKT-2024-02,,POST
+2025-06-15,Bayar ATK,1300000,,ATK Juni,ATK-2025-06,,POST
+2025-06-28,Bayar Listrik Kampus,7000000,,Listrik kampus Juni (liburan),PLN-2025-06,,POST
+2025-06-28,Bayar Air Kampus,1800000,,Air PDAM Juni,PDAM-2025-06,,POST
+2025-06-29,Bayar Internet & Telepon,5000000,,Internet dedicated Juni,NET-2025-06,,POST
+2025-06-30,Beban Keamanan,3000000,,Jasa keamanan Juni,SEC-2025-06,,POST
+2025-06-30,Beban Kebersihan,2500000,,Jasa kebersihan Juni,CLN-2025-06,,POST
+2025-06-30,Beban Admin Bank,25000,,Biaya admin BCA Juni,ADM-2025-06,,POST
+# === JULY 2025 — Semester Ganjil 2025/2026 starts ===
+2025-07-05,Tagihan SPP Mahasiswa,900000000,,Tagihan SPP Angkatan 2023 - Ganjil 2025/2026,SPP-2023-GNJ,,POST
+2025-07-05,Tagihan SPP Mahasiswa,900000000,,Tagihan SPP Angkatan 2024 - Ganjil 2025/2026,SPP-2024-GNJ,,POST
+2025-07-10,Tagihan Uang Pangkal,1800000000,,Tagihan Uang Pangkal Angkatan 2025,UP-2025,,POST
+2025-07-10,Tagihan SPP Mahasiswa,900000000,,Tagihan SPP Angkatan 2025 - Ganjil 2025/2026,SPP-2025-GNJ,,POST
+2025-07-15,Pembayaran Uang Pangkal,900000000,,Pembayaran Uang Pangkal Akt 2025 - Cicilan 1,RCV-UP-2025-01,,POST
+2025-07-20,Pembayaran SPP,500000000,,Pembayaran SPP Angkatan 2023 - Cicilan 1 Ganjil,RCV-SPP-2023-04,,POST
+2025-07-25,Pembayaran SPP,450000000,,Pembayaran SPP Angkatan 2024 - Cicilan 1 Ganjil,RCV-SPP-2024-04,,POST
+2025-07-28,Bayar Listrik Kampus,8500000,,Listrik kampus Juli,PLN-2025-07,,POST
+2025-07-28,Bayar Air Kampus,2200000,,Air PDAM Juli,PDAM-2025-07,,POST
+2025-07-29,Bayar Internet & Telepon,5000000,,Internet dedicated Juli,NET-2025-07,,POST
+2025-07-30,Beban Keamanan,3000000,,Jasa keamanan Juli,SEC-2025-07,,POST
+2025-07-30,Beban Kebersihan,2500000,,Jasa kebersihan Juli,CLN-2025-07,,POST
+2025-07-31,Beban Admin Bank,25000,,Biaya admin BCA Juli,ADM-2025-07,,POST
+# === AUGUST 2025 ===
+2025-08-05,Pembayaran Uang Pangkal,600000000,,Pembayaran Uang Pangkal Akt 2025 - Cicilan 2,RCV-UP-2025-02,,POST
+2025-08-10,Pembayaran SPP,300000000,,Pembayaran SPP Angkatan 2025 - Cicilan 1,RCV-SPP-2025-01,,POST
+2025-08-15,Pembayaran SPP,300000000,,Pembayaran SPP Angkatan 2023 - Cicilan 2 Ganjil,RCV-SPP-2023-05,,POST
+2025-08-20,Bayar ATK,1500000,,ATK Agustus,ATK-2025-08,,POST
+2025-08-25,Bayar Bahan Praktikum,3000000,,Bahan praktikum semester baru,LAB-2025-08,,POST
+2025-08-28,Bayar Listrik Kampus,9000000,,Listrik kampus Agustus (penuh),PLN-2025-08,,POST
+2025-08-28,Bayar Air Kampus,2300000,,Air PDAM Agustus,PDAM-2025-08,,POST
+2025-08-29,Bayar Internet & Telepon,5000000,,Internet dedicated Agustus,NET-2025-08,,POST
+2025-08-30,Beban Keamanan,3000000,,Jasa keamanan Agustus,SEC-2025-08,,POST
+2025-08-30,Beban Kebersihan,2500000,,Jasa kebersihan Agustus,CLN-2025-08,,POST
+2025-08-31,Beban Admin Bank,25000,,Biaya admin BCA Agustus,ADM-2025-08,,POST
+# === SEPTEMBER 2025 ===
+2025-09-05,Pembayaran Uang Pangkal,300000000,,Pembayaran Uang Pangkal Akt 2025 - Cicilan 3,RCV-UP-2025-03,,POST
+2025-09-10,Pembayaran SPP,400000000,,Pembayaran SPP Angkatan 2025 - Cicilan 2,RCV-SPP-2025-02,,POST
+2025-09-15,Pembayaran SPP,250000000,,Pembayaran SPP Angkatan 2024 - Cicilan 2 Ganjil,RCV-SPP-2024-05,,POST
+2025-09-20,Tagihan Biaya Praktikum,120000000,,Tagihan Praktikum semua angkatan - Ganjil,PRKT-ALL-GNJ,,POST
+2025-09-25,Pemeliharaan Gedung,15000000,,Perbaikan atap kampus,MNT-GDG-2025-Q3,,POST
+2025-09-28,Bayar Listrik Kampus,8800000,,Listrik kampus September,PLN-2025-09,,POST
+2025-09-28,Bayar Air Kampus,2200000,,Air PDAM September,PDAM-2025-09,,POST
+2025-09-29,Bayar Internet & Telepon,5000000,,Internet dedicated September,NET-2025-09,,POST
+2025-09-30,Beban Keamanan,3000000,,Jasa keamanan September,SEC-2025-09,,POST
+2025-09-30,Beban Kebersihan,2500000,,Jasa kebersihan September,CLN-2025-09,,POST
+2025-09-30,Beban Admin Bank,25000,,Biaya admin BCA September,ADM-2025-09,,POST
+# === OCTOBER 2025 ===
+2025-10-05,Pembayaran SPP,100000000,,Pembayaran SPP Angkatan 2023 - Cicilan 3 Ganjil,RCV-SPP-2023-06,,POST
+2025-10-10,Pembayaran Biaya Praktikum,80000000,,Pembayaran Praktikum Ganjil - Cicilan 1,RCV-PRKT-GNJ-01,,POST
+2025-10-15,Beasiswa Prestasi,7500000,,Beasiswa prestasi semester ganjil (3 mahasiswa),BEA-P-2025-GNJ,,POST
+2025-10-15,Beasiswa Tidak Mampu,12500000,,Beasiswa tidak mampu semester ganjil (5 mahasiswa),BEA-TM-2025-GNJ,,POST
+2025-10-20,Pemeliharaan Lab,8000000,,Upgrade peralatan lab,MNT-LAB-2025-10,,POST
+2025-10-28,Bayar Listrik Kampus,8500000,,Listrik kampus Oktober,PLN-2025-10,,POST
+2025-10-28,Bayar Air Kampus,2100000,,Air PDAM Oktober,PDAM-2025-10,,POST
+2025-10-29,Bayar Internet & Telepon,5000000,,Internet dedicated Oktober,NET-2025-10,,POST
+2025-10-30,Beban Keamanan,3000000,,Jasa keamanan Oktober,SEC-2025-10,,POST
+2025-10-30,Beban Kebersihan,2500000,,Jasa kebersihan Oktober,CLN-2025-10,,POST
+2025-10-31,Beban Admin Bank,25000,,Biaya admin BCA Oktober,ADM-2025-10,,POST
+# === NOVEMBER 2025 ===
+2025-11-05,Pembayaran SPP,200000000,,Pembayaran SPP Angkatan 2025 - Cicilan 3,RCV-SPP-2025-03,,POST
+2025-11-10,Pembayaran Biaya Praktikum,40000000,,Pembayaran Praktikum Ganjil - Cicilan 2,RCV-PRKT-GNJ-02,,POST
+2025-11-15,Bayar ATK,1500000,,ATK November,ATK-2025-11,,POST
+2025-11-28,Bayar Listrik Kampus,8200000,,Listrik kampus November,PLN-2025-11,,POST
+2025-11-28,Bayar Air Kampus,2100000,,Air PDAM November,PDAM-2025-11,,POST
+2025-11-29,Bayar Internet & Telepon,5000000,,Internet dedicated November,NET-2025-11,,POST
+2025-11-30,Beban Keamanan,3000000,,Jasa keamanan November,SEC-2025-11,,POST
+2025-11-30,Beban Kebersihan,2500000,,Jasa kebersihan November,CLN-2025-11,,POST
+2025-11-30,Beban Admin Bank,25000,,Biaya admin BCA November,ADM-2025-11,,POST
+# === DECEMBER 2025 ===
+2025-12-10,Bayar Bahan Praktikum,2000000,,Bahan praktikum UAS,LAB-2025-12,,POST
+2025-12-15,Bayar ATK,1000000,,ATK Desember,ATK-2025-12,,POST
+2025-12-28,Bayar Listrik Kampus,7500000,,Listrik kampus Desember (liburan),PLN-2025-12,,POST
+2025-12-28,Bayar Air Kampus,1900000,,Air PDAM Desember,PDAM-2025-12,,POST
+2025-12-29,Bayar Internet & Telepon,5000000,,Internet dedicated Desember,NET-2025-12,,POST
+2025-12-30,Beban Keamanan,3000000,,Jasa keamanan Desember,SEC-2025-12,,POST
+2025-12-30,Beban Kebersihan,2500000,,Jasa kebersihan Desember,CLN-2025-12,,POST
+2025-12-31,Pemeliharaan Gedung,8000000,,Pemeliharaan akhir tahun,MNT-GDG-2025-Q4,,POST
+2025-12-31,Beban Admin Bank,25000,,Biaya admin BCA Desember,ADM-2025-12,,POST

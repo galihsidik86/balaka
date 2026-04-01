@@ -1,6 +1,6 @@
 date,template_name,amount,inputs,description,reference,project,status
 # === JANUARY 2025 ===
-2025-01-02,Setoran Modal,200000000,,Setoran modal awal tahun 2025,CAP-2025-001,,POST
+2025-01-02,Setoran Modal,300000000,,Setoran modal awal tahun 2025,CAP-2025-001,,POST
 2025-01-05,Pembelian Barang Dagangan,45000000,,Pembelian stok smartphone Q1,PO-2025-001,,POST
 2025-01-08,Penjualan Tokopedia,0,var_grossSales:25000000|var_adminFee:1250000,Penjualan Tokopedia minggu 1,ORD-TOKPED-0101,,POST
 2025-01-15,Penjualan Shopee,0,var_grossSales:18000000|var_adminFee:1080000,Penjualan Shopee minggu 2,ORD-SHOPEE-0102,,POST
