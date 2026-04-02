@@ -7,7 +7,7 @@ import java.util.List;
 
 @Slf4j
 @DisplayName("Verify: Online Seller")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Tag("demo") @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class OnlineSellerVerificationTest extends DemoVerificationTest {
     @Override protected String industryName() { return "Online Seller"; }
     @Override protected String seedDataPath() { return "industry-seed/online-seller/seed-data"; }

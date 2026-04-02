@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
@@ -28,7 +29,7 @@ import java.time.LocalDate;
  */
 @Slf4j
 @DisplayName("Demo: IT Service Data Loader")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Tag("demo") @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DemoItServiceDataLoader extends DemoDataLoaderBase {
 
     @Override protected String industryName() { return "IT Service"; }

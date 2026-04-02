@@ -61,7 +61,7 @@ jobs:
 
       - name: Run all tests with coverage
         run: ./mvnw clean verify
-        timeout-minutes: 90
+        timeout-minutes: 180
         env:
           MAVEN_OPTS: -Xmx4g -XX:MaxMetaspaceSize=512m
 

@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 @DisplayName("Demo Data Verification")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Tag("demo") @Tag("demo") @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DemoVerificationTest extends DemoDataLoaderBase {
 
     @Autowired private jakarta.persistence.EntityManager entityManager;
