@@ -69,6 +69,11 @@ public class UserManualGenerator {
         // 11. Keamanan - security & compliance
         // 12. Lampiran - appendix
         return List.of(
+            // LANDING PAGE
+            new SectionGroup("beranda", "Beranda", "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", List.of(
+                new Section("beranda", "Dokumentasi Balaka", "index.md", List.of())
+            )),
+
             // 1. SETUP AWAL & ADMINISTRASI
             new SectionGroup("setup-awal", "Setup Awal & Administrasi", "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z", List.of(
                 new Section("setup-awal", "Setup Awal", "01-setup-awal.md", List.of("login", "dashboard", "accounts-list", "accounts-form")),
@@ -294,6 +299,68 @@ public class UserManualGenerator {
                 new Section("tut-campus-payroll", "Payroll Dosen & Staff", "campus/05-faculty-payroll.md", List.of()),
                 new Section("tut-campus-ops", "Operasional Kampus", "campus/06-campus-operations.md", List.of()),
                 new Section("tut-campus-report", "Laporan & Pelaporan", "campus/07-reporting.md", List.of())
+            )),
+
+            // ==================== FEATURE REFERENCE ====================
+
+            new SectionGroup("fitur-referensi", "Referensi Fitur", "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", List.of(
+                new Section("ref-bank-recon", "Rekonsiliasi Bank", "01-bank-reconciliation.md", List.of()),
+                new Section("ref-invoicing", "Faktur (Invoice)", "02-invoicing.md", List.of()),
+                new Section("ref-bills", "Tagihan Vendor", "03-vendor-bills.md", List.of()),
+                new Section("ref-recurring", "Transaksi Berulang", "04-recurring-transactions.md", List.of()),
+                new Section("ref-alerts", "Peringatan (Smart Alerts)", "05-smart-alerts.md", List.of()),
+                new Section("ref-tags", "Tag Transaksi", "06-tags.md", List.of()),
+                new Section("ref-ai", "Integrasi AI & Telegram", "07-ai-integration.md", List.of()),
+                new Section("ref-data", "Manajemen Data", "08-data-management.md", List.of()),
+                new Section("ref-device-auth", "Otorisasi Perangkat API", "09-api-device-auth.md", List.of())
+            )),
+
+            // ==================== ADMIN GUIDE ====================
+
+            new SectionGroup("admin-guide", "Panduan Administrator", "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z", List.of(
+                new Section("adm-deployment", "Deployment", "01-deployment.md", List.of()),
+                new Section("adm-config", "Konfigurasi", "02-configuration.md", List.of()),
+                new Section("adm-database", "Database", "03-database.md", List.of()),
+                new Section("adm-monitoring", "Monitoring", "04-monitoring.md", List.of()),
+                new Section("adm-updates", "Update & Upgrade", "05-updates.md", List.of()),
+                new Section("adm-security", "Keamanan", "06-security.md", List.of()),
+                new Section("adm-multi-instance", "Multi-Instance", "07-multi-instance.md", List.of()),
+                new Section("adm-demo-setup", "Setup Demo", "08-demo-setup.md", List.of()),
+                new Section("adm-troubleshooting", "Troubleshooting", "09-troubleshooting.md", List.of())
+            )),
+
+            // ==================== IMPLEMENTOR GUIDE ====================
+
+            new SectionGroup("implementor-guide", "Panduan Implementor", "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z", List.of(
+                new Section("impl-partner", "Model Kemitraan", "01-partner-model.md", List.of()),
+                new Section("impl-onboarding", "Onboarding Klien", "02-client-onboarding.md", List.of()),
+                new Section("impl-coa", "Kustomisasi COA", "03-coa-customization.md", List.of()),
+                new Section("impl-import", "Import Data", "04-data-import.md", List.of()),
+                new Section("impl-template", "Konfigurasi Template", "05-template-config.md", List.of()),
+                new Section("impl-tax", "Setup Pajak", "06-tax-setup.md", List.of()),
+                new Section("impl-training", "Pelatihan Klien", "07-training-clients.md", List.of()),
+                new Section("impl-support", "Support Playbook", "08-support-playbook.md", List.of())
+            )),
+
+            // ==================== DEVELOPER GUIDE ====================
+
+            new SectionGroup("dev-api", "Developer: API Guide", "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", List.of(
+                new Section("dev-auth", "Authentication", "01-authentication.md", List.of()),
+                new Section("dev-quickstart", "Quickstart", "02-quickstart.md", List.of()),
+                new Section("dev-transactions", "Transactions API", "03-transactions.md", List.of()),
+                new Section("dev-reports", "Reports API", "04-reports.md", List.of()),
+                new Section("dev-payroll", "Payroll API", "05-payroll.md", List.of()),
+                new Section("dev-tax", "Tax Export API", "06-tax-export.md", List.of()),
+                new Section("dev-pagination", "Pagination", "07-pagination.md", List.of())
+            )),
+
+            new SectionGroup("dev-extending", "Developer: Extending Balaka", "M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z", List.of(
+                new Section("dev-architecture", "Architecture", "01-architecture.md", List.of()),
+                new Section("dev-structure", "Project Structure", "02-project-structure.md", List.of()),
+                new Section("dev-adding", "Adding Features", "03-adding-features.md", List.of()),
+                new Section("dev-seed-packs", "Seed Packs", "04-seed-packs.md", List.of()),
+                new Section("dev-testing", "Testing", "05-testing.md", List.of()),
+                new Section("dev-contributing", "Contributing", "06-contributing.md", List.of())
             ))
         );
     }
@@ -449,6 +516,18 @@ public class UserManualGenerator {
         Path tutorialPath = Paths.get("docs", "tutorials").resolve(filename);
         if (Files.exists(tutorialPath)) {
             return Files.readString(tutorialPath, StandardCharsets.UTF_8);
+        }
+        // Try docs root (for index.md and other top-level docs)
+        Path docsPath = Paths.get("docs").resolve(filename);
+        if (Files.exists(docsPath)) {
+            return Files.readString(docsPath, StandardCharsets.UTF_8);
+        }
+        // Try admin-guide, implementor-guide, feature-reference, developer-guide
+        for (String subdir : List.of("admin-guide", "implementor-guide", "feature-reference", "developer-guide", "developer-guide/api", "developer-guide/extending")) {
+            Path guidePath = Paths.get("docs", subdir).resolve(filename);
+            if (Files.exists(guidePath)) {
+                return Files.readString(guidePath, StandardCharsets.UTF_8);
+            }
         }
         return "Konten belum tersedia.";
     }

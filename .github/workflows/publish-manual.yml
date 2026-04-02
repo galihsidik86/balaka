@@ -6,8 +6,7 @@ on:
       - main
       - master
     paths:
-      - 'docs/user-manual/**'
-      - 'docs/tutorials/**'
+      - 'docs/**'
       - 'src/main/resources/templates/**'
       - 'src/test/java/**/manual/**'
       - 'src/test/java/**/functional/**'
