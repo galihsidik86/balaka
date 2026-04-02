@@ -1,9 +1,13 @@
 package com.artivisi.accountingfinance.functional.manufacturing;
 
 import com.artivisi.accountingfinance.functional.util.CsvLoader;
+import org.springframework.test.annotation.DirtiesContext;
 import com.artivisi.accountingfinance.functional.util.ExpectedInventoryRow;
+import org.springframework.test.annotation.DirtiesContext;
 import com.artivisi.accountingfinance.functional.util.ProductionOrderRow;
+import org.springframework.test.annotation.DirtiesContext;
 import com.artivisi.accountingfinance.ui.PlaywrightTestBase;
+import org.springframework.test.annotation.DirtiesContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -25,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @DisplayName("Manufacturing - CSV-Driven Tests")
 @Import(CoffeeTestDataInitializer.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class MfgCsvDrivenTest extends PlaywrightTestBase {
 
     @Test

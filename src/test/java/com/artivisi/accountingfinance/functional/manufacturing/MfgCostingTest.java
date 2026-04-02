@@ -1,6 +1,7 @@
 package com.artivisi.accountingfinance.functional.manufacturing;
 
 import com.artivisi.accountingfinance.ui.PlaywrightTestBase;
+import org.springframework.test.annotation.DirtiesContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
@@ -14,6 +15,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  */
 @DisplayName("Manufacturing - Costing & Valuation")
 @Import(CoffeeTestDataInitializer.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class MfgCostingTest extends PlaywrightTestBase {
 
     @Test
