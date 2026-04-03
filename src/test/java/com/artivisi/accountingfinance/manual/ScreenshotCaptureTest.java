@@ -71,10 +71,20 @@ class ScreenshotCaptureTest extends PlaywrightTestBase {
         Path indexPath = outputDir.resolve("index.html");
         assertThat(Files.exists(indexPath)).isTrue();
 
-        // Verify all sections are present
-        String html = Files.readString(indexPath);
-        for (UserManualGenerator.Section section : UserManualGenerator.getSections()) {
-            assertThat(html).contains("id=\"" + section.id() + "\"");
+        // Verify all section group pages are generated
+        // Each SectionGroup produces a {group-id}.html file (except "beranda" which is index.html)
+        for (UserManualGenerator.SectionGroup group : UserManualGenerator.getSectionGroups()) {
+            if ("beranda".equals(group.id())) continue;
+            Path groupPage = outputDir.resolve(group.id() + ".html");
+            assertThat(Files.exists(groupPage))
+                    .as("Page should exist: " + group.id() + ".html")
+                    .isTrue();
+
+            // Verify all sections within this group page are present
+            String html = Files.readString(groupPage);
+            for (UserManualGenerator.Section section : group.sections()) {
+                assertThat(html).contains("id=\"" + section.id() + "\"");
+            }
         }
     }
 }
