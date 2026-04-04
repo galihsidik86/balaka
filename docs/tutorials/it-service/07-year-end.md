@@ -42,6 +42,8 @@ LABA BERSIH                         794.184.240
 
 Buka **Laporan → Rekonsiliasi Fiskal** (tahun: 2025).
 
+![Laporan rekonsiliasi fiskal](screenshots/tutorials/it-service/report-rekonsiliasi-fiskal.png)
+
 Tambahkan koreksi fiskal:
 
 | Uraian | Kategori | Arah | Jumlah |
@@ -82,6 +84,8 @@ Jurnal penutup menutup semua akun pendapatan dan beban:
 - Semua pendapatan (4.x) menjadi saldo 0
 - Semua beban (5.x) menjadi saldo 0
 - Selisih masuk ke **Laba Ditahan (3.2.01)**: 794.184.240
+
+![Checklist SPT tahunan](screenshots/tutorials/it-service/report-spt-checklist.png)
 
 ## Langkah 6: Export Coretax
 

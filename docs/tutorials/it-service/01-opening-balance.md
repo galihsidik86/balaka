@@ -16,6 +16,8 @@ Gunakan template **Setoran Modal**:
 | Deskripsi | Setoran modal awal tahun 2025 |
 | Referensi | CAP-2025-001 |
 
+![Form transaksi setoran modal](screenshots/tutorials/it-service/tx-form-setoran-modal.png)
+
 Jurnal yang dihasilkan:
 
 | Akun | Debit | Kredit |
@@ -24,6 +26,8 @@ Jurnal yang dihasilkan:
 | 3.1.01 Modal Disetor | | 500.000.000 |
 
 Bank bertambah (debit), modal bertambah (kredit).
+
+![Detail transaksi setoran modal](screenshots/tutorials/it-service/tx-detail-setoran-modal.png)
 
 Untuk memahami kenapa debit dan kredit seperti ini, lihat [Debit dan Kredit](../common/03-debit-credit.md).
 

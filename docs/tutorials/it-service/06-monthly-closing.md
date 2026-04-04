@@ -56,6 +56,8 @@ Untuk panduan umum tutup bulan, lihat [Panduan Tutup Bulanan](../common/11-month
 ### Tutup Periode Januari
 - Buka Periode Fiskal → Januari 2025 → Tutup Bulan
 
+![Daftar periode fiskal](screenshots/tutorials/it-service/fiscal-period-list.png)
+
 ## PPN: Mana yang Disetor?
 
 Tidak semua bulan ada PPN yang disetor. Bulan dimana semua pendapatan dari BUMN (FP 03), PPN nihil:

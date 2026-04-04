@@ -24,6 +24,8 @@ Buka **Payroll → Buat Baru**. Isi:
 
 Klik **Buat & Kalkulasi**. Sistem otomatis menghitung untuk semua karyawan aktif.
 
+![Form pembuatan payroll baru](screenshots/tutorials/it-service/payroll-form.png)
+
 ### Langkah 2: Review Hasil Kalkulasi
 
 Halaman detail payroll menampilkan ringkasan:
@@ -35,6 +37,8 @@ Halaman detail payroll menampilkan ringkasan:
 - **Total PPh 21** — pajak penghasilan yang dipotong
 
 Dan detail per karyawan: BPJS Kes, JHT, JP, JKK, JKM, PPh 21, net pay.
+
+![Hasil kalkulasi payroll](screenshots/tutorials/it-service/payroll-calculated.png)
 
 ### Langkah 3: Approve
 
@@ -52,6 +56,8 @@ Klik **Post ke Jurnal**. Sistem membuat transaksi "Post Gaji Bulanan" dengan jur
 | Hutang Gaji | | netPay |
 | Hutang BPJS | | totalBpjs |
 | Hutang PPh 21 | | pph21 |
+
+![Payroll setelah posting ke jurnal](screenshots/tutorials/it-service/payroll-posted.png)
 
 ## Setelah Posting
 

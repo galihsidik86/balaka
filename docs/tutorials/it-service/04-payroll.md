@@ -23,6 +23,8 @@ Buka **Payroll → Buat Baru**:
 
 Klik **Buat & Kalkulasi**.
 
+![Form pembuatan payroll baru](screenshots/tutorials/it-service/payroll-form.png)
+
 ### 2. Review Hasil
 
 Sistem menampilkan:
@@ -37,6 +39,8 @@ Sistem menampilkan:
 | Total Company BPJS | 6.584.230 | 6.584.230 |
 
 Desember memiliki PPh 21 lebih besar karena **rekonsiliasi tahunan** — PPh 21 dihitung ulang dengan tarif progresif dan selisih dari TER bulanan disesuaikan.
+
+![Hasil kalkulasi payroll](screenshots/tutorials/it-service/payroll-calculated.png)
 
 ### 3. Approve & Post
 

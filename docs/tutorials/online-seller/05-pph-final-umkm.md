@@ -89,7 +89,7 @@ PPh Final dicatat sebagai **beban** (bukan hutang yang ditunda) karena langsung 
 ## Perbedaan PPh Final vs PPh Badan
 
 | | PPh Final UMKM | PPh Badan (IT Service) |
-|-|---------------|----------------------|
+|---|---------------|----------------------|
 | Tarif | 0,5% dari omzet bruto | 11%/22% dari laba kena pajak |
 | Dasar perhitungan | Omzet (sebelum biaya) | Laba (setelah biaya) |
 | PPN | Tidak ada (non-PKP) | Memungut PPN 11% |

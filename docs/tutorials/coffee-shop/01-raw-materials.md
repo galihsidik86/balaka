@@ -69,7 +69,7 @@ Di akhir tahun 2025, Kedai Kopi Nusantara masih memiliki **Hutang Supplier Rp 10
 ## Perbedaan Tunai vs Kredit
 
 | | Tunai | Kredit |
-|-|-------|--------|
+|---|-------|--------|
 | Kas berkurang | Ya, langsung | Tidak |
 | Hutang timbul | Tidak | Ya |
 | Persediaan bertambah | Ya | Ya |

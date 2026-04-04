@@ -390,6 +390,14 @@ public class UserManualGenerator {
             copyScreenshotsRecursively(screenshotsDir, outputScreenshotsDir);
         }
 
+        // Copy tutorial screenshots from docs/tutorials/screenshots/
+        Path tutorialScreenshotsDir = Paths.get("docs", "tutorials", "screenshots");
+        if (Files.exists(tutorialScreenshotsDir)) {
+            Path outputTutorialScreenshots = outputScreenshotsDir.resolve("tutorials");
+            Files.createDirectories(outputTutorialScreenshots);
+            copyScreenshotsRecursively(tutorialScreenshotsDir, outputTutorialScreenshots);
+        }
+
         List<SectionGroup> groups = getSectionGroups();
 
         // Generate landing page (index.html)

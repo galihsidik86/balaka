@@ -26,6 +26,8 @@ Buka **Aset Tetap → Tambah Baru**:
 | Masa Manfaat | 48 bulan |
 | Nilai Residu | 0 |
 
+![Form pendaftaran aset tetap](screenshots/tutorials/it-service/asset-form.png)
+
 ### Langkah 2: Catat Pembayaran
 
 Template **Pembelian Aset Tetap** otomatis membuat jurnal:
@@ -34,6 +36,8 @@ Template **Pembelian Aset Tetap** otomatis membuat jurnal:
 |------|-------|--------|
 | 1.2.01 Peralatan Komputer | 25.000.000 | |
 | 1.1.02 Bank BCA | | 25.000.000 |
+
+![Detail aset tetap yang sudah terdaftar](screenshots/tutorials/it-service/asset-detail.png)
 
 ## Penyusutan Bulanan
 

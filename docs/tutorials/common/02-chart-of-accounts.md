@@ -39,6 +39,8 @@ Hanya akun **detail** (level terbawah) yang bisa digunakan dalam transaksi. Akun
 
 Buka **Master Data → Bagan Akun** untuk melihat seluruh daftar akun.
 
+![Daftar bagan akun](screenshots/tutorials/it-service/coa-list.png)
+
 Setiap akun menampilkan:
 - **Kode** — nomor unik (misal 1.1.02)
 - **Nama** — deskripsi akun (misal Bank BCA)

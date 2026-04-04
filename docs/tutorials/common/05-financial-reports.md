@@ -23,6 +23,8 @@ Jika total tidak sama, ada transaksi yang belum benar. Dalam praktik, Balaka men
 
 **Cara akses:** Laporan → Neraca Saldo → pilih tanggal
 
+![Laporan neraca saldo](screenshots/tutorials/it-service/report-trial-balance.png)
+
 ## 2. Laporan Laba Rugi (Income Statement / P&L)
 
 Menampilkan pendapatan dikurangi beban selama periode tertentu.
@@ -50,6 +52,8 @@ BEBAN
 **Laba bersih positif** = perusahaan untung. **Negatif** = rugi.
 
 **Cara akses:** Laporan → Laba Rugi → pilih rentang tanggal
+
+![Laporan laba rugi](screenshots/tutorials/it-service/report-income-statement.png)
 
 ## 3. Neraca (Balance Sheet)
 
@@ -83,6 +87,8 @@ EKUITAS
 **Persamaan akuntansi:** Aset = Kewajiban + Ekuitas. Selalu harus sama.
 
 **Cara akses:** Laporan → Neraca → pilih tanggal
+
+![Laporan neraca](screenshots/tutorials/it-service/report-balance-sheet.png)
 
 ## 4. Laporan Arus Kas (Cash Flow)
 

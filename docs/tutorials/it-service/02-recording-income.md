@@ -48,6 +48,8 @@ Klien korporat yang memotong PPh 23 (2%) dari pembayaran. Anda memungut PPN 11%,
 | Referensi | INV-SDN-2025-001 |
 | Proyek | PRJ-MND-01 |
 
+![Form pendapatan jasa dengan PPN dan PPh 23](screenshots/tutorials/it-service/tx-form-pendapatan-jasa-ppn-pph-23.png)
+
 Jurnal yang dihasilkan:
 
 | Akun | Debit | Kredit | Perhitungan |
@@ -58,6 +60,8 @@ Jurnal yang dihasilkan:
 | Hutang PPN | | 16.500.000 | 150jt × 11% |
 
 Anda menerima Rp 163,5 juta (harga jual + PPN 11% − PPh 23 2%). Selisih 2% menjadi **kredit pajak** yang bisa dikurangkan dari PPh Badan tahunan.
+
+![Detail transaksi pendapatan jasa dengan PPN dan PPh 23](screenshots/tutorials/it-service/tx-detail-pendapatan-jasa-ppn-pph-23.png)
 
 **Penting:** Minta bukti potong PPh 23 dari klien — ini dibutuhkan saat pelaporan SPT.
 
@@ -91,7 +95,7 @@ Tidak ada Hutang PPN — PPN dipungut dan disetor oleh PLN langsung.
 ## Perbandingan 3 Pola
 
 | | Swasta (+PPN) | Korporat (+PPN+PPh23) | BUMN (FP 03) |
-|-|---------------|----------------------|---------------|
+|---|---------------|----------------------|---------------|
 | Anda terima | 111% | 109% | 98% |
 | PPN | Anda setor | Anda setor | Klien setor |
 | PPh 23 | Tidak ada | Klien potong 2% | Klien potong 2% |

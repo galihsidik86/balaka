@@ -50,6 +50,8 @@ Pajak bulan lalu disetor di bulan ini:
 - [ ] Klik periode bulan ini
 - [ ] Klik **Tutup Bulan**
 
+![Daftar periode fiskal](screenshots/tutorials/it-service/fiscal-period-list.png)
+
 Setelah ditutup, tidak ada transaksi baru yang bisa diposting ke bulan tersebut. Ini mencegah perubahan di bulan yang sudah final.
 
 ## Jadwal Bulanan

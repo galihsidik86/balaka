@@ -14,6 +14,8 @@ Laba komersial (dari laporan keuangan) tidak selalu sama dengan laba fiskal (unt
 
 Buka **Laporan → Rekonsiliasi Fiskal** dan tambahkan koreksi:
 
+![Laporan rekonsiliasi fiskal](screenshots/tutorials/it-service/report-rekonsiliasi-fiskal.png)
+
 | Jenis Koreksi | Arah | Contoh |
 |--------------|------|--------|
 | **Beda Tetap** (Permanent) | Positif (+) | Beban entertainment tanpa daftar nominatif |

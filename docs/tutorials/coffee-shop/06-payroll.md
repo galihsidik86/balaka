@@ -87,7 +87,7 @@ Total beban gaji dan BPJS: **397.944.000/tahun** — ini adalah beban terbesar k
 ## Perbandingan dengan IT Service
 
 | | Kedai Kopi | IT Service |
-|-|-----------|-----------|
+|---|-----------|-----------|
 | Gaji/orang | 5.000.000 | 15.000.000 |
 | Jumlah karyawan | 6 | 5 |
 | Total gross/bulan | 30.000.000 | 75.000.000 |

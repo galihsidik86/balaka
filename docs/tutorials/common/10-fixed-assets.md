@@ -27,6 +27,8 @@ Buka **Master Data → Aset Tetap → Tambah Baru**. Isi:
 | Masa Manfaat | 48 bulan |
 | Nilai Residu | 0 |
 
+![Form pendaftaran aset tetap](screenshots/tutorials/it-service/asset-form.png)
+
 ### Langkah 2: Buat Transaksi Pembelian
 
 Gunakan template **Pembelian Aset Tetap** (DETAILED, variabel `assetCost`):
@@ -35,6 +37,8 @@ Gunakan template **Pembelian Aset Tetap** (DETAILED, variabel `assetCost`):
 |------|-------|--------|
 | 1.2.01 Peralatan Komputer | 25.000.000 | |
 | 1.1.02 Bank BCA | | 25.000.000 |
+
+![Detail aset tetap](screenshots/tutorials/it-service/asset-detail.png)
 
 ## Penyusutan Bulanan
 
@@ -53,6 +57,8 @@ Jurnal penyusutan:
 
 **Beban Penyusutan** masuk ke Laba Rugi (mengurangi laba).
 **Akumulasi Penyusutan** masuk ke Neraca (mengurangi nilai aset).
+
+![Daftar entry penyusutan](screenshots/tutorials/it-service/depreciation-list.png)
 
 ## Nilai Buku
 

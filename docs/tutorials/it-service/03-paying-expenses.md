@@ -27,6 +27,8 @@ Semua template pengeluaran bekerja sama:
 3. Isi deskripsi dan referensi
 4. Klik **Simpan & Posting**
 
+![Form transaksi pembayaran beban](screenshots/tutorials/it-service/tx-form-bayar-beban-sewa.png)
+
 Jurnal yang dihasilkan (contoh cloud):
 
 | Akun | Debit | Kredit |

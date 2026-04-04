@@ -9,6 +9,9 @@ Anda **tidak perlu menghafal** akun mana yang di-debit atau di-kredit. Template 
 1. Pilih template (misal: "Bayar Beban Sewa")
 2. Isi tanggal dan jumlah (misal: 15.000.000)
 3. Klik **Simpan & Posting**
+
+![Form transaksi Bayar Beban Sewa](screenshots/tutorials/it-service/tx-form-bayar-beban-sewa.png)
+
 4. Balaka otomatis membuat jurnal:
 
 | Akun | Debit | Kredit |
@@ -101,6 +104,8 @@ Tagihan SPP/Uang Pangkal/Praktikum, Pembayaran SPP, Beasiswa, Gaji Dosen, Hibah
 ## Membuat Template Sendiri
 
 Jika template bawaan tidak sesuai, Anda bisa membuat template sendiri:
+
+![Daftar template jurnal](screenshots/tutorials/it-service/template-list.png)
 
 1. Buka **Master Data → Template Jurnal**
 2. Klik **Buat Template**
