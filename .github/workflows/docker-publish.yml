@@ -10,7 +10,7 @@ on:
     branches:
       - main
   schedule:
-    # Weekly rebuild of :main to pick up base image CVE patches (Mondays 18:00 UTC = 01:00 WIB Tue)
+    # Weekly rebuild of :main to pick up base image CVE patches (Mondays 18:00 UTC = Tue 01:00 WIB)
     - cron: '0 18 * * 1'
   workflow_dispatch:
     inputs:
@@ -28,12 +28,20 @@ permissions:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    env:
-      # Fork PRs cannot access secrets — build only, do not push.
-      IS_FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Detect fork PR
+        id: fork
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            echo "is_fork=true" >> "$GITHUB_OUTPUT"
+            echo "push=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_fork=false" >> "$GITHUB_OUTPUT"
+            echo "push=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -42,7 +50,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GHCR
-        if: ${{ env.IS_FORK_PR != 'true' }}
+        if: steps.fork.outputs.is_fork == 'false'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -50,7 +58,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
-        if: ${{ env.IS_FORK_PR != 'true' && secrets.DOCKERHUB_USERNAME != '' }}
+        if: steps.fork.outputs.is_fork == 'false'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -62,23 +70,23 @@ jobs:
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/balaka
-            ${{ secrets.DOCKERHUB_USERNAME != '' && 'artivisi/balaka' || '' }}
+            artivisi/balaka
           # Tag matrix:
           #   Push to main           → :main, :main-<sha>
-          #   Pull request           → :pr-<number>          (build only for fork PRs, push for same-repo PRs)
+          #   Pull request           → :pr-<number>
           #   Tag *-RELEASE          → :2025.12-RELEASE, :2025.12, :latest    (CalVer per docs/03-operations-guide.md)
           #   Patch *-RELEASE        → :2025.12.1-RELEASE, :2025.12.1, :2025.12, :latest
-          #   Schedule (weekly cron) → :main (rebuilt with fresh base layers for CVE patches)
+          #   Schedule (weekly cron) → :main (rebuilt with fresh base layers)
           #   workflow_dispatch      → user-supplied tag, default :edge
           tags: |
             type=ref,event=branch
             type=ref,event=pr,prefix=pr-
             type=ref,event=tag
             type=match,pattern=(.*)-RELEASE,group=1
-            type=sha,prefix=main-,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=main-,enable={{is_default_branch}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-RELEASE') }}
             type=raw,value=main,enable=${{ github.event_name == 'schedule' }}
-            type=raw,value=${{ inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
           labels: |
             org.opencontainers.image.title=Balaka
             org.opencontainers.image.description=Open-source accounting application for Indonesian SMEs
@@ -92,17 +100,16 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          # Fork PRs build but do not push (no registry credentials available).
-          push: ${{ env.IS_FORK_PR != 'true' }}
+          push: ${{ steps.fork.outputs.push }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: ${{ env.IS_FORK_PR != 'true' }}
-          sbom: ${{ env.IS_FORK_PR != 'true' }}
+          provenance: ${{ steps.fork.outputs.push }}
+          sbom: ${{ steps.fork.outputs.push }}
 
-      - name: Generate artifact attestation (GHCR)
-        if: ${{ env.IS_FORK_PR != 'true' && steps.build.outputs.digest != '' }}
+      - name: Attest GHCR image
+        if: steps.fork.outputs.is_fork == 'false' && steps.build.outputs.digest != ''
         uses: actions/attest-build-provenance@v2
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/balaka
