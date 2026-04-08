@@ -1871,11 +1871,26 @@ Git-versioned sample data for 4 industry demo instances. Full plan: `aplikasi-ak
 - [x] When true, show banner on every page: "Data direset setiap hari pukul 00:00 WIB"
 
 ### Docker Image (for Sumopod template & container deployment)
-- [ ] Create Dockerfile — multi-stage build or Spring Boot's `spring-boot:build-image` plugin (evaluate both; prefer `build-image` if the generated image meets size/startup requirements, otherwise self-maintained multi-stage)
-- [ ] Multi-stage Dockerfile reference: stage 1 = Maven build (`./mvnw package -DskipTests`), stage 2 = `azul/zulu-openjdk-alpine:25-jre` + JAR copy. No Nginx, no PostgreSQL — external managed DB, platform handles SSL/routing.
-- [ ] Externalize all config via environment variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JAVA_HEAP_MIN`, `JAVA_HEAP_MAX`, `APP_ENCRYPTION_KEY`. Most already work via Spring Boot externalized config — verify and document.
-- [ ] Integrate into release procedure: on tagged release, CI builds and pushes Docker image to registry (Docker Hub `artivisi/balaka:<version>` + `artivisi/balaka:latest`)
-- [ ] Test image locally: `docker run` with external PostgreSQL (via `docker compose` with PG sidecar for local testing)
+- [x] Create Dockerfile — **decision: custom multi-stage** (not `spring-boot:build-image`). Rationale: JDK 25 control (Paketo lags on bleeding-edge JDK), OSS auditability (handcrafted Dockerfile vs buildpack black box), Indonesian locale/timezone via `apk add tzdata`, sub-300MB target via Alpine base, standard entrypoint expected by Sumopod marketplace. File: `Dockerfile` at repo root.
+- [x] Multi-stage Dockerfile: stage 1 = `maven:3.9-eclipse-temurin-25-alpine` build with BuildKit cache mount, stage 2 = `azul/zulu-openjdk-alpine:25-jre` + layered JAR extract (`jarmode=tools extract --layers`). Runs as non-root `app` user, `/opt/app/documents` declared as VOLUME, tini as PID 1, healthcheck against `/actuator/health/liveness`.
+- [ ] Externalize all config via environment variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JAVA_OPTS`, `APP_ENCRYPTION_KEY`, `APP_DOCUMENT_STORAGE_PATH`. Most already work via Spring Boot externalized config — verify and document.
+- [x] Integrate into release procedure: on `*-RELEASE` git tag, CI builds and pushes Docker image to **two registries** with CalVer tagging matching `docs/03-operations-guide.md` release convention:
+  - **Primary:** GitHub Container Registry — `ghcr.io/artivisi/balaka:2025.12-RELEASE`, `:2025.12`, `:latest`
+  - **Mirror:** Docker Hub — `artivisi/balaka:2025.12-RELEASE`, `:2025.12`, `:latest` (conditional on `DOCKERHUB_USERNAME` secret)
+  - Patch releases (`2025.12.1-RELEASE`) produce both `:2025.12.1-RELEASE` and `:2025.12.1`. The unsuffixed `:2025.12` short tag rolls forward to whichever release was pushed last (matches Docker convention for date-stamped images).
+- [x] GitHub Actions workflow `.github/workflows/docker-publish.yml`:
+  - **Triggers (full continuous-build matrix):**
+    - Push to `main` → `:main`, `:main-<short-sha>` (catches Dockerfile rot on every commit)
+    - Push of `*-RELEASE` tag → `:2025.12-RELEASE`, `:2025.12`, `:latest` (CalVer per `docs/03-operations-guide.md`)
+    - Pull request to `main` → `:pr-<number>` (push for same-repo PRs; **build-only, no push** for fork PRs since secrets aren't accessible)
+    - Weekly cron (Mon 18:00 UTC = Tue 01:00 WIB) → rebuild `:main` to pick up base image CVE patches
+    - `workflow_dispatch` → user-supplied tag, defaults to `:edge`
+  - Uses `docker/setup-qemu-action`, `docker/setup-buildx-action`, `docker/login-action` (GHCR + Docker Hub), `docker/metadata-action` with `type=ref` for branches/PRs/tags + `type=match,pattern=(.*)-RELEASE,group=1` for CalVer extraction + `type=sha,prefix=main-` for commit-pinned main builds, `docker/build-push-action@v6`
+  - Multi-arch: linux/amd64 + linux/arm64
+  - Provenance + SBOM attestation enabled, build-provenance attestation pushed to GHCR
+  - GHA build cache (cache-from/cache-to type=gha)
+  - **Secrets to configure in repo settings before first run:** `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (Docker Hub PAT). GHCR auth uses built-in `GITHUB_TOKEN` automatically — no setup needed.
+- [ ] Test image locally: `docker build -t balaka:dev . && docker run` with external PostgreSQL (via `docker compose` with PG sidecar for local testing)
 - [ ] Implement first-run setup: if no users exist in DB, show setup wizard (create admin user + select industry seed pack) on first access
 - [ ] Target image size: < 300 MB (JRE ~200 MB + JAR ~140 MB, Alpine base)
 - [ ] Minimum resource: 2 GB RAM, 1 vCPU
