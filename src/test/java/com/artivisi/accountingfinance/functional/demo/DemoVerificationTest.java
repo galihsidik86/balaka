@@ -438,7 +438,7 @@ class DemoVerificationTest extends DemoDataLoaderBase {
         waitForPageLoad();
         tutorialScreenshot("report-rekonsiliasi-fiskal");
 
-        navigateTo("/reports/spt-tahunan");
+        navigateTo("/reports/spt-checklist?year=2025");
         waitForPageLoad();
         tutorialScreenshot("report-spt-checklist");
 
