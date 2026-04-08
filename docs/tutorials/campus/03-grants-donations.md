@@ -23,6 +23,8 @@ Jurnal yang dihasilkan:
 
 Bank bertambah, pendapatan hibah diakui. Hibah masuk sebagai pendapatan lain-lain (bukan pendapatan operasional SPP).
 
+![Form penerimaan hibah](screenshots/tutorials/campus/tx-form-terima-hibah.png)
+
 ### Hibah vs Pendapatan SPP
 
 | Aspek | Pendapatan SPP | Pendapatan Hibah |
@@ -65,6 +67,8 @@ Jurnal yang dihasilkan:
 | 3.1.01 Modal Yayasan | | 200.000.000 |
 
 Bank bertambah, modal bertambah. Setoran modal **tidak masuk laporan laba rugi** — ini dicatat di neraca sebagai ekuitas.
+
+![Form setoran modal yayasan](screenshots/tutorials/campus/tx-form-setoran-modal-yayasan.png)
 
 ### Perbedaan Modal vs Hibah vs Pendapatan
 

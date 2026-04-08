@@ -34,6 +34,8 @@ Jurnal yang dihasilkan:
 | 5.3.01 Ongkir Ditanggung Penjual | 2.000.000 | |
 | 1.1.02 Bank BCA | | 2.000.000 |
 
+![Form ongkir ditanggung penjual](screenshots/tutorials/online-seller/tx-form-ongkir-ditanggung-penjual.png)
+
 ### Contoh: Bayar Iklan Marketplace
 
 | Field | Isi |
@@ -50,6 +52,8 @@ Jurnal:
 |------|-------|--------|
 | 5.2.10 Biaya Iklan Marketplace | 3.000.000 | |
 | 1.1.02 Bank BCA | | 3.000.000 |
+
+![Form pembayaran iklan marketplace](screenshots/tutorials/online-seller/tx-form-bayar-iklan-marketplace.png)
 
 ## Pengeluaran Bulanan 2025 (Detail)
 

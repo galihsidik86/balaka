@@ -31,6 +31,8 @@ Jurnal yang dihasilkan:
 
 PPh Final dicatat sebagai **Beban Lain-lain** (bukan beban operasional) dan dibayar dari Bank BCA via e-Billing DJP.
 
+![Form pembayaran PPh Final UMKM](screenshots/tutorials/coffee-shop/tx-form-bayar-pph-final-umkm.png)
+
 ## Jadwal Pembayaran PPh Final 2025
 
 PPh Final dibayar paling lambat tanggal 15 bulan berikutnya:

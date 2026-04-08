@@ -66,6 +66,8 @@ Jurnal yang dihasilkan:
 
 PPh Final dicatat sebagai **beban** (bukan hutang yang ditunda) karena langsung dibayar.
 
+![Form pembayaran PPh Final UMKM](screenshots/tutorials/online-seller/tx-form-bayar-pph-final-umkm.png)
+
 ## Jadwal PPh Final 2025
 
 | Bulan Omzet | Omzet Bruto | PPh Final (0,5%) | Bulan Bayar |

@@ -25,6 +25,8 @@ Jurnal yang dihasilkan:
 
 Persediaan bertambah (aset naik), bank berkurang (aset turun). Pembelian stok bukan beban — barang masih punya nilai sampai dijual.
 
+![Form pembelian barang dagangan](screenshots/tutorials/online-seller/tx-form-pembelian-barang-dagangan.png)
+
 ## Jadwal Pembelian 2025
 
 | Tanggal | Deskripsi | Jumlah | Referensi |

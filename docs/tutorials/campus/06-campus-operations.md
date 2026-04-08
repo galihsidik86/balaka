@@ -64,6 +64,8 @@ Listrik kampus bervariasi mengikuti kalender akademik:
 | 2025-12-10 | 2.000.000 | Bahan praktikum UAS |
 | **Total** | **9.500.000** | |
 
+![Form pembelian bahan praktikum](screenshots/tutorials/campus/tx-form-bayar-bahan-praktikum.png)
+
 ### Pemeliharaan Lab
 
 | Tanggal | Jumlah | Deskripsi |

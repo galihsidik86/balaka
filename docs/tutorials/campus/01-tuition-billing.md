@@ -128,6 +128,10 @@ C: Pendapatan SPP       C: Piutang SPP
 
 Piutang naik saat tagihan dibuat, turun saat pembayaran diterima.
 
+![Form tagihan SPP mahasiswa](screenshots/tutorials/campus/tx-form-tagihan-spp-mahasiswa.png)
+
+![Form tagihan uang pangkal](screenshots/tutorials/campus/tx-form-tagihan-uang-pangkal.png)
+
 ## Rekap Total Tagihan 2025
 
 | Jenis | Semester Genap | Semester Ganjil | Total |

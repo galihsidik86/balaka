@@ -40,6 +40,8 @@ Jurnal yang dihasilkan:
 
 Setelah withdraw: Saldo Tokopedia = 0, Bank BCA bertambah 23,75 juta.
 
+![Form withdraw saldo Tokopedia](screenshots/tutorials/online-seller/tx-form-withdraw-saldo-tokopedia.png)
+
 ## Contoh: Withdraw Shopee Januari
 
 | Field | Isi |

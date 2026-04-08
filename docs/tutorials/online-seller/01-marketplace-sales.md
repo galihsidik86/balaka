@@ -40,6 +40,8 @@ Jurnal yang dihasilkan:
 
 Pendapatan dicatat penuh 25 juta. Potongan admin 1,25 juta dicatat sebagai beban terpisah. Saldo Tokopedia bertambah 23,75 juta (netto setelah potongan).
 
+![Form penjualan Tokopedia](screenshots/tutorials/online-seller/tx-form-penjualan-tokopedia.png)
+
 ### Penjualan Shopee (Admin 6%)
 
 **Template:** Penjualan Shopee
@@ -63,6 +65,8 @@ Jurnal yang dihasilkan:
 
 Shopee memotong admin fee 6% — lebih tinggi dari Tokopedia. Di penjualan 18 juta, selisihnya 180rb lebih besar dibanding kalau di Tokopedia.
 
+![Form penjualan Shopee](screenshots/tutorials/online-seller/tx-form-penjualan-shopee.png)
+
 ### Penjualan TikTok Shop (Admin 4%)
 
 **Template:** Penjualan TikTok Shop
@@ -85,6 +89,8 @@ Jurnal yang dihasilkan:
 | 4.1.05 Penjualan TikTok Shop | | 12.000.000 | grossSales |
 
 TikTok Shop punya admin fee terendah (4%). Dari 12 juta, hanya 480rb yang dipotong.
+
+![Form penjualan TikTok Shop](screenshots/tutorials/online-seller/tx-form-penjualan-tiktok-shop.png)
 
 ## Perbandingan Admin Fee
 

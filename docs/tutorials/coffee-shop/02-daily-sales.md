@@ -45,6 +45,8 @@ Jurnal yang dihasilkan:
 3. **HPP** bertambah — biaya bahan baku diakui sebagai beban
 4. **Persediaan Barang Jadi** berkurang — stok keluar
 
+![Form penjualan tunai dengan COGS](screenshots/tutorials/coffee-shop/tx-form-penjualan-tunai-cogs.png)
+
 ## Menghitung COGS
 
 Angka COGS bisa dihitung dari data POS:

@@ -41,6 +41,8 @@ Jurnal yang dihasilkan:
 
 Bank bertambah (debit), piutang berkurang (kredit).
 
+![Form pembayaran SPP](screenshots/tutorials/campus/tx-form-pembayaran-spp.png)
+
 ### Angkatan 2024 Semester Genap
 
 Tagihan: **Rp 900.000.000**

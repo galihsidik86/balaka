@@ -37,6 +37,8 @@ Jurnal yang dihasilkan:
 
 Beban beasiswa bertambah (debit), piutang mahasiswa berkurang (kredit). Mahasiswa penerima beasiswa tidak perlu membayar sebagian SPP-nya.
 
+![Form beasiswa prestasi](screenshots/tutorials/campus/tx-form-beasiswa-prestasi.png)
+
 ## Beasiswa Tidak Mampu
 
 Beasiswa untuk mahasiswa kurang mampu. Diberikan Rp 12.500.000 per semester untuk 5 mahasiswa (Rp 2.500.000 per mahasiswa).
@@ -62,6 +64,8 @@ Beasiswa untuk mahasiswa kurang mampu. Diberikan Rp 12.500.000 per semester untu
 | Referensi | BEA-TM-2025-GNJ |
 
 Total beasiswa tidak mampu tahun 2025: **25.000.000** (2 semester x 12,5M).
+
+![Form beasiswa tidak mampu](screenshots/tutorials/campus/tx-form-beasiswa-tidak-mampu.png)
 
 ## Mekanisme Beasiswa
 

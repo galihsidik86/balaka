@@ -50,6 +50,8 @@ Jurnal yang dihasilkan:
 
 Perhatikan: uang online masuk ke **Bank BCA** (transfer dari platform), bukan ke **Kas** seperti penjualan walk-in.
 
+![Form penjualan online GrabFood/GoFood](screenshots/tutorials/coffee-shop/tx-form-penjualan-online-grabfood-gofood-.png)
+
 ## Penjualan Online Sepanjang 2025
 
 Tidak setiap bulan ada penjualan online (tergantung volume order):

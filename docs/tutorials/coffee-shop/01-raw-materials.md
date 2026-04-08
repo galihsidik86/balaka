@@ -37,6 +37,8 @@ Jurnal yang dihasilkan:
 
 Persediaan bertambah (debit), kas berkurang (kredit). Bahan baku masuk gudang, uang keluar dari kasir.
 
+![Form pembelian bahan baku tunai](screenshots/tutorials/coffee-shop/tx-form-pembelian-bahan-baku-tunai.png)
+
 Untuk memahami konsep debit dan kredit, lihat [Debit dan Kredit](../common/03-debit-credit.md).
 
 ## Pembelian Kredit
@@ -63,6 +65,8 @@ Jurnal yang dihasilkan:
 | 2.1.02 Hutang Supplier | | 10.000.000 |
 
 Persediaan tetap bertambah, tapi yang berkurang bukan kas — melainkan timbul hutang ke supplier. Hutang ini harus dilunasi sesuai kesepakatan.
+
+![Form pembelian bahan baku kredit](screenshots/tutorials/coffee-shop/tx-form-pembelian-bahan-baku-kredit.png)
 
 Di akhir tahun 2025, Kedai Kopi Nusantara masih memiliki **Hutang Supplier Rp 10.000.000** (pembelian kredit Q1 yang belum dilunasi).
 
