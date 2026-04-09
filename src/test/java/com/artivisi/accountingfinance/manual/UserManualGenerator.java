@@ -796,6 +796,14 @@ public class UserManualGenerator {
             return markdown;
         }
 
+        // When this Section is the only one referencing the file (no siblings),
+        // return the full file. H2-level extraction is only meaningful when multiple
+        // Sections split a single file — otherwise an accidental H2 substring match
+        // silently drops the rest of the file.
+        if (siblingTitles == null || siblingTitles.isEmpty()) {
+            return markdown.replaceFirst("^#\\s+[^\\n]+\\n*", "").trim();
+        }
+
         // Split by H2 headings to get all sections
         String[] sections = markdown.split("(?m)^## ");
 
