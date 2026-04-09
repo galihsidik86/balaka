@@ -413,7 +413,7 @@ CREATE TABLE recurring_transaction_logs (
     id_recurring_transaction UUID NOT NULL REFERENCES recurring_transactions(id),
     scheduled_date DATE NOT NULL,
     executed_at TIMESTAMP,
-    id_transaction UUID REFERENCES transactions(id),
+    id_transaction UUID REFERENCES transactions(id) ON DELETE SET NULL,
     status VARCHAR(20) NOT NULL,
     error_message TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
