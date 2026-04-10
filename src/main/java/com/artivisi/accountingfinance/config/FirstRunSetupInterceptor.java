@@ -12,7 +12,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * Static assets, error pages, API, and the setup endpoint itself are excluded
  * via WebMvcConfig path patterns.
  *
- * Once any user exists, this interceptor is a no-op (single count() query).
+ * Once any user exists, this interceptor is a no-op (single count() query
+ * on a small indexed table — negligible overhead).
  */
 @Component
 @RequiredArgsConstructor

@@ -3,6 +3,7 @@ package com.artivisi.accountingfinance.controller;
 import com.artivisi.accountingfinance.entity.User;
 import com.artivisi.accountingfinance.enums.Role;
 import com.artivisi.accountingfinance.repository.UserRepository;
+import com.artivisi.accountingfinance.security.LogSanitizer;
 import com.artivisi.accountingfinance.service.DataImportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +76,7 @@ public class SetupController {
         byte[] zip = buildSeedZip(industryPack);
         DataImportService.ImportResult result = dataImportService.importAllData(zip);
         log.info("Setup wizard imported seed pack {}: {} records in {}ms",
-                industryPack, result.totalRecords(), result.durationMs());
+                LogSanitizer.sanitize(industryPack), result.totalRecords(), result.durationMs());
 
         User admin = new User();
         admin.setUsername(username);
@@ -85,7 +86,7 @@ public class SetupController {
         admin.setActive(true);
         admin.setRoles(Set.of(Role.ADMIN), "setup-wizard");
         userRepository.save(admin);
-        log.info("Setup wizard created admin user: {}", username);
+        log.info("Setup wizard created admin user: {}", LogSanitizer.username(username));
 
         ra.addFlashAttribute("setupComplete", true);
         return "redirect:/login";
