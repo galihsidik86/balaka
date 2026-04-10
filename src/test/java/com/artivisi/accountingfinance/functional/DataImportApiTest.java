@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,6 +37,7 @@ import static org.awaitility.Awaitility.await;
 @Slf4j
 @DisplayName("Data Import API - Functional Tests")
 @Import(ServiceTestDataInitializer.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class DataImportApiTest extends PlaywrightTestBase {
 
     private APIRequestContext apiContext;
