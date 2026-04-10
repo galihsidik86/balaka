@@ -127,7 +127,7 @@ User → Controller (MVC) → Service → Repository → PostgreSQL
 
 ## Current Release
 
-**2026.03.3-RELEASE** deployed to production (balaka.artivisi.id, akunting.stmik.tazkia.ac.id). See `docs/releases/2026.03.3-RELEASE.md` for release notes.
+**2026.04-RELEASE** tagged. See `docs/releases/2026.04-RELEASE.md` for release notes.
 
 ## Current Focus
 
