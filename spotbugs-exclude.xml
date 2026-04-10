@@ -202,6 +202,12 @@ Each exclusion must have a justification comment explaining the mitigation.
         <Bug pattern="CRLF_INJECTION_LOGS"/>
     </Match>
 
+    <!-- SetupController: User-controlled username/industryPack passed through LogSanitizer before logging + Logback %replace strips CRLF -->
+    <Match>
+        <Class name="com.artivisi.accountingfinance.controller.SetupController"/>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+
     <!--
     BEAN_PROPERTY_INJECTION - BeanUtils.copyProperties() in controller form DTO mapping
 
