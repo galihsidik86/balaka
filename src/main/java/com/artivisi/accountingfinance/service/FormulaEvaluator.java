@@ -228,23 +228,16 @@ public class FormulaEvaluator {
             throw new IllegalArgumentException("Formula returned null result");
         }
 
+        // PER-11/PJ/2025 Pasal 129 ayat 3: desimal < 0.50 → bulatkan ke bawah, ≥ 0.50 → bulatkan ke atas.
+        // This is RoundingMode.HALF_UP. Coretax rejects faktur pajak with FLOOR/truncated values
+        // that differ from the DJP-mandated rounding. Prior BUG-001 fix used FLOOR on an incorrect
+        // reading of Indonesian tax practice — see BUG-020.
         if (result instanceof BigDecimal bd) {
-            // For division formulas that result in repeating decimals, use FLOOR
-            // to truncate fractional cents. This is the standard Indonesian tax practice.
-            log.info("BigDecimal result before rounding: {}", bd);
-            BigDecimal rounded = bd.setScale(0, RoundingMode.FLOOR);
-            log.info("BigDecimal result after rounding: {}", rounded);
-            return rounded;
+            return bd.setScale(0, RoundingMode.HALF_UP);
         }
 
         if (result instanceof Number num) {
-            // Convert from number to BigDecimal using string representation
-            // Then use FLOOR for consistency with Indonesian tax practice
-            log.info("Number result: {}, num.toString(): {}", num, num.toString());
-            BigDecimal rounded = new BigDecimal(num.toString())
-                    .setScale(0, RoundingMode.FLOOR);
-            log.info("Number result after rounding: {}", rounded);
-            return rounded;
+            return BigDecimal.valueOf(num.doubleValue()).setScale(0, RoundingMode.HALF_UP);
         }
 
         throw new IllegalArgumentException("Formula must return a numeric value, got: " + result.getClass().getSimpleName());

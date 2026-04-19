@@ -308,6 +308,9 @@ public class TransactionService {
         String journalNumber = generateJournalNumber();
         int lineIndex = 0;
 
+        List<JournalEntry> addedEntries = new ArrayList<>();
+        List<String> addedFormulas = new ArrayList<>();
+
         for (JournalTemplateLine line : template.getLines()) {
             ChartOfAccount account = accountOverrides.getOrDefault(line.getId(), line.getAccount());
             if (account == null) {
@@ -338,7 +341,11 @@ public class TransactionService {
             }
 
             transaction.addJournalEntry(entry);
+            addedEntries.add(entry);
+            addedFormulas.add(line.getFormula());
         }
+
+        JournalBalancer.absorbRoundingResidual(addedEntries, addedFormulas);
     }
 
     @Transactional

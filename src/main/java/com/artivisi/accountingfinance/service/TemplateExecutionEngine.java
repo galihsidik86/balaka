@@ -41,6 +41,10 @@ public class TemplateExecutionEngine {
         }
 
         List<JournalEntry> entries = buildJournalEntries(template, context);
+        List<String> formulas = template.getLines().stream()
+                .map(JournalTemplateLine::getFormula)
+                .toList();
+        JournalBalancer.absorbRoundingResidual(entries, formulas);
 
         // Create Transaction as header
         Transaction transaction = new Transaction();
@@ -92,7 +96,17 @@ public class TemplateExecutionEngine {
             totalCredit = totalCredit.add(credit);
         }
 
-        return new PreviewResult(true, List.of(), previewEntries, totalDebit, totalCredit);
+        List<String> formulas = template.getLines().stream()
+                .map(JournalTemplateLine::getFormula)
+                .toList();
+        List<PreviewEntry> balanced = JournalBalancer.absorbPreviewResidual(previewEntries, formulas);
+        BigDecimal balancedDebit = balanced.stream()
+                .map(PreviewEntry::debitAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal balancedCredit = balanced.stream()
+                .map(PreviewEntry::creditAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new PreviewResult(true, List.of(), balanced, balancedDebit, balancedCredit);
     }
 
     private record AccountInfo(String code, String name) {}
