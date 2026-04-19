@@ -1,1 +1,20 @@
 template_name,tag_name
+Pendapatan Jasa Training,penjualan
+Pendapatan Jasa Konsultasi,penjualan
+Pendapatan Jasa + PPN,penjualan
+Pendapatan Jasa + PPh 23 Dipotong,penjualan
+Pendapatan Jasa + PPN + PPh 23,penjualan
+Bayar Beban Gaji,pengeluaran
+Bayar Beban Cloud & Server,pengeluaran
+Bayar Beban Software & Lisensi,pengeluaran
+Bayar Beban Telekomunikasi,operasional
+Bayar Beban Listrik,operasional
+Bayar Beban Sewa,operasional
+Bayar Beban Operasional,operasional
+Pembelian dengan PPN,pembelian
+Pembayaran Jasa dengan PPh 23,pembelian
+Pembayaran Sewa dengan PPh 4(2),sewa
+Setor PPh 21,pajak
+Setor PPh 23,pajak
+Setor PPh 4(2),pajak
+Setor PPN,pajak

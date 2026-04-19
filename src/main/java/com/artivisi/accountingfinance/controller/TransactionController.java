@@ -26,6 +26,7 @@ import com.artivisi.accountingfinance.service.TransactionApiService;
 import com.artivisi.accountingfinance.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
@@ -61,6 +62,7 @@ import static com.artivisi.accountingfinance.controller.ViewConstants.*;
 @Controller
 @RequestMapping("/transactions")
 @RequiredArgsConstructor
+@Slf4j
 @PreAuthorize("hasAuthority('" + Permission.TRANSACTION_VIEW + "')")
 public class TransactionController {
 
@@ -449,6 +451,7 @@ public class TransactionController {
     @ResponseBody
     @PreAuthorize("hasAuthority('" + Permission.TRANSACTION_CREATE + "')")
     public ResponseEntity<Transaction> apiCreate(@Valid @RequestBody TransactionDto dto) {
+        log.info("API Create - amount: {}, amount class: {}, variables: {}", dto.amount(), dto.amount().getClass().getName(), dto.variables());
         Transaction transaction = mapDtoToEntity(dto);
 
         Transaction saved = transactionService.create(transaction, dto.accountMappings(), dto.variables());

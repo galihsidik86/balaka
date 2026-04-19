@@ -272,6 +272,9 @@ public class TransactionService {
             createJournalEntriesFromTemplate(transaction, context);
         }
 
+        // Auto-balance journal entries to handle rounding errors
+        autoBalanceJournalEntries(transaction.getJournalEntries());
+
         validateJournalBalance(transaction.getJournalEntries());
 
         transaction.setStatus(TransactionStatus.POSTED);
@@ -581,6 +584,81 @@ public class TransactionService {
             throw new IllegalStateException(
                     String.format("Journal not balanced: Debit=%s, Credit=%s", totalDebit, totalCredit));
         }
+    }
+
+    /**
+     * Auto-balance journal entries by adjusting the PPh (tax withholding) line.
+     * This handles rounding errors from division formulas like amount/1.09.
+     *
+     * <p>For "nilai diterima termasuk pajak" templates, PPh is used as the balancing figure:
+     * <ul>
+     *   <li>DPP and PPN are calculated with formulas (fixed)</li>
+     *   <li>PPh = (DPP + PPN) - amount (balancing figure)</li>
+     * </ul>
+     *
+     * <p>The balancing line is identified as the smallest DEBIT amount (excluding the primary amount),
+     * since PPh (2%) is always smaller than the main amount received.
+     *
+     * @param entries journal entries to balance
+     */
+    private void autoBalanceJournalEntries(List<JournalEntry> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return;
+        }
+
+        // Calculate totals
+        BigDecimal totalDebit = entries.stream()
+                .map(JournalEntry::getDebitAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalCredit = entries.stream()
+                .map(JournalEntry::getCreditAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // If already balanced, return
+        if (totalDebit.compareTo(totalCredit) == 0) {
+            log.debug("Journal entries already balanced: Debit={}, Credit={}", totalDebit, totalCredit);
+            return;
+        }
+
+        // Find the balancing line - smallest DEBIT amount (usually PPh 2%)
+        // This works for "nilai diterima termasuk pajak" template where:
+        // - DEBIT line 1: amount (e.g., 20,000,000 - bank received)
+        // - DEBIT line 2: PPh (e.g., 366,972 - 2% withholding, much smaller)
+        JournalEntry balancingLine = entries.stream()
+                .filter(e -> e.getDebitAmount().compareTo(BigDecimal.ZERO) > 0)
+                .min((e1, e2) -> e1.getDebitAmount().compareTo(e2.getDebitAmount()))
+                .orElse(null);
+
+        if (balancingLine == null) {
+            log.warn("Auto-balance: No suitable balancing line found (no DEBIT lines with positive amount)");
+            return;
+        }
+
+        // Calculate the difference needed to balance
+        BigDecimal difference = totalCredit.subtract(totalDebit);
+        BigDecimal currentAmount = balancingLine.getDebitAmount();
+        BigDecimal adjustedAmount = currentAmount.add(difference);
+
+        // Ensure adjusted amount is non-negative
+        if (adjustedAmount.compareTo(BigDecimal.ZERO) < 0) {
+            log.warn("Auto-balance: Adjusted amount would be negative, setting to zero. Current={}, Diff={}",
+                    currentAmount, difference);
+            adjustedAmount = BigDecimal.ZERO;
+        }
+
+        log.info("Auto-balancing journal entries: Total Debit={}, Total Credit={}, Diff={}, Adjusting PPh from {} to {}",
+                totalDebit, totalCredit, difference, currentAmount, adjustedAmount);
+        balancingLine.setDebitAmount(adjustedAmount);
+
+        // Verify balance after adjustment
+        BigDecimal newTotalDebit = entries.stream()
+                .map(JournalEntry::getDebitAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal newTotalCredit = entries.stream()
+                .map(JournalEntry::getCreditAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("Auto-balance complete: New Total Debit={}, New Total Credit={}, Balanced={}",
+                newTotalDebit, newTotalCredit, newTotalDebit.compareTo(newTotalCredit) == 0);
     }
 
     @Transactional

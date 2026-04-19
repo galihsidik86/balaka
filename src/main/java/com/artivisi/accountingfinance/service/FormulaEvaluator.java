@@ -2,6 +2,7 @@ package com.artivisi.accountingfinance.service;
 
 import com.artivisi.accountingfinance.dto.FormulaContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.PropertyAccessor;
@@ -36,6 +37,7 @@ import java.util.List;
  * <p>Per Decision #13: Uses SimpleEvaluationContext for secure sandbox evaluation.
  */
 @Service
+@Slf4j
 public class FormulaEvaluator {
 
     private static final String VAR_AMOUNT = "amount";
@@ -59,6 +61,7 @@ public class FormulaEvaluator {
                         "(4) Per ADR #13, this is the recommended secure pattern for SpEL evaluation."
     )
     public BigDecimal evaluate(String formula, FormulaContext context) {
+        log.info("Evaluating formula: {}, amount: {}, amount class: {}", formula, context.amount(), context.amount().getClass().getName());
         if (formula == null || formula.isBlank()) {
             return context.amount();
         }
@@ -226,11 +229,22 @@ public class FormulaEvaluator {
         }
 
         if (result instanceof BigDecimal bd) {
-            return bd.setScale(0, RoundingMode.FLOOR);
+            // For division formulas that result in repeating decimals, use FLOOR
+            // to truncate fractional cents. This is the standard Indonesian tax practice.
+            log.info("BigDecimal result before rounding: {}", bd);
+            BigDecimal rounded = bd.setScale(0, RoundingMode.FLOOR);
+            log.info("BigDecimal result after rounding: {}", rounded);
+            return rounded;
         }
 
         if (result instanceof Number num) {
-            return BigDecimal.valueOf(num.doubleValue()).setScale(0, RoundingMode.FLOOR);
+            // Convert from number to BigDecimal using string representation
+            // Then use FLOOR for consistency with Indonesian tax practice
+            log.info("Number result: {}, num.toString(): {}", num, num.toString());
+            BigDecimal rounded = new BigDecimal(num.toString())
+                    .setScale(0, RoundingMode.FLOOR);
+            log.info("Number result after rounding: {}", rounded);
+            return rounded;
         }
 
         throw new IllegalArgumentException("Formula must return a numeric value, got: " + result.getClass().getSimpleName());

@@ -200,12 +200,15 @@ function registerFormComponents() {
     // Transaction form state
     Alpine.data('transactionForm', () => ({
         init() {
-            this.amount = Number.parseInt(this.$el.dataset.amount, 10) || 0
+            // Store amount as raw string to preserve precision
+            const rawAmount = this.$el.dataset.amount || '0'
+            this.amount = rawAmount.replaceAll(/\D/g, '') || '0'
             this.description = this.$el.dataset.description || ''
             // Initialize the display input with formatted value
             const displayInput = this.$el.querySelector('#amount')
-            if (displayInput && this.amount > 0) {
-                displayInput.value = new Intl.NumberFormat('id-ID').format(this.amount)
+            if (displayInput && this.amount !== '0') {
+                const numericValue = Number.parseInt(this.amount, 10)
+                displayInput.value = new Intl.NumberFormat('id-ID').format(numericValue)
             }
             // Initialize description input
             const descInput = this.$el.querySelector('#description')
@@ -213,7 +216,7 @@ function registerFormComponents() {
                 descInput.value = this.description
             }
         },
-        amount: 0,
+        amount: '0',
         description: '',
         submitting: false,
 
@@ -238,15 +241,18 @@ function registerFormComponents() {
 
         // Getter - accessed as property in :value="formattedAmount"
         get formattedAmount() {
-            return this.amount > 0 ? new Intl.NumberFormat('id-ID').format(this.amount) : ''
+            if (this.amount === '0') return ''
+            const numericValue = Number.parseInt(this.amount, 10)
+            return new Intl.NumberFormat('id-ID').format(numericValue)
         },
 
         // Method - called as event handler @input="updateAmount"
         updateAmount(e) {
-            // Parse the raw numeric value
-            this.amount = Number.parseInt(e.target.value.replaceAll(/\D/g, '')) || 0
+            // Parse the raw numeric value and store as string to preserve precision
+            this.amount = e.target.value.replaceAll(/\D/g, '') || '0'
             // Re-format the display
-            e.target.value = this.amount > 0 ? new Intl.NumberFormat('id-ID').format(this.amount) : ''
+            const numericValue = Number.parseInt(this.amount, 10)
+            e.target.value = numericValue > 0 ? new Intl.NumberFormat('id-ID').format(numericValue) : ''
             // Sync hidden input immediately (before HTMX reads it)
             const hiddenInput = document.getElementById('amountHidden')
             if (hiddenInput) {
@@ -274,13 +280,14 @@ function registerFormComponents() {
 
     // Quick transaction form state
     Alpine.data('quickTransactionForm', () => ({
-        amount: 0,
+        amount: '0',
         submitting: false,
 
         // Getter - accessed as property
         get formattedAmount() {
-            if (!this.amount) return ''
-            return idNumberFormat.format(this.amount)
+            if (this.amount === '0') return ''
+            const numericValue = Number.parseInt(this.amount, 10)
+            return idNumberFormat.format(numericValue)
         },
 
         // Getter - button text based on submitting state
@@ -290,8 +297,10 @@ function registerFormComponents() {
 
         // Method - called as event handler @input="updateAmount"
         updateAmount(e) {
-            this.amount = Number.parseInt(e.target.value.replaceAll(/\D/g, '')) || 0
-            e.target.value = this.amount ? idNumberFormat.format(this.amount) : ''
+            // Store as string to preserve precision
+            this.amount = e.target.value.replaceAll(/\D/g, '') || '0'
+            const numericValue = Number.parseInt(this.amount, 10)
+            e.target.value = numericValue > 0 ? idNumberFormat.format(numericValue) : ''
         },
 
         // Method - for variable inputs in DETAILED templates
@@ -328,9 +337,10 @@ function registerFormComponents() {
             const variables = {}
             for (const [key, value] of formData.entries()) {
                 if (key.startsWith('var_') && value) {
+                    // Send as string to preserve precision - backend will convert to BigDecimal
                     const cleanValue = value.replaceAll(/\D/g, '')
                     if (cleanValue) {
-                        variables[key.substring(4)] = Number.parseInt(cleanValue, 10)
+                        variables[key.substring(4)] = cleanValue
                     }
                 }
             }
@@ -359,9 +369,11 @@ function registerFormComponents() {
             try {
                 const formData = new FormData(form)
                 const variables = this.collectVariables(formData)
+                // Send amount as string to preserve precision - backend will convert to BigDecimal
+                const rawAmount = formData.get('amount')?.replaceAll(/\D/g, '') || '0'
                 const data = {
                     templateId: formData.get('templateId'),
-                    amount: Number.parseInt(formData.get('amount'), 10) || 0,
+                    amount: rawAmount,
                     description: formData.get('description'),
                     transactionDate: formData.get('transactionDate'),
                     referenceNumber: formData.get('referenceNumber') || '',
